@@ -89,8 +89,8 @@ if __name__ == '__main__':
         offset = ((w - im_w) // 2, (h - im_h))
         return offset
 
-    #combine foreground and background
-    def combine(image, bg, matte, image_name):
+    #flatten foreground and background
+    def flatten(image, bg, matte, image_name):
 
         #resize image by width
         image = default_resize(image)
@@ -104,7 +104,7 @@ if __name__ == '__main__':
         image = image.convert("RGBA")
         bg = bg.convert("RGBA")
 
-        #combine foreground and background
+        #flatten foreground and background
         final.paste(bg, getOffset(bg), bg)
         final.paste(image, getOffset(image), matte)
 
@@ -179,7 +179,7 @@ if __name__ == '__main__':
         image = Image.open(os.path.join(args.input_path, image_name))
         matte = Image.open(os.path.join(args.matte_path, matte_name))
         foreground = getForeground(image,matte,image_name)
-        final = combine(foreground, background, matte, image_name)
+        final = flatten(foreground, background, matte, image_name)
 
 
 
