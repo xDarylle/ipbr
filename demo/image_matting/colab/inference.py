@@ -71,15 +71,14 @@ if __name__ == '__main__':
     def default_resize(image):
         basewidth = 1080
         width, height = image.size
-        wpercent = (basewidth / width)
-        hsize = int(height * wpercent)
-        image = image.resize((basewidth, hsize), Image.ANTIALIAS)
+        new_height = int(height * basewidth / width)
+        image = image.resize((basewidth, new_height), Image.ANTIALIAS)
         return image
 
     def resize_bg(bg):
         baseheight = 800
         width, height = bg.size
-        new_width = int(baseheight * width/height)
+        new_width = int(width * baseheight / height)
         bg = bg.resize((new_width, baseheight), Image.ANTIALIAS)
         return bg
 
@@ -180,11 +179,3 @@ if __name__ == '__main__':
         matte = Image.open(os.path.join(args.matte_path, matte_name))
         foreground = getForeground(image,matte,image_name)
         final = flatten(foreground, background, matte, image_name)
-
-
-
-
-
-
-
-
