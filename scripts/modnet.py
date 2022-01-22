@@ -71,7 +71,7 @@ class _modnet():
         matte = F.interpolate(matte, size=(im_h, im_w), mode='area')
         matte = matte[0][0].data.cpu().numpy()
 
-        return matte
+        return matte * 255
 
 
 

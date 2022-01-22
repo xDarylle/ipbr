@@ -16,15 +16,17 @@ class _image_():
         return im
 
     def change_background(self, image, matte, background):
+        image = np.array(image)
+        matte = np.array(matte)/255
+        background = np.array(background)
 
         new_image = image * matte + background * (1 - matte)
 
-        return new_image
+        return Image.fromarray(np.uint8(new_image))
 
     def crop(self, img, matte):
-        img = cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
-        matte = cv2.cvtColor(matte, cv2.COLOR_RGBA2BGR)
-
+        img = np.array(img)
+        matte = cv2.cvtColor(np.array(matte), cv2.COLOR_RGB2BGR)
         gray = cv2.cvtColor(matte, cv2.COLOR_BGR2GRAY)
 
         # threshold
@@ -37,7 +39,6 @@ class _image_():
         # get bounds of white pixels
         white = np.where(thresh == 255)
         xmin, ymin, xmax, ymax = np.min(white[1]), np.min(white[0]), np.max(white[1]), np.max(white[0])
-        print(xmin, xmax, ymin, ymax)
 
         # crop the image at the bounds adding back the two blackened rows at the bottom
         img = img[ymin:ymax + 3, xmin:xmax]
@@ -47,6 +48,40 @@ class _image_():
         img = Image.fromarray(img)
         matte = Image.fromarray(matte)
         return img, matte
+
+    def rescale(self, img, basesize, baseTo):
+        basewidth, baseheight = basesize
+        width, height = img.size
+
+        # scale to width
+        if baseTo == 0:
+            basewidth = basewidth - 100
+            new_height = int(height * basewidth / width)
+            img = img.resize((basewidth, new_height), Image.ANTIALIAS)
+
+        # scale to height
+        if baseTo == 1:
+            new_width = int(baseheight * width / height)
+            img = img.resize((new_width, baseheight), Image.ANTIALIAS)
+
+        return img
+
+
+    def paste(self, img, matte, size):
+        img = img.convert("RGBA")
+        matte = matte.convert("RGBA")
+
+        size_width, size_height = size
+        img_width, img_height = img.size
+
+        x = int((size_width - img_width) / 2)
+        y = int(size_height - img_height)
+
+        temp = Image.new("RGBA", size, "BLACK")
+
+        temp.paste(img, (x,y), matte)
+        return temp
+
 
 
 
