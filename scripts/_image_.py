@@ -52,10 +52,11 @@ class _image_():
     def rescale(self, img, basesize, baseTo):
         basewidth, baseheight = basesize
         width, height = img.size
+        padding = 100
 
         # scale to width
         if baseTo == 0:
-            basewidth = basewidth - 100
+            basewidth = basewidth - padding
             new_height = int(height * basewidth / width)
             img = img.resize((basewidth, new_height), Image.ANTIALIAS)
 
