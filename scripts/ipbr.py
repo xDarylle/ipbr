@@ -1,13 +1,13 @@
 from PIL import Image
 import numpy as np
 import modnet
-import _image_
+import image
 
 class main():
     def __init__(self):
         url = "../MODNet/pretrained/modnet_photographic_portrait_matting.ckpt"
         self.model = modnet._modnet(url)
-        self.im = _image_._image_()
+        self.im = image._image_()
 
     def process(self, img, background, def_size):
 
