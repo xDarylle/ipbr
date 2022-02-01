@@ -49,19 +49,19 @@ class _image_():
         matte = Image.fromarray(matte)
         return img, matte
 
-    def rescale(self, img, basesize, baseTo):
+    def rescale(self, img, basesize):
         basewidth, baseheight = basesize
         width, height = img.size
         padding = 100
 
         # scale to width
-        if baseTo == 0:
+        if width < height:
             basewidth = basewidth - padding
             new_height = int(height * basewidth / width)
             img = img.resize((basewidth, new_height), Image.ANTIALIAS)
 
         # scale to height
-        if baseTo == 1:
+        if width > height:
             new_width = int(baseheight * width / height)
             img = img.resize((new_width, baseheight), Image.ANTIALIAS)
 

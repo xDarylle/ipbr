@@ -59,6 +59,8 @@ class cam_modnet():
         def_size = (600,900)
 
         # rescale
+        frame = self.im.rescale(frame, def_size, 1)
+        matte = self.im.rescale(matte, def_size, 1)
         bg = self.im.rescale(bg, def_size, 1)
 
         # paste

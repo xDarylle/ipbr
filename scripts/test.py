@@ -11,30 +11,20 @@ def start():
     model = modnet._modnet(url)
     _image_ = image._image_()
 
-    im = Image.open("../input/rap.jpg")
+    im = Image.open("../input/jumalon.jpg")
     bg = Image.open("../background/bg.jpg")
+
+    im = np.array(im)
+    im = _image_.unify_channel(im)
 
     # predict matte
     matte = model.get_matte(im)
-    matte = Image.fromarray(np.uint8(matte))
+    matte = _image_.unify_channel(matte)
+    matte = matte / 255
+    new_image = im * matte + np.full(im.shape, 255) * (1 - matte)
+    new_image = Image.fromarray(np.uint8(new_image)).save("C:/Users/daryl/Desktop/pic.png")
 
-    # crop
-    im, matte = _image_.crop(im, matte)
-
-    # rescale
-    im = _image_.rescale(im, def_size, 0)
-    matte = _image_.rescale(matte, def_size, 0)
-    bg = _image_.rescale(bg, def_size, 1)
-
-    # paste
-    foreground = _image_.paste(im, matte, def_size)
-    matte = _image_.paste(matte, matte, def_size)
-    background = _image_.paste(bg, bg, def_size)
-
-    # change bg
-    new_image = _image_.change_background(foreground, matte, background)
-
-    new_image.show()
+start()
 
 
 
