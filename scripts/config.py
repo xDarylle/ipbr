@@ -1,22 +1,25 @@
-import os
 import configparser
+import os
 
 class conf():
     def __init__(self):
-        config_path = "../resources/config.ini"
+        self.config_path = "../resources/config.ini"
         self.config = configparser.ConfigParser()
-        if os.path.exists(config_path):
-            self.c = self.config.read(config_path)
-            self.settings = self.c["Settings"]
-            self.output_path = self.settings["output_path"]
-            self.background = self.settings["background"]
-            self.width = self.settings["width"]
-            self.height = self.settings["height"]
+        if os.path.exists(self.config_path):
+            self.load_conf()
         else:
-            self.f = open(config_path, "w+")
+            self.f = open(self.config_path, "w+")
             self.config.add_section("Settings")
             self.set_conf("","", "", "")
+            self.load_conf()
 
+    def load_conf(self):
+        self.config.read(self.config_path)
+        self.c = self.config["Settings"]
+        self.output_path = self.c["output_path"]
+        self.background = self.c["background"]
+        self.width = self.c["width"]
+        self.height = self.c["height"]
 
     def get_conf(self):
         return self.output_path, self.background, self.width, self.height
@@ -42,14 +45,19 @@ class conf():
         return self.height
 
     def set_output_path(self, output_path):
-        self.settings["output_path"] = output_path
+        print(output_path)
+        self.c["output_path"] = output_path
 
     def set_background(self, background):
-        self.settings["background"] = background
+        self.c["background"] = background
 
     def set_width(self, width):
-        self.settings["width"] = width
+        print(width)
+        self.c["width"] = width
 
     def set_height(self, height):
-        self.settings["height"] = height
+        self.c["height"] = height
 
+    def write(self):
+        self.f = open(self.config_path, "w+")
+        self.config.write(self.f)

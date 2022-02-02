@@ -170,10 +170,6 @@ def save_settings(setting_panel,height_error_label,width_error_label):
         else:
             height_error = False
 
-        conf.set_output_path(output_loc)
-        conf.set_width(width)
-        conf.set_height(height_var)
-
     except ValueError:
         height_error_label.configure(text = "Numbers Only (Integers)")
         height_error = True
@@ -202,9 +198,10 @@ def save_settings(setting_panel,height_error_label,width_error_label):
         height_var = height_holder
         width_var = width_holder
 
-        # print(output_loc)
-        # print(height_var)
-        # print(width_var)
+        conf.set_output_path(str(output_loc))
+        conf.set_width(str(width_var))
+        conf.set_height(str(height_var))
+        conf.write()
 
         setting_panel.destroy()
     else:
