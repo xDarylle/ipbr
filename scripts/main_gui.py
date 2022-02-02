@@ -47,7 +47,8 @@ def add_background(panel):
         image_url = filedialog.askopenfilename(initialdir="/Desktop", filetypes=(("image files",".jpg"),("image files",".png")))
         create_background_gallery(image_url, panel)
         backgrounds_array.append(image_url)
-
+        conf.set_array_backgrounds(backgrounds_array)
+        conf.write()
     else:
         print("Exceeded Number of Backgrounds")
 
@@ -72,6 +73,8 @@ def deletebackground(image_url):
     global backgrounds_array
     print(len(backgrounds_array))
     backgrounds_array.remove(image_url)
+    conf.set_array_backgrounds(backgrounds_array)
+    conf.write()
     print(len(backgrounds_array))
 
     background_panel_gui()
@@ -79,9 +82,11 @@ def deletebackground(image_url):
 def choosebackground(bgimg, image_url):
     #access essential variable background image
     global background_image
+    print("here")
     #assign it with the argument variable image
     background_image = image_url
     conf.set_background(background_image)
+    conf.write()
     background_preview.configure(height = 160, width = 310, image = bgimg)
 
 def open_settings():

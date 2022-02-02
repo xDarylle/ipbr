@@ -8,9 +8,8 @@ class conf():
         if os.path.exists(self.config_path):
             self.load_conf()
         else:
-            self.f = open(self.config_path, "w+")
             self.config.add_section("Settings")
-            self.set_conf("","", "", "")
+            self.set_conf("","", "", "", [])
             self.load_conf()
 
     def load_conf(self):
@@ -20,23 +19,36 @@ class conf():
         self.background = self.c["background"]
         self.width = self.c["width"]
         self.height = self.c["height"]
+        self.bg_no = int(self.c["Number of BG"])
+        self.background_array = []
+
+        for i in range(int(self.bg_no)):
+            self.background_array.append(self.c[str(i)])
 
     def get_conf(self):
         return self.output_path, self.background, self.width, self.height
 
-    def set_conf(self, output_path, background, width, height):
+    def set_conf(self, output_path, background, width, height, background_array):
+        bg_no = len(background_array)
         self.config.set("Settings", "output_path", output_path)
         self.config.set("Settings", "background", background)
         self.config.set("Settings", "width", width)
         self.config.set("Settings", "height", height)
-        self.config.write(self.f)
+        self.config.set("Settings", "Number of BG", str(bg_no))
 
+        for i in range(int(bg_no)):
+            self.config.set("Settings", str(i), background_array[i])
+
+        self.write()
 
     def get_output_path(self):
         return self.output_path
 
     def get_background(self):
         return self.background
+
+    def get_array_backgrounds(self):
+        return self.background_array
 
     def get_width(self):
         return self.width
@@ -50,6 +62,11 @@ class conf():
 
     def set_background(self, background):
         self.c["background"] = background
+
+    def set_array_backgrounds(self, background_array):
+        self.c["Number of BG"] = str(len(background_array))
+        for i in range(len(background_array)):
+             self.c[str(i)] = background_array[i]
 
     def set_width(self, width):
         print(width)
