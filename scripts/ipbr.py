@@ -20,9 +20,9 @@ class main():
         im, matte = self.im.crop(img, matte)
 
         # rescale
-        im = self.im.rescale(im, def_size)
-        matte = self.im.rescale(matte, def_size)
-        bg = self.im.rescale(background, def_size)
+        im = self.im.rescale(im, def_size, True)
+        matte = self.im.rescale(matte, def_size, True)
+        bg = self.im.rescale(background, def_size, False)
 
         # paste
         foreground = self.im.paste(im, matte, def_size)

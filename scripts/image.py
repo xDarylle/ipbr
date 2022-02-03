@@ -53,21 +53,27 @@ class _image_():
         return img, matte
 
     # scale image to match the basesize
-    def rescale(self, img, basesize):
+    def rescale(self, img, basesize, type):
         basewidth, baseheight = basesize
         width, height = img.size
         padding = 100
 
-        # scale to width
-        if width < height:
+        # img is foreground
+        if type == True:
             basewidth = basewidth - padding
             new_height = int(height * basewidth / width)
             img = img.resize((basewidth, new_height), Image.ANTIALIAS)
 
-        # scale to height
-        if width > height:
-            new_width = int(baseheight * width / height)
-            img = img.resize((new_width, baseheight), Image.ANTIALIAS)
+        # img is background
+        if type == False:
+            # scale background to height
+            if width > height:
+                new_width = int(baseheight * width / height)
+                img = img.resize((new_width, baseheight), Image.ANTIALIAS)
+            # scale background to width
+            if width < height:
+                new_height = int(height * basewidth / width)
+                img = img.resize((basewidth, new_height), Image.ANTIALIAS)
 
         return img
 

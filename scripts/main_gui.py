@@ -303,6 +303,10 @@ main = ipbr.main()
 conf = config.conf()
 output_loc, background_path, width_var, height_var = conf.get_conf()
 
+#convert str to int
+width_var = int(width_var)
+height_var = int(height_var)
+
 #global variables
 height_entry_var = StringVar()
 width_entry_var = StringVar()

@@ -9,7 +9,7 @@ class conf():
             self.load_conf()
         else:
             self.config.add_section("Settings")
-            self.set_conf("","", "", "", [])
+            self.set_conf("","", "600", "900", [])
             self.load_conf()
 
     def load_conf(self):
@@ -78,3 +78,5 @@ class conf():
     def write(self):
         self.f = open(self.config_path, "w+")
         self.config.write(self.f)
+        self.f.close()
+
