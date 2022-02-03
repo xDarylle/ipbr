@@ -18,6 +18,7 @@ class cam_modnet():
         self.modnet = MODNet(backbone_pretrained=False)
         self.modnet = nn.DataParallel(self.modnet).cuda()
 
+        # check if gpu supports cuda else use cpu
         GPU = True if torch.cuda.device_count() > 0 else False
         if GPU:
             modnet = self.modnet.cuda()
@@ -37,8 +38,8 @@ class cam_modnet():
 
         self.im = image._image_()
 
+    # replace background of current frame
     def update(self, frame, bg):
-
         frame_PIL = Image.fromarray(frame)
         frame_tensor = self.im_transform(frame_PIL)
         frame_tensor = frame_tensor[None, :, :, :]
@@ -72,3 +73,4 @@ class cam_modnet():
         new_image = self.im.change_background(foreground, matte, background)
 
         return new_image
+

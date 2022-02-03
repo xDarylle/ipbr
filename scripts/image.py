@@ -4,6 +4,7 @@ import cv2
 
 class _image_():
 
+    # unify channel to 3
     def unify_channel(self, im):
 
         if len(im.shape) == 2:
@@ -15,6 +16,7 @@ class _image_():
 
         return im
 
+    # combine background ang foreground
     def change_background(self, image, matte, background):
         image = np.array(image)
         matte = np.array(matte)/255
@@ -24,6 +26,7 @@ class _image_():
 
         return Image.fromarray(np.uint8(new_image))
 
+    # crop foreground
     def crop(self, img, matte):
         img = np.array(img)
         matte = cv2.cvtColor(np.array(matte), cv2.COLOR_RGB2BGR)
@@ -49,6 +52,7 @@ class _image_():
         matte = Image.fromarray(matte)
         return img, matte
 
+    # scale image to match the basesize
     def rescale(self, img, basesize):
         basewidth, baseheight = basesize
         width, height = img.size
@@ -68,6 +72,7 @@ class _image_():
         return img
 
 
+    # create a container for image
     def paste(self, img, matte, size):
         img = img.convert("RGBA")
         matte = matte.convert("RGBA")

@@ -9,6 +9,7 @@ class main():
         self.model = modnet._modnet(url)
         self.im = image._image_()
 
+    # main process
     def process(self, img, background, def_size):
 
         # get matte

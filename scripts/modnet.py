@@ -29,6 +29,7 @@ class _modnet():
             ]
         )
 
+    # predict alpha matte
     def get_matte(self, im):
 
         # unify image channels to 3
