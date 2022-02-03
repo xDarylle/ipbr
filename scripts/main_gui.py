@@ -95,6 +95,7 @@ def open_settings():
     global temp
 
     temp = tk.BooleanVar()
+    temp.set(ifcheck_var)
     # create variable for checkbox  with bollean as datatype
 
     setting_panel = tk.Frame(mainwindow, height=720, width=350, bg="#161010")
@@ -143,6 +144,7 @@ def open_settings():
     height_error_label.place(relx=0.575, rely=0.305)
     width_error_label = tk.Label(setting_panel, font=("Roboto", 10), fg="#ff7045", bg="#161010")
     width_error_label.place(relx=0.575, rely=0.355)
+    checkbox(height_entry, width_entry)
 
     return height_error_label, width_error_label, output_error_label, output_loc_entry, setting_panel
 
