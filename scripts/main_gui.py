@@ -34,7 +34,6 @@ def background_panel_gui():
     tk.Button(background_panel, height=0, width=0, bd=0, text="Add Background", font=("Roboto", 15), fg="#CDC9C9",
               bg="#383d3a", cursor="hand2", command=(lambda: add_background(background_panel))).place(relx=0.15,
                                                                                                       rely=0.015)
-
     # recreate the image gallery with current image and panel as paramenter
     for img in backgrounds_array:
         create_background_gallery(img, background_panel)
@@ -51,6 +50,8 @@ def add_background(panel):
         create_background_gallery(image_url, panel)
         backgrounds_array.append(image_url)
 
+        conf.set_array_backgrounds(backgrounds_array)
+        conf.write()
     else:
         print("Exceeded Number of Backgrounds")
 
@@ -82,7 +83,8 @@ def deletebackground(image_url):
     print(len(backgrounds_array))
     backgrounds_array.remove(image_url)
     print(len(backgrounds_array))
-
+    conf.set_array_backgrounds(backgrounds_array)
+    conf.write()
     background_panel_gui()
 
 
@@ -93,9 +95,9 @@ def choosebackground(bgimg,image_url, panel):
     #assign it with the argument variable image
     background_image = bgimg
     background_path = image_url
+    background_preview.configure(height=160, width=310, image=background_image)
     conf.set_background(background_path)
     conf.write()
-    background_preview.configure(height = 160, width = 310, image = bgimg)
     panel.destroy()
 
 def open_settings():
@@ -103,9 +105,12 @@ def open_settings():
     global output_loc
     global height_entry_var
     global width_entry_var
+    global ifcheck_var
+    global ch
+    global temp
 
+    temp = tk.BooleanVar()
     # create variable for checkbox  with bollean as datatype
-    ifcheck_var = BooleanVar()
 
     setting_panel = tk.Frame(mainwindow, height=720, bd=2, width=350, relief="groove", bg="#161010")
     setting_panel.place(relx=0.72, rely=0)
@@ -113,7 +118,7 @@ def open_settings():
               cursor="hand2", command=setting_panel.destroy).place(relx=0.65, rely=0.025)
     tk.Button(setting_panel, height=2, width=25, text="Apply Changes", font=("Roboto", 11), fg="white", bg="#127DF4",
               cursor="hand2", command=lambda: [
-            save_settings(height_error_label, width_error_label, output_error_label, setting_panel,  ifcheck_var.get())]).place(
+            save_settings(height_error_label, width_error_label, output_error_label, setting_panel,  ifcheck_var)]).place(
         relx=0.175, rely=0.75)
     tk.Label(setting_panel, text="Settings", font=("Roboto", 20), fg="#127DF4", bg="#161010").place(relx=0.05,
                                                                                                     rely=0.025)
@@ -121,25 +126,33 @@ def open_settings():
                                                                                                            rely=0.1)
     output_loc_entry = tk.Label(setting_panel, width=25, font=("Roboto", 12), fg="#D6D2D2", bg="#161010", bd=2,
                                 relief="groove")
+    output_loc_entry.configure(text = output_loc)
     output_loc_entry.place(relx=0.05, rely=0.15, height=40)
+
     output_error_label = tk.Label(setting_panel, font=("Roboto", 10), fg="#ff7045", bg="#161010")
     output_error_label.place(relx=0.25, rely=0.215)
+
     tk.Button(setting_panel, height=0, width=3, text="...", font=("Roboto", 15), fg="#D6D2D2", bg="#161010", bd=2,
               relief="groove", command=lambda: [get_output_loc(output_loc_entry)]).place(relx=0.7, rely=0.15)
+
     tk.Label(setting_panel, text="Use Custom Resolution", font=("Roboto", 13), fg="#D6D2D2", bg="#161010").place(
         relx=0.05, rely=0.25)
-    tk.Checkbutton(setting_panel, variable=ifcheck_var, font=("Roboto", 12), bg="#161010",
-                   command=lambda: [checkbox(ifcheck_var.get(), height_entry, width_entry)]).place(relx=0.60,
-                                                                                                   rely=0.248)
+
+    tk.Checkbutton(setting_panel, variable= temp, font=("Roboto", 12), bg="#161010",
+                   command=lambda: [checkbox(height_entry, width_entry)]).place(relx=0.60, rely=0.248)
+
     tk.Label(setting_panel, text="Height (Pixels): ", font=("Roboto", 12), fg="#D6D2D2", bg="#161010").place(relx=0.05,
                                                                                                              rely=0.3)
-    height_entry = tk.Entry(setting_panel, state='readonly', textvariable=height_entry_var, width=5,
+    height_entry = tk.Entry(setting_panel, state='readonly',  textvariable=height_entry_var, width=5,
                             font=("Roboto", 12), fg="#D6D2D2", bg="#161010", bd=3)
+
     height_entry.place(relx=0.4, rely=0.3)
-    tk.Label(setting_panel, text="Width (Pixels): ", font=("Roboto", 12), fg="#D6D2D2", bg="#161010").place(relx=0.05,
-                                                                                                            rely=0.35)
+
+    tk.Label(setting_panel, text="Width (Pixels): ", font=("Roboto", 12), fg="#D6D2D2", bg="#161010").place(relx=0.05,rely=0.35)
+
     width_entry = tk.Entry(setting_panel, state='readonly', textvariable=width_entry_var, width=5, font=("Roboto", 12),
                            fg="#D6D2D2", bg="#161010", bd=3)
+
     width_entry.place(relx=0.4, rely=0.35)
     height_error_label = tk.Label(setting_panel, font=("Roboto", 10), fg="#ff7045", bg="#161010")
     height_error_label.place(relx=0.575, rely=0.305)
@@ -149,18 +162,19 @@ def open_settings():
     return height_error_label, width_error_label, output_error_label, output_loc_entry, setting_panel
 
 
-def checkbox(ifcheck_var, height_entry, width_entry):
+def checkbox(height_entry, width_entry):
     # check if checkbox is checked or not
-    if ifcheck_var == True:
+    global ifcheck_var
+    if temp.get() is True:
         height_entry.configure(state="normal")
         width_entry.configure(state="normal")
+
     else:
-        height_entry.delete(0, tk.END)
-        width_entry.delete(0, tk.END)
         height_entry.configure(state="readonly")
         width_entry.configure(state="readonly")
+        print("false")
 
-    print(ifcheck_var)
+    ifcheck_var = temp.get()
 
 def get_output_loc(output_loc_entry):
     #access temporary location variables as holedr
@@ -178,13 +192,12 @@ def save_settings(height_error_label, width_error_label, output_error_label , se
     global height_var
     global width_var
 
-    print(f"save settings {ifcheck_var}")
-    print(temp_output_loc)
     height_error = False
     width_error = False
-    if ifcheck_var == True:
+
+    if ifcheck_var is True:
         try:
-            height_var = int(height_entry_var.get())
+            height_var = int(height_entry_var)
             height_error_label.configure(text="")
             height_error = False
             # check if height input is 512 or higher
@@ -200,7 +213,7 @@ def save_settings(height_error_label, width_error_label, output_error_label , se
             height_error_label.configure(text="Numbers Only (Integers)")
             height_error = True
         try:
-            width_var = int(width_entry_var.get())
+            width_var = int(width_entry_var)
             width_error_label.configure(text="")
             width_error = False
             # check if height input is 512 or higher
@@ -215,23 +228,20 @@ def save_settings(height_error_label, width_error_label, output_error_label , se
         except ValueError:
             width_error_label.configure(text="Numbers Only (Integers)")
             width_error = True
-    else:
-        height_var = 900
-        width_var = 600
 
-    if height_error == False and width_error == False and os.path.exists(temp_output_loc) == True:
+    if height_error is False and width_error is False and os.path.exists(temp_output_loc) is True:
         # pass temporary output location to permanent output location
         output_loc = temp_output_loc
-        print(f" {height_var}")
-        print(f" {width_var}")
-        print(f" {temp_output_loc}")
-        print(f" {output_loc}")
-        print("SUCCESS!")
+        conf.set_output_path(output_loc)
+        conf.set_width(width_var)
+        conf.set_height(height_var)
+        conf.set_checkbox_state(1 if ifcheck_var is True else 0)
+        conf.write()
         setting_panel.destroy()
     else:
         output_error_label.configure(text="Path Not Found!")
-def start_process():
 
+def start_process():
     #access permanent variables
     global background_path
     global input_folder_path
@@ -301,27 +311,34 @@ main = ipbr.main()
 
 # load config
 conf = config.conf()
-output_loc, background_path, width_var, height_var = conf.get_conf()
+output_loc, background_path, ifcheck_var, width_var, height_var, backgrounds_array = conf.get_conf()
 
-#convert str to int
+# convert str to int
 width_var = int(width_var)
 height_var = int(height_var)
 
+# convert int to bool
+ifcheck_var = bool(ifcheck_var)
+
+# set default background preview
+try:
+    background_image = Image.open(background_path)
+    background_image.thumbnail((250, 250))
+    background_image = ImageTk.PhotoImage(background_image)
+except:
+    background_image = None
+
 #global variables
-height_entry_var = StringVar()
-width_entry_var = StringVar()
-temp_output_loc = ""
+height_entry_var = tk.StringVar()
+width_entry_var = tk.StringVar()
+height_entry_var.set(str(height_var))
+width_entry_var.set(str(width_var))
+temp_output_loc = output_loc
 input_count = 0
 yindex = 0.1
-backgrounds_array = []
-background_image = None
 im_index = 0
 
-background_path = ""
 input_folder_path = ""
-width_var = 0
-height_var = 0
-output_loc = ""
 
 #create and assign icons image
 add_background_icon = tk.PhotoImage(file = "../resources/images/add_background_icon.png")
@@ -355,6 +372,7 @@ menu_frame.place(relx= 0.72, rely= 0)
 tk.Label(menu_frame, text = "Chosen Background Image Preview: ", font = ("Roboto", 12), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.05, rely = 0.02)
 background_preview = tk.Button(menu_frame, height = 10, width = 43, bg = "#2C2B2B", bd =2, relief = "groove")
 background_preview.place(relx = 0.05, rely = 0.05)
+background_preview.configure(height = 160, width = 310, image = background_image)
 tk.Button(menu_frame, height = 2, width = 34, text = "Change Background", font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor ="hand2", command=background_panel_gui).place(relx= 0.05, rely= 0.30)
 tk.Button(menu_frame, height = 2, width = 34, text = "Settings", font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor ="hand2", command = open_settings).place(relx= 0.05, rely= 0.45)
 tk.Button(menu_frame, height = 4, width = 34, text = "Start Process", font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor ="hand2", command = start_process).place(relx= 0.05, rely= 0.85)
