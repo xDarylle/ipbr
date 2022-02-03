@@ -328,12 +328,12 @@ input_folder_path = ""
 
 #create and assign icons image
 add_background_icon = tk.PhotoImage(file = "../resources/images/add_background_icon.png")
-icon = tk.PhotoImage(file = "../resources/images/add_background_icon.png")
+icon2 = ("../resources/images/logo.ico")
 
 #configure mainwindow / root
-mainwindow.iconphoto(False, icon)
+mainwindow.iconbitmap(icon2)
 mainwindow.geometry("1280x720")
-mainwindow.title("Main Window")
+mainwindow.title("Intelligent Portrait Background Replacement")
 mainwindow.configure(bg = "#2C2B2B")
 mainwindow.resizable(False, False)
 
