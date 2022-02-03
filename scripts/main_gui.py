@@ -1,22 +1,12 @@
-from argparse import FileType
-from distutils import command
-from multiprocessing.sharedctypes import Value
 import tkinter as tk
-from tkinter import BooleanVar, StringVar, font
-from turtle import width
-from tkinter import PhotoImage, filedialog
-from typing_extensions import IntVar
+from tkinter import filedialog
 from PIL import Image, ImageTk
 from TkinterDnD2 import DND_FILES, TkinterDnD
 import os, os.path
 import imghdr
 import ipbr
-
 import config
 
-# class MainWindow():
-    
-#     def main_gui_design(self):
 def background_panel_gui():
     # access variables
     global add_background_icon
@@ -40,7 +30,6 @@ def background_panel_gui():
 
     return background_panel
 
-
 def add_background(panel):
     global backgrounds_array
     print(len(backgrounds_array))
@@ -54,7 +43,6 @@ def add_background(panel):
         conf.write()
     else:
         print("Exceeded Number of Backgrounds")
-
 
 def create_background_gallery(image_url, panel):
     # acces y index
@@ -86,7 +74,6 @@ def deletebackground(image_url):
     conf.set_array_backgrounds(backgrounds_array)
     conf.write()
     background_panel_gui()
-
 
 def choosebackground(bgimg,image_url, panel):
     #access essential variable background image
@@ -161,7 +148,6 @@ def open_settings():
 
     return height_error_label, width_error_label, output_error_label, output_loc_entry, setting_panel
 
-
 def checkbox(height_entry, width_entry):
     # check if checkbox is checked or not
     global ifcheck_var
@@ -197,7 +183,7 @@ def save_settings(height_error_label, width_error_label, output_error_label , se
 
     if ifcheck_var is True:
         try:
-            height_var = int(height_entry_var)
+            height_var = int(height_entry_var.get())
             height_error_label.configure(text="")
             height_error = False
             # check if height input is 512 or higher
@@ -213,7 +199,7 @@ def save_settings(height_error_label, width_error_label, output_error_label , se
             height_error_label.configure(text="Numbers Only (Integers)")
             height_error = True
         try:
-            width_var = int(width_entry_var)
+            width_var = int(width_entry_var.get())
             width_error_label.configure(text="")
             width_error = False
             # check if height input is 512 or higher
