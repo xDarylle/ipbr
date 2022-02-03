@@ -284,6 +284,8 @@ main = ipbr.main()
 # load config
 conf = config.conf()
 output_loc, background_image, width_var, height_var = conf.get_conf()
+width_var = int(width_var)
+height_var = int(height_var)
 
 #global variables
 #temporary holder variables
