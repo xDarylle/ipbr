@@ -9,13 +9,14 @@ class conf():
             self.load_conf()
         else:
             self.config.add_section("Settings")
-            self.set_conf("","", "600", "900", [])
+            self.set_conf("","", "0","600", "900", [])
             self.load_conf()
 
     def load_conf(self):
         self.config.read(self.config_path)
         self.c = self.config["Settings"]
         self.output_path = self.c["output_path"]
+        self.checkbock_state = self.c["State"]
         self.background = self.c["background"]
         self.width = self.c["width"]
         self.height = self.c["height"]
@@ -26,12 +27,13 @@ class conf():
             self.background_array.append(self.c[str(i)])
 
     def get_conf(self):
-        return self.output_path, self.background, self.width, self.height
+        return self.output_path, self.background, self.checkbock_state, self.width, self.height, self.background_array
 
-    def set_conf(self, output_path, background, width, height, background_array):
+    def set_conf(self, output_path, background, state, width, height, background_array):
         bg_no = len(background_array)
         self.config.set("Settings", "output_path", output_path)
         self.config.set("Settings", "background", background)
+        self.config.set("Settings", "State", state)
         self.config.set("Settings", "width", width)
         self.config.set("Settings", "height", height)
         self.config.set("Settings", "Number of BG", str(bg_no))
@@ -50,6 +52,9 @@ class conf():
     def get_array_backgrounds(self):
         return self.background_array
 
+    def get_checkbock_state(self):
+        return self.checkbock_state
+
     def get_width(self):
         return self.width
 
@@ -57,7 +62,6 @@ class conf():
         return self.height
 
     def set_output_path(self, output_path):
-        print(output_path)
         self.c["output_path"] = output_path
 
     def set_background(self, background):
@@ -68,12 +72,14 @@ class conf():
         for i in range(len(background_array)):
              self.c[str(i)] = background_array[i]
 
+    def set_checkbox_state(self, state):
+        self.c["state"] = str(state)
+
     def set_width(self, width):
-        print(width)
-        self.c["width"] = width
+        self.c["width"] = str(width)
 
     def set_height(self, height):
-        self.c["height"] = height
+        self.c["height"] = str(height)
 
     def write(self):
         self.f = open(self.config_path, "w+")
