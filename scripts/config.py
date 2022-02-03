@@ -79,3 +79,4 @@ class conf():
         self.f = open(self.config_path, "w+")
         self.config.write(self.f)
         self.f.close()
+
