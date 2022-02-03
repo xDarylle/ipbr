@@ -66,7 +66,7 @@ class _modnet():
         im = F.interpolate(im, size=(im_rh, im_rw), mode='area')
 
         # inference
-        _, _, matte = self.modnet(im.cuda(), True)
+        _, _, matte = self.modnet(im.cuda() if torch.cuda.is_available() else im, True)
 
         # resize
         matte = F.interpolate(matte, size=(im_h, im_w), mode='area')
