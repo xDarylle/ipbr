@@ -59,13 +59,13 @@ class _image_():
         padding = 100
 
         # img is foreground
-        if type == True:
+        if type is True:
             basewidth = basewidth - padding
             new_height = int(height * basewidth / width)
             img = img.resize((basewidth, new_height), Image.ANTIALIAS)
 
         # img is background
-        if type == False:
+        if type is False:
             # scale background to height
             if width > height:
                 new_width = int(baseheight * width / height)
