@@ -95,3 +95,10 @@ ENV/
 
 # Project files
 .vscode
+
+# intellij configs
+.idea/
+
+# config.ini
+resources/config.ini
+
