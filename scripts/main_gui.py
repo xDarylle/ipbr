@@ -1,22 +1,12 @@
-from argparse import FileType
-from distutils import command
-from multiprocessing.sharedctypes import Value
 import tkinter as tk
-from tkinter import BooleanVar, StringVar, font
-from turtle import width
-from tkinter import PhotoImage, filedialog
-from typing_extensions import IntVar
+from tkinter import filedialog
 from PIL import Image, ImageTk
 from TkinterDnD2 import DND_FILES, TkinterDnD
 import os, os.path
 import imghdr
 import ipbr
-
 import config
 
-# class MainWindow():
-    
-#     def main_gui_design(self):
 def background_panel_gui():
     # access variables
     global add_background_icon
@@ -38,7 +28,6 @@ def background_panel_gui():
 
     return background_panel
 
-
 def add_background(panel):
     global backgrounds_array
     print(len(backgrounds_array))
@@ -52,7 +41,6 @@ def add_background(panel):
         conf.write()
     else:
         print("Exceeded Number of Backgrounds")
-
 
 def create_background_gallery(image_url, panel):
     # acces y index
@@ -84,7 +72,6 @@ def deletebackground(image_url):
     conf.set_array_backgrounds(backgrounds_array)
     conf.write()
     background_panel_gui()
-
 
 def choosebackground(bgimg,image_url, panel):
     #access essential variable background image
@@ -158,7 +145,6 @@ def open_settings():
     width_error_label.place(relx=0.575, rely=0.355)
 
     return height_error_label, width_error_label, output_error_label, output_loc_entry, setting_panel
-
 
 def checkbox(height_entry, width_entry):
     # check if checkbox is checked or not
@@ -321,12 +307,12 @@ input_folder_path = ""
 
 #create and assign icons image
 add_background_icon = tk.PhotoImage(file = "../resources/images/add_background_icon.png")
-icon = tk.PhotoImage(file = "../resources/images/add_background_icon.png")
+icon2 = ("../resources/images/logo.ico")
 
 #configure mainwindow / root
-mainwindow.iconphoto(False, icon)
+mainwindow.iconbitmap(icon2)
 mainwindow.geometry("1280x720")
-mainwindow.title("Main Window")
+mainwindow.title("Intelligent Portrait Background Replacement")
 mainwindow.configure(bg = "#2C2B2B")
 mainwindow.resizable(False, False)
 
