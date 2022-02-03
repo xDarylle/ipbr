@@ -27,35 +27,36 @@ class ThreadedCamera(object):
             return self.frame
         return None
 
-pretrained_ckpt = '../MODNet/pretrained/modnet_webcam_portrait_matting.ckpt'
-cmodnet = cam_modnet.cam_modnet(pretrained_ckpt)
+class camera():
+    def __init__(self, model):
+        pretrained_ckpt = model
+        self.cmodnet = cam_modnet.cam_modnet(pretrained_ckpt)
 
-bg = Image.open('../background/bg1.jpg')
-url = "https://192.168.1.9:8080/video"
+    def setup_camera(self, camera):
+        self.streamer = ThreadedCamera(camera)
 
-streamer = ThreadedCamera(url)
+    def get_preview(self, bg, output_path):
+        while(True):
+            frame_np = self.streamer.grab_frame()
 
-while(True):
-    frame_np = streamer.grab_frame()
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+            if frame_np is not None:
+                frame_np = cv2.cvtColor(frame_np, cv2.COLOR_BGR2RGB)
+                frame_np = cv2.resize(frame_np, (910, 512), cv2.INTER_AREA)
+                frame_np = frame_np[:, 120:792, :]
+                frame_np = cv2.flip(frame_np, 1)
 
-    if frame_np is not None:
-        frame_np = cv2.cvtColor(frame_np, cv2.COLOR_BGR2RGB)
-        frame_np = cv2.resize(frame_np, (910, 512), cv2.INTER_AREA)
-        frame_np = frame_np[:, 120:792, :]
-        frame_np = cv2.flip(frame_np, 1)
+                fg_np = self.cmodnet.update(frame_np, bg)
 
-        fg_np = cmodnet.update(frame_np, bg)
+                fg_np = cv2.cvtColor(np.uint8(fg_np), cv2.COLOR_RGB2BGR)
+                cv2.imshow('MODNet - WebCam [Press \'Q\' To Exit]', fg_np)
 
-        fg_np = cv2.cvtColor(np.uint8(fg_np), cv2.COLOR_RGB2BGR)
-        cv2.imshow('MODNet - WebCam [Press \'Q\' To Exit]', fg_np)
-
-        if cv2.waitKey(1) & 0xFF == ord("c"):
-            img_name = "C:/Users/daryl/Desktop/opencv_frame_{}.png"
-            cv2.imwrite(img_name, fg_np)
-            print("captured")
+                if cv2.waitKey(1) & 0xFF == ord("c"):
+                    img_name = "C:/Users/daryl/Desktop/opencv_frame_{}.png"
+                    cv2.imwrite(img_name, fg_np)
+                    print("captured")
 
 
 
