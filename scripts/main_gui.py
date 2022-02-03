@@ -96,7 +96,9 @@ def open_settings():
 
     temp = tk.BooleanVar()
     temp.set(ifcheck_var)
-    # create variable for checkbox  with bollean as datatype
+
+    height_entry_var.set(str(height_var))
+    width_entry_var.set(str(width_var))
 
     setting_panel = tk.Frame(mainwindow, height=720, width=350, bg="#161010")
     setting_panel.place(relx=0.72, rely=0)
@@ -214,6 +216,9 @@ def save_settings(height_error_label, width_error_label, output_error_label , se
         except ValueError:
             width_error_label.configure(text="Numbers Only (Integers)")
             width_error = True
+    else:
+        height_var = 900
+        width_var = 600
 
     if height_error is False and width_error is False and os.path.exists(temp_output_loc) is True:
         # pass temporary output location to permanent output location
@@ -299,8 +304,6 @@ except:
 #global variables
 height_entry_var = tk.StringVar()
 width_entry_var = tk.StringVar()
-height_entry_var.set(str(height_var))
-width_entry_var.set(str(width_var))
 temp_output_loc = output_loc
 yindex = 0.1
 im_index = 0
