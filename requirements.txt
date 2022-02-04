@@ -1,0 +1,8 @@
+cvzone==1.5.4
+numpy==1.20.3
+opencv_python==4.5.5.62
+Pillow==9.0.1
+scipy==1.7.1
+TkinterDnD2==0.3.0
+torch==1.10.1
+torchvision==0.11.2
