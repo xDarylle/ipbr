@@ -5,6 +5,8 @@ class conf():
     def __init__(self):
         self.config_path = "../resources/config.ini"
         self.config = configparser.ConfigParser()
+
+        # check if config.ini exists and creates if not
         if os.path.exists(self.config_path):
             self.load_conf()
         else:
@@ -42,24 +44,6 @@ class conf():
             self.config.set("Settings", str(i), background_array[i])
 
         self.write()
-
-    def get_output_path(self):
-        return self.output_path
-
-    def get_background(self):
-        return self.background
-
-    def get_array_backgrounds(self):
-        return self.background_array
-
-    def get_checkbock_state(self):
-        return self.checkbock_state
-
-    def get_width(self):
-        return self.width
-
-    def get_height(self):
-        return self.height
 
     def set_output_path(self, output_path):
         self.c["output_path"] = output_path
