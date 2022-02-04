@@ -1,7 +1,5 @@
 import cv2
-import cvzone
 import numpy as np
-from PIL import Image
 from threading import Thread
 
 import cam_modnet
