@@ -9,7 +9,11 @@ class main():
         self.model = modnet._modnet(url)
         self.im = image._image_()
 
-    # main process
+    ''' Process if follow_input_size is False. 
+        This uses a define size for the output.
+        Crops the input image so that only the portrait will remain and then will be auto-centered when pasting into
+        an image container.
+    '''
     def process(self, img, background, def_size):
 
         # get matte
@@ -24,7 +28,7 @@ class main():
         matte = self.im.rescale(matte, def_size, True)
         bg = self.im.rescale(background, def_size, False)
 
-        # paste
+        # create container
         foreground = self.im.paste(im, matte, def_size)
         matte = self.im.paste(matte, matte, def_size)
         background = self.im.paste(bg, bg, def_size)
@@ -33,5 +37,27 @@ class main():
         new_image = self.im.change_background(foreground, matte, background)
 
         return new_image
+
+    ''' Process if follow_input_size is True. 
+        This will use the width and height of the input image for the output.
+        Does not involve cropping and rescaling of input image. 
+    '''
+    def process_v2(self, img, background):
+
+        # get matte
+        matte = self.model.get_matte(img)
+        matte = Image.fromarray(np.uint8(matte))
+
+        # rescale background to match foreground
+        bg = self.im.rescale(background, img.size, False)
+
+        # create container for background
+        bg = self.im.paste(bg, bg, img.size)
+
+        # change bg
+        new_image = self.im.change_background(img, matte, bg)
+
+        return new_image
+
 
 
