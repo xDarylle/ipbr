@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 from tkinter import filedialog
 from PIL import Image, ImageTk
 from TkinterDnD2 import DND_FILES, TkinterDnD
@@ -30,7 +31,6 @@ def background_panel_gui():
 
 def add_background(panel):
     global backgrounds_array
-    print(len(backgrounds_array))
     if len(backgrounds_array) <= 2:
         image_url = filedialog.askopenfilename(initialdir="/Desktop",
                                                filetypes=(("image files", ".jpg"), ("image files", ".png")))
@@ -46,7 +46,7 @@ def create_background_gallery(image_url, panel):
     # acces y index
     global yindex
     global im_index
-
+    print(image_url)
     img = Image.open(image_url)
     img.thumbnail((250, 250))
     img = ImageTk.PhotoImage(img)
@@ -266,15 +266,69 @@ def drop_inside_list_box(event):
     global input_folder_path
     #assign it with data from event
     input_folder_path = event.data
+    print(input_folder_path)
+    print(input_path_validity_handler(input_folder_path))
 
 def get_input_handler():
     #access essential variable
     global input_folder_path
     #assign it with data from event
     input_folder_path = filedialog.askdirectory(initialdir = "/Desktop",title = "Select Input Path")
+    input_path_validity_handler(input_folder_path)
 
-def input_gallery_gui():
-    input_gallery_frame = tk.Frame()
+def input_path_validity_handler(input_folder_path):
+    if os.path.exists(input_folder_path):
+        input_gallery_gui(input_folder_path)
+        view_input_error.configure(text="")
+    else:
+        view_input_error.configure(text = "No Path Folder Found! Please Intert Inout Folder")
+
+def input_gallery_gui(input_folder_path):
+
+    def on_configure(event):
+        display_canvas.configure(scrollregion=display_canvas.bbox('all'))
+
+    input_gallery_frame = tk.Frame(mainwindow, height = 720, width = 930, bg = "#2C2B2B")
+    input_gallery_frame.place(relx = 0, rely = 0)
+    tk.Button(input_gallery_frame, height = 1, width = 10, text = "Close", font = ("Roboto", 12), cursor = "hand2", command = input_gallery_frame.destroy).place(relx = 0.8, rely = 0.015)
+    display_frame = tk.Frame(input_gallery_frame, height = 600, width = 900, bg = "#2C2B2B")
+    display_frame.place(relx = 0.015, rely = 0.15)
+    display_canvas = tk.Canvas(display_frame, bg = "#2C2B2B", height = 600, width = 900)
+    display_canvas.place(relx = 0, rely = 0)
+    view_frame = tk.Frame(display_canvas, bg = "#2C2B2B")
+    view_frame.bind('<Configure>', on_configure)
+    display_canvas.create_window(0, 0, window=view_frame)
+    scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
+    scrollbar.place(relx=1, rely=0, relheight=1, anchor='ne')
+    display_canvas.configure(yscrollcommand=scrollbar.set)
+
+
+
+    row_dimension = 0
+    column_cimension = 0
+    #
+    #
+    #
+    # # looping every file in the path
+    for file in os.listdir(input_folder_path):
+
+        # validate if file is a valid image file using imghdr.what() module
+        if imghdr.what(os.path.join(input_folder_path + "/" + file)) == "jpeg" or imghdr.what(os.path.join(input_folder_path + "/" + file)) == "png":
+            # if file is an image then create an image widget
+            image_path = os.path.join(input_folder_path + "/" + file)
+            image_file = Image.open(image_path)
+            image_file.thumbnail((150,150))
+            image_file = ImageTk.PhotoImage(image_file)
+            if column_cimension < 4:
+                image_frame = tk.Frame(view_frame, height=200, width=220, bg="#2C2B2B", bd=0, relief="groove")
+                image_frame.grid(row=row_dimension, column=column_cimension)
+                # change the h and w of tk.Button when trying display the image
+                tk.Button(image_frame, text = "Image Here but not Displaying", height = 12, width = 20).place(relx = 0.15, rely = 0.1)
+                column_cimension += 1
+            else:
+                row_dimension += 1
+                column_cimension = 0
+
 
 # start of main gui creationg with TkinterDnD wrapper
 mainwindow = TkinterDnD.Tk()
@@ -326,9 +380,12 @@ foreground_input_list_box = tk.Listbox(mainwindow, selectmode= tk.SINGLE, width 
 foreground_input_list_box.drop_target_register(DND_FILES)
 foreground_input_list_box.dnd_bind("<<Drop>>", drop_inside_list_box)
 foreground_input_list_box.place(relx= 0, rely=0)
+tk.Button(foreground_input_list_box, height = 1, width = 10, text = "View Inputs",font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor = "hand2", command = lambda: input_path_validity_handler(input_folder_path)).place(relx = 0.8, rely = 0.015)
+view_input_error = tk.Label(foreground_input_list_box, font = ("Roboto", 11), fg = "#f7ad8f", bg = "#2C2B2B")
+view_input_error.place(relx = 0.65, rely = 0.05)
 tk.Label(foreground_input_list_box, text= "Drop Input Folder Here", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.35, rely = 0.35)
 tk.Label(foreground_input_list_box, text= "or", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.49, rely = 0.45)
-tk.Button(foreground_input_list_box, text = "Browse", height = 1, width=10, font = ("Roboto", 14),  fg = "#D6D2D2", bg = "#2C2B2B", cursor = "hand2", command= get_input_handler).place(relx= 0.44, rely = 0.55)
+tk.Button(foreground_input_list_box, text = "Browse", height = 1, width=10, font = ("Roboto", 14),  fg = "white", bg = "#127DF4", cursor = "hand2", command= get_input_handler).place(relx= 0.44, rely = 0.55)
 
 #create menu frame widget
 menu_frame = tk.Frame(mainwindow, height= 720, width=350, relief="groove", bg = "#2C2B2B")
