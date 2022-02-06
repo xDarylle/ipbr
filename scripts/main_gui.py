@@ -3,11 +3,9 @@ from tkinter import ttk
 from tkinter import filedialog
 from PIL import Image, ImageTk
 from TkinterDnD2 import DND_FILES, TkinterDnD
-import os, os.path, sys
+import os, os.path
 import ipbr
 import config
-import imghdr
-import threading
 
 def background_panel_gui():
     # access variables
@@ -313,22 +311,35 @@ def input_gallery_gui(input_folder_path):
     # # looping every file in the path
     for file in os.listdir(input_folder_path):
         # validate if file is a valid image file using imghdr.what() module
-        if imghdr.what(os.path.join(input_folder_path + "/" + file)) == "jpeg" or imghdr.what(
-                os.path.join(input_folder_path + "/" + file)) == "png":
+        im = os.path.join(input_folder_path, file)
+        if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
             # if file is an image then create an image widget
-            image = Image.open(input_folder_path + "/" + file)
-            image.thumbnail((150, 150), resample=4)
-            image = ImageTk.PhotoImage(image)
-            images.append(image)
-            if column_cimension < 4:
-                image_frame = tk.Frame(view_frame, height=200, width=220, bg="#2C2B2B", bd=0, relief="groove")
-                image_frame.grid(row=row_dimension, column=column_cimension)
-                # change the h and w of tk.Button when trying display the image
-                tk.Label(image_frame, image = image).place(relx=0.15, rely=0.1)
-                column_cimension += 1
-            else:
-                row_dimension += 1
-                column_cimension = 0
+            try:
+                image = Image.open(input_folder_path + "/" + file)
+                image.thumbnail((200, 220), resample=4)
+                image = ImageTk.PhotoImage(image)
+                images.append(image)
+
+                if column_cimension < 4:
+                    image_frame = tk.Frame(view_frame, height=200, width=220, bg="#2C2B2B", bd=0, relief="groove")
+                    image_frame.grid(row=row_dimension, column=column_cimension)
+                    # change the h and w of tk.Button when trying display the image
+                    tk.Label(image_frame, image=image, borderwidth= 0).place(relx=0.15, rely=0.1)
+                    column_cimension += 1
+                else:
+                    row_dimension += 1
+                    column_cimension = 0
+            except:
+                if column_cimension < 4:
+                    image_frame = tk.Frame(view_frame, height=200, width=220, bg="#2C2B2B", bd=0, relief="groove")
+                    image_frame.grid(row=row_dimension, column=column_cimension)
+                    # change the h and w of tk.Button when trying display the image
+                    tk.Label(image_frame, text= "CORRUPTED IMAGE", bg="BLACK", fg= "#FFFFFF", width=20, height=10 ).place(relx=0.15, rely=0.1)
+                    column_cimension += 1
+                else:
+                    row_dimension += 1
+                    column_cimension = 0
+
 
 
 # start of main gui creationg with TkinterDnD wrapper
