@@ -305,10 +305,7 @@ def input_gallery_gui(input_folder_path):
 
     row_dimension = 0
     column_cimension = 0
-    #
-    #
-    #
-    # # looping every file in the path
+
     for file in os.listdir(input_folder_path):
         # validate if file is a valid image file using imghdr.what() module
         im = os.path.join(input_folder_path, file)
