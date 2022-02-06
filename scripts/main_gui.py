@@ -307,6 +307,7 @@ def clear():
 
 def input_gallery_gui(input_folder_path):
     global images
+    global view_frame
     global foreground_input_list_box
     images = []
 
@@ -326,10 +327,8 @@ def input_gallery_gui(input_folder_path):
 
     row_dimension = 0
     column_cimension = 0
-
     for file in os.listdir(input_folder_path):
         # validate if file is a valid image file using imghdr.what() module
-        im = os.path.join(input_folder_path, file)
         if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
             # if file is an image then create an image widget
             try:
@@ -358,6 +357,45 @@ def input_gallery_gui(input_folder_path):
                 else:
                     row_dimension += 1
                     column_cimension = 0
+
+    check_gallery()
+
+# delete this line
+from threading import Timer
+
+col_d = 0
+row_d = 0
+
+def check_gallery():
+    global col_d
+    global row_d
+    global view_frame
+
+    if col_d == 4:
+        row_d += 1
+        col_d = 0
+
+    if col_d == 0 and row_d != 0:
+        label = tk.Label(view_frame, text = " Finish! ", font = ("Roboto", 24), fg = "orange", bg = "black")
+        label.grid(row = row_d - 1, column = 3)
+
+    if col_d == 0:
+        label = tk.Label(view_frame, text = "Current!", font = ("Roboto", 24), fg = "orange", bg = "black")
+        label.grid(row = row_d, column = col_d)
+    else:
+        label = tk.Label(view_frame, text = "Current!", font = ("Roboto", 24), fg = "orange",bg = "black")
+        label.grid(row = row_d, column = col_d)
+        label = tk.Label(view_frame, text = " Finish! ", font = ("Roboto", 24), fg = "orange",bg = "black")
+        label.grid(row = row_d, column = col_d - 1)
+    col_d +=1
+    print(row_d)
+    print(col_d)
+    print("")
+
+    # delete this line as well
+    Timer(1, check_gallery).start()
+
+
 
 # start of main gui creationg with TkinterDnD wrapper
 mainwindow = TkinterDnD.Tk()
@@ -390,7 +428,7 @@ width_entry_var = tk.StringVar()
 temp_output_loc = output_loc
 yindex = 0.1
 im_index = 0
-
+view_frame = None
 input_folder_path = ""
 
 #create and assign icons image
