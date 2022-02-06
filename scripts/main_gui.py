@@ -308,7 +308,6 @@ def clear():
 def input_gallery_gui(input_folder_path):
     global images
     global foreground_input_list_box
-    global style
     images = []
 
     def on_configure(event):
@@ -321,8 +320,7 @@ def input_gallery_gui(input_folder_path):
     view_frame = tk.Frame(display_canvas, bg="#2C2B2B")
     view_frame.bind('<Configure>', on_configure)
     display_canvas.create_window(0, 0, window=view_frame)
-    scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
-    style.configure("arrowless.Vertical.TScrollbar", troughcolor = "BLUE")
+    scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview, orient= "vertical")
     scrollbar.place(relx=1, rely=0, relheight=1, anchor='ne')
     display_canvas.configure(yscrollcommand=scrollbar.set)
 
@@ -363,8 +361,6 @@ def input_gallery_gui(input_folder_path):
 
 # start of main gui creationg with TkinterDnD wrapper
 mainwindow = TkinterDnD.Tk()
-style = ttk.Style()
-style.theme_use("clam")
 
 # initialize ipbr
 main = ipbr.main()
