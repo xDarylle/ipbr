@@ -166,8 +166,13 @@ def checkbox(height_entry, width_entry):
 def get_output_loc(output_loc_entry):
     #access temporary location variables as holedr
     global temp_output_loc
+    global output_loc
     #assign it with value <str> path from filedialog.askdirectory fpr folder path only
-    temp_output_loc = filedialog.askdirectory(initialdir= "/Desktop")
+    temp_output_loc = filedialog.askdirectory(initialdir= "/Desktop" if temp_output_loc is None else temp_output_loc)
+
+    if not temp_output_loc:
+        temp_output_loc = output_loc
+
     output_loc_entry.configure(text = temp_output_loc)
 
 def save_settings(height_error_label, width_error_label, output_error_label , setting_panel ,ifcheck_var):
@@ -251,10 +256,14 @@ def start_process():
         background_path = Image.open(background_path)
         im_names = os.listdir(input_folder_path)
         for im in im_names:
-            print("Processing: " + im)
-            img = Image.open(os.path.join(input_folder_path, im))
-            name = im.split('.')[0] + '.png'
-            img = main.process(img, background_path, (width_var, height_var)).save(os.path.join(output_loc, name))
+            if im.endswith(".png") or im.endswith(".jpg") or im.endswith(".jpeg"):
+                print("Processing: " + im)
+                try:
+                    img = Image.open(os.path.join(input_folder_path, im))
+                    name = im.split('.')[0] + '.png'
+                    img = main.process(img, background_path, (width_var, height_var)).save(os.path.join(output_loc, name))
+                except:
+                    print("Cannot Process: ", im)
         print("DONE!")
 
     else:
@@ -265,15 +274,15 @@ def drop_inside_list_box(event):
     global input_folder_path
     #assign it with data from event
     input_folder_path = event.data
-    print(input_folder_path)
-    print(input_path_validity_handler(input_folder_path))
 
 def get_input_handler():
     #access essential variable
     global input_folder_path
     #assign it with data from event
-    input_folder_path = filedialog.askdirectory(initialdir = "/Desktop",title = "Select Input Path")
-    input_path_validity_handler(input_folder_path)
+    input_folder_path = filedialog.askdirectory(initialdir = "/Desktop" if input_folder_path is None else input_folder_path,title = "Select Input Path")
+
+    if input_folder_path:
+        input_path_validity_handler(input_folder_path)
 
 def input_path_validity_handler(input_folder_path):
     if os.path.exists(input_folder_path):
@@ -282,24 +291,38 @@ def input_path_validity_handler(input_folder_path):
     else:
         view_input_error.configure(text = "No Path Folder Found! Please Intert Inout Folder")
 
+def clear():
+    global foreground_input_list_box
+
+    for widgets in foreground_input_list_box.winfo_children():
+        widgets.destroy()
+
+    tk.Label(foreground_input_list_box, text="Drop image folder here", font=("Roboto", 20), fg="#D6D2D2",
+             bg="#2C2B2B").place(relx=0.25, rely=0.35)
+    tk.Label(foreground_input_list_box, text="or", font=("Roboto", 20), fg="#D6D2D2", bg="#2C2B2B").place(relx=0.35,
+                                                                                                          rely=0.41)
+    tk.Button(foreground_input_list_box, text="Browse", height=1, width=20, font=("Roboto", 17), fg="white",
+              bg="#127DF4", cursor="hand2", borderwidth=0, highlightthickness=0, command=get_input_handler).place(
+        relx=0.255, rely=0.50)
+
 def input_gallery_gui(input_folder_path):
     global images
+    global foreground_input_list_box
+    global style
     images = []
+
     def on_configure(event):
         display_canvas.configure(scrollregion=display_canvas.bbox('all'))
 
-    input_gallery_frame = tk.Frame(mainwindow, height=720, width=930, bg="#2C2B2B")
-    input_gallery_frame.place(relx=0, rely=0)
-    tk.Button(input_gallery_frame, height=1, width=10, text="Close", font=("Roboto", 12), cursor="hand2",
-              command=input_gallery_frame.destroy).place(relx=0.8, rely=0.015)
-    display_frame = tk.Frame(input_gallery_frame, height=600, width=900, bg="#2C2B2B")
-    display_frame.place(relx=0.015, rely=0.15)
-    display_canvas = tk.Canvas(display_frame, bg="#2C2B2B", height=600, width=900)
+    display_frame = tk.Frame(foreground_input_list_box, height=720, width=927, bg="#2C2B2B")
+    display_frame.place(relx=0, rely=0)
+    display_canvas = tk.Canvas(display_frame, bg="#2C2B2B", height=720, width=927, borderwidth=0, highlightthickness=0)
     display_canvas.place(relx=0, rely=0)
     view_frame = tk.Frame(display_canvas, bg="#2C2B2B")
     view_frame.bind('<Configure>', on_configure)
     display_canvas.create_window(0, 0, window=view_frame)
     scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
+    style.configure("arrowless.Vertical.TScrollbar", troughcolor = "BLUE")
     scrollbar.place(relx=1, rely=0, relheight=1, anchor='ne')
     display_canvas.configure(yscrollcommand=scrollbar.set)
 
@@ -327,6 +350,7 @@ def input_gallery_gui(input_folder_path):
                     row_dimension += 1
                     column_cimension = 0
             except:
+
                 if column_cimension < 4:
                     image_frame = tk.Frame(view_frame, height=200, width=220, bg="#2C2B2B", bd=0, relief="groove")
                     image_frame.grid(row=row_dimension, column=column_cimension)
@@ -337,10 +361,10 @@ def input_gallery_gui(input_folder_path):
                     row_dimension += 1
                     column_cimension = 0
 
-
-
 # start of main gui creationg with TkinterDnD wrapper
 mainwindow = TkinterDnD.Tk()
+style = ttk.Style()
+style.theme_use("clam")
 
 # initialize ipbr
 main = ipbr.main()
@@ -381,31 +405,33 @@ icon2 = ("../resources/images/logo.ico")
 mainwindow.iconbitmap(icon2)
 mainwindow.geometry("1280x720")
 mainwindow.title("Intelligent Portrait Background Replacement")
-mainwindow.configure(bg = "#2C2B2B")
+mainwindow.configure(bg = "#323232")
 mainwindow.resizable(False, False)
 
 #create main window widgets
-foreground_input_list_box = tk.Listbox(mainwindow, selectmode= tk.SINGLE, width = 155, height = 50, bg = "#2C2B2B", bd = 1, relief = "groove")
+frame1 = tk.Frame(mainwindow, height= 50, width = 900, bg = "#323232").place(x=0,y=0)
+tk.Button(frame1, height = 1, width = 10, text = "Clear",font = ("Roboto", 14), fg = "white", bg = "#127DF4", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command = lambda: clear()).place(relx = 0.640, rely = 0.035)
+
+foreground_input_list_box = tk.Listbox(mainwindow, selectmode= tk.SINGLE, width = 200, height = 40, bg = "#2C2B2B", bd = 1, relief = "groove", borderwidth= 0, highlightthickness=0 )
 foreground_input_list_box.drop_target_register(DND_FILES)
 foreground_input_list_box.dnd_bind("<<Drop>>", drop_inside_list_box)
-foreground_input_list_box.place(relx= 0, rely=0)
-tk.Button(foreground_input_list_box, height = 1, width = 10, text = "View Inputs",font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor = "hand2", command = lambda: input_path_validity_handler(input_folder_path)).place(relx = 0.8, rely = 0.015)
+foreground_input_list_box.place(relx= 0.005, rely=0.1)
 view_input_error = tk.Label(foreground_input_list_box, font = ("Roboto", 11), fg = "#f7ad8f", bg = "#2C2B2B")
 view_input_error.place(relx = 0.65, rely = 0.05)
-tk.Label(foreground_input_list_box, text= "Drop Input Folder Here", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.35, rely = 0.35)
-tk.Label(foreground_input_list_box, text= "or", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.49, rely = 0.45)
-tk.Button(foreground_input_list_box, text = "Browse", height = 1, width=10, font = ("Roboto", 14),  fg = "white", bg = "#127DF4", cursor = "hand2", command= get_input_handler).place(relx= 0.44, rely = 0.55)
+tk.Label(foreground_input_list_box, text= "Drop image folder here", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.25, rely = 0.35)
+tk.Label(foreground_input_list_box, text= "or", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.35, rely = 0.41)
+tk.Button(foreground_input_list_box, text = "Browse", height = 1, width=20, font = ("Roboto", 17),  fg = "white", bg = "#127DF4", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command= get_input_handler).place(relx= 0.255, rely = 0.50)
 
 #create menu frame widget
-menu_frame = tk.Frame(mainwindow, height= 720, width=350, relief="groove", bg = "#2C2B2B")
-menu_frame.place(relx= 0.72, rely= 0)
-tk.Label(menu_frame, text = "Chosen Background Image Preview: ", font = ("Roboto", 12), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.05, rely = 0.02)
-background_preview = tk.Button(menu_frame, height = 10, width = 43, bg = "#2C2B2B", bd =2, relief = "groove")
-background_preview.place(relx = 0.05, rely = 0.05)
+menu_frame = tk.Frame(mainwindow, height= 720, width=350, relief="groove", bg = "#323232")
+menu_frame.place(relx= 0.73, rely= 0)
+#tk.Label(menu_frame, text = "Chosen Background Image Preview: ", font = ("Roboto", 12), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.05, rely = 0.02)
+background_preview = tk.Button(menu_frame, height = 10, width = 43, bg = "#2C2B2B", bd =2, relief = "groove", borderwidth= 0, highlightthickness=0)
+background_preview.place(relx = 0.05, rely = 0.03)
 background_preview.configure(height = 160, width = 310, image = background_image)
-tk.Button(menu_frame, height = 2, width = 34, text = "Change Background", font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor ="hand2", command=background_panel_gui).place(relx= 0.05, rely= 0.30)
-tk.Button(menu_frame, height = 2, width = 34, text = "Settings", font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor ="hand2", command = open_settings).place(relx= 0.05, rely= 0.45)
-tk.Button(menu_frame, height = 4, width = 34, text = "Start Process", font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor ="hand2", command = start_process).place(relx= 0.05, rely= 0.85)
+tk.Button(menu_frame, height = 2, width = 34, text = "Change Background", font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command=background_panel_gui).place(relx= 0.05, rely= 0.30)
+tk.Button(menu_frame, height = 2, width = 34, text = "Settings", font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor ="hand2",borderwidth= 0, highlightthickness= 0,command = open_settings).place(relx= 0.05, rely= 0.38)
+tk.Button(menu_frame, height = 4, width = 34, text = "Start Process", font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command = start_process).place(relx= 0.05, rely= 0.85)
 
 #make main window display in loop
 mainwindow.mainloop()
