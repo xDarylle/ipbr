@@ -292,6 +292,10 @@ from threading import Timer
 
 def input_gallery_gui(input_folder_path):
     global input_images
+    global images
+    global foreground_input_list_box
+    images = []
+
     def on_configure(event):
         display_canvas.configure(scrollregion=display_canvas.bbox('all'))
 
@@ -307,6 +311,7 @@ def input_gallery_gui(input_folder_path):
     view_frame.bind('<Configure>', on_configure)
     display_canvas.create_window(0, 0, window=view_frame)
     scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
+    scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview, orient= "vertical")
     scrollbar.place(relx=1, rely=0, relheight=1, anchor='ne')
     display_canvas.configure(yscrollcommand=scrollbar.set)
 
@@ -371,7 +376,9 @@ def check_done(view_frame):
 
 # start of main gui creationg with TkinterDnD wrapper
 mainwindow = TkinterDnD.Tk()
-# make color ab23ff invisible in the entire mainwindow
+# <<<<<<< HEAD
+# =======
+# >>>>>>> refs/remotes/origin/main
 
 # initialize ipbr
 main = ipbr.main()
