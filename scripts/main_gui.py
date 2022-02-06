@@ -282,14 +282,7 @@ def get_input_handler():
     input_folder_path = filedialog.askdirectory(initialdir = "/Desktop" if input_folder_path is None else input_folder_path,title = "Select Input Path")
 
     if input_folder_path:
-        input_path_validity_handler(input_folder_path)
-
-def input_path_validity_handler(input_folder_path):
-    if os.path.exists(input_folder_path):
         input_gallery_gui(input_folder_path)
-        view_input_error.configure(text="")
-    else:
-        view_input_error.configure(text = "No Path Folder Found! Please Intert Inout Folder")
 
 def clear():
     global foreground_input_list_box
@@ -412,8 +405,6 @@ foreground_input_list_box = tk.Listbox(mainwindow, selectmode= tk.SINGLE, width 
 foreground_input_list_box.drop_target_register(DND_FILES)
 foreground_input_list_box.dnd_bind("<<Drop>>", drop_inside_list_box)
 foreground_input_list_box.place(relx= 0.005, rely=0.1)
-view_input_error = tk.Label(foreground_input_list_box, font = ("Roboto", 11), fg = "#f7ad8f", bg = "#2C2B2B")
-view_input_error.place(relx = 0.65, rely = 0.05)
 tk.Label(foreground_input_list_box, text= "Drop image folder here", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.25, rely = 0.35)
 tk.Label(foreground_input_list_box, text= "or", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.35, rely = 0.41)
 tk.Button(foreground_input_list_box, text = "Browse", height = 1, width=20, font = ("Roboto", 17),  fg = "white", bg = "#127DF4", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command= get_input_handler).place(relx= 0.255, rely = 0.50)
