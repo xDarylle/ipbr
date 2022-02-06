@@ -3,10 +3,11 @@ from tkinter import ttk
 from tkinter import filedialog
 from PIL import Image, ImageTk
 from TkinterDnD2 import DND_FILES, TkinterDnD
-import os, os.path
-import imghdr
+import os, os.path, sys
 import ipbr
 import config
+import imghdr
+import threading
 
 def background_panel_gui():
     # access variables
@@ -284,25 +285,25 @@ def input_path_validity_handler(input_folder_path):
         view_input_error.configure(text = "No Path Folder Found! Please Intert Inout Folder")
 
 def input_gallery_gui(input_folder_path):
-
+    global images
+    images = []
     def on_configure(event):
         display_canvas.configure(scrollregion=display_canvas.bbox('all'))
 
-    input_gallery_frame = tk.Frame(mainwindow, height = 720, width = 930, bg = "#2C2B2B")
-    input_gallery_frame.place(relx = 0, rely = 0)
-    tk.Button(input_gallery_frame, height = 1, width = 10, text = "Close", font = ("Roboto", 12), cursor = "hand2", command = input_gallery_frame.destroy).place(relx = 0.8, rely = 0.015)
-    display_frame = tk.Frame(input_gallery_frame, height = 600, width = 900, bg = "#2C2B2B")
-    display_frame.place(relx = 0.015, rely = 0.15)
-    display_canvas = tk.Canvas(display_frame, bg = "#2C2B2B", height = 600, width = 900)
-    display_canvas.place(relx = 0, rely = 0)
-    view_frame = tk.Frame(display_canvas, bg = "#2C2B2B")
+    input_gallery_frame = tk.Frame(mainwindow, height=720, width=930, bg="#2C2B2B")
+    input_gallery_frame.place(relx=0, rely=0)
+    tk.Button(input_gallery_frame, height=1, width=10, text="Close", font=("Roboto", 12), cursor="hand2",
+              command=input_gallery_frame.destroy).place(relx=0.8, rely=0.015)
+    display_frame = tk.Frame(input_gallery_frame, height=600, width=900, bg="#2C2B2B")
+    display_frame.place(relx=0.015, rely=0.15)
+    display_canvas = tk.Canvas(display_frame, bg="#2C2B2B", height=600, width=900)
+    display_canvas.place(relx=0, rely=0)
+    view_frame = tk.Frame(display_canvas, bg="#2C2B2B")
     view_frame.bind('<Configure>', on_configure)
     display_canvas.create_window(0, 0, window=view_frame)
     scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
     scrollbar.place(relx=1, rely=0, relheight=1, anchor='ne')
     display_canvas.configure(yscrollcommand=scrollbar.set)
-
-
 
     row_dimension = 0
     column_cimension = 0
@@ -311,19 +312,19 @@ def input_gallery_gui(input_folder_path):
     #
     # # looping every file in the path
     for file in os.listdir(input_folder_path):
-
         # validate if file is a valid image file using imghdr.what() module
-        if imghdr.what(os.path.join(input_folder_path + "/" + file)) == "jpeg" or imghdr.what(os.path.join(input_folder_path + "/" + file)) == "png":
+        if imghdr.what(os.path.join(input_folder_path + "/" + file)) == "jpeg" or imghdr.what(
+                os.path.join(input_folder_path + "/" + file)) == "png":
             # if file is an image then create an image widget
-            image_path = os.path.join(input_folder_path + "/" + file)
-            image_file = Image.open(image_path)
-            image_file.thumbnail((150,150))
-            image_file = ImageTk.PhotoImage(image_file)
+            image = Image.open(input_folder_path + "/" + file)
+            image.thumbnail((150, 150), resample=4)
+            image = ImageTk.PhotoImage(image)
+            images.append(image)
             if column_cimension < 4:
                 image_frame = tk.Frame(view_frame, height=200, width=220, bg="#2C2B2B", bd=0, relief="groove")
                 image_frame.grid(row=row_dimension, column=column_cimension)
                 # change the h and w of tk.Button when trying display the image
-                tk.Button(image_frame, text = "Image Here but not Displaying", height = 12, width = 20).place(relx = 0.15, rely = 0.1)
+                tk.Label(image_frame, image = image).place(relx=0.15, rely=0.1)
                 column_cimension += 1
             else:
                 row_dimension += 1
