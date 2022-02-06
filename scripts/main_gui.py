@@ -303,6 +303,7 @@ def input_gallery_gui(input_folder_path):
     global foreground_input_list_box
     images = []
 
+
     def on_configure(event):
         display_canvas.configure(scrollregion=display_canvas.bbox('all'))
 
