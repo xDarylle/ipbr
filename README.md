@@ -17,4 +17,8 @@ cd intelligent_portrait_background_replacement
 ```
 pip install -r requirements.txt
 ```
+4. Execute code:
+```
+python -m scripts.main_gui
+```
 
