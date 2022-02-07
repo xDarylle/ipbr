@@ -241,7 +241,7 @@ if __name__ == "__main__":
             output_error_label.configure(text="Path Not Found!")
 
     def start_thread():
-        t1 = Thread(target = start_process)
+        t1 = Thread(target=start_process)
         t1.start()
 
     def start_process():
@@ -255,7 +255,7 @@ if __name__ == "__main__":
         #check if all needed variables are populated
         if(background_path != None and input_folder_path != "" and width_var != 0 and width_var != 0 and output_loc != ""):
             print("Ok!")
-            background_path = Image.open(background_path)
+            background = Image.open(background_path)
             im_names = os.listdir(input_folder_path)
             for im in im_names:
                 if im.endswith(".png") or im.endswith(".jpg") or im.endswith(".jpeg"):
@@ -263,7 +263,7 @@ if __name__ == "__main__":
                     try:
                         img = Image.open(os.path.join(input_folder_path, im))
                         name = im.split('.')[0] + '.png'
-                        img = main.process(img, background_path, (width_var, height_var)).save(os.path.join(output_loc, name))
+                        img = main.process(img, background, (width_var, height_var)).save(os.path.join(output_loc, name))
                         check_gallery()
                     except:
                         print("Cannot Process: ", im)
@@ -285,14 +285,8 @@ if __name__ == "__main__":
         input_folder_path = filedialog.askdirectory(initialdir = "/Desktop" if input_folder_path is None else input_folder_path,title = "Select Input Path")
 
         if input_folder_path:
-            input_path_validity_handler(input_folder_path)
-
-    def input_path_validity_handler(input_folder_path):
-        if os.path.exists(input_folder_path):
             input_gallery_gui(input_folder_path)
-            view_input_error.configure(text="")
-        else:
-            view_input_error.configure(text = "No Path Folder Found! Please Intert Inout Folder")
+
 
     def clear():
         global foreground_input_list_box
@@ -330,13 +324,16 @@ if __name__ == "__main__":
 
         row_dimension = 0
         column_cimension = 0
+        i=0
         for file in os.listdir(input_folder_path):
             # validate if file is a valid image file using imghdr.what() module
+            i += 1
+            print(i)
             if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
                 # if file is an image then create an image widget
                 try:
-                    image = Image.open(input_folder_path + "/" + file)
-                    image.thumbnail((200, 220), resample=4)
+                    image = Image.open(os.path.join(input_folder_path, file))
+                    image.thumbnail((200, 220), resample=1)
                     image = ImageTk.PhotoImage(image)
                     images.append(image)
 
@@ -346,7 +343,8 @@ if __name__ == "__main__":
                         # change the h and w of tk.Button when trying display the image
                         tk.Label(image_frame, image=image, borderwidth= 0).place(relx=0.15, rely=0.1)
                         column_cimension += 1
-                    else:
+
+                    if column_cimension == 4:
                         row_dimension += 1
                         column_cimension = 0
                 except:
@@ -357,11 +355,10 @@ if __name__ == "__main__":
                         # change the h and w of tk.Button when trying display the image
                         tk.Label(image_frame, text= "CORRUPTED IMAGE", bg="BLACK", fg= "#FFFFFF", width=20, height=10 ).place(relx=0.15, rely=0.1)
                         column_cimension += 1
-                    else:
+
+                    if column_cimension == 4:
                         row_dimension += 1
                         column_cimension = 0
-
-        check_gallery()
 
     col_d = 0
     row_d = 0
@@ -445,8 +442,6 @@ if __name__ == "__main__":
     foreground_input_list_box.drop_target_register(DND_FILES)
     foreground_input_list_box.dnd_bind("<<Drop>>", drop_inside_list_box)
     foreground_input_list_box.place(relx= 0.005, rely=0.1)
-    view_input_error = tk.Label(foreground_input_list_box, font = ("Roboto", 11), fg = "#f7ad8f", bg = "#2C2B2B")
-    view_input_error.place(relx = 0.65, rely = 0.05)
     tk.Label(foreground_input_list_box, text= "Drop image folder here", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.25, rely = 0.35)
     tk.Label(foreground_input_list_box, text= "or", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.35, rely = 0.41)
     tk.Button(foreground_input_list_box, text = "Browse", height = 1, width=20, font = ("Roboto", 17),  fg = "white", bg = "#127DF4", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command= get_input_handler).place(relx= 0.255, rely = 0.50)
