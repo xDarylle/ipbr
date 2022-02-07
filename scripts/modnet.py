@@ -5,15 +5,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
-
-from MODNet.src.models.modnet import MODNet
+import sys
+sys.path.append('intelligent_portrait_background_replacement/scripts')
+import MODNet.src.models.modnet
 
 class _modnet():
 
     def __init__(self, model_path):
-
         # create MODNet and load the pre-trained ckpt
-        self.modnet = MODNet(backbone_pretrained=False)
+        self.modnet = MODNet.src.models.modnet.MODNet(backbone_pretrained=False)
         self.modnet = nn.DataParallel(self.modnet).cuda()
         self.modnet.load_state_dict(torch.load(model_path))
         self.modnet.eval()

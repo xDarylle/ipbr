@@ -1,14 +1,12 @@
 import numpy as np
 from PIL import Image
-import cv2
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torchvision.transforms as transforms
 import image
 
-from MODNet.src.models.modnet import MODNet
+from scripts.MODNet.src.models.modnet import MODNet
 
 class cam_modnet():
 

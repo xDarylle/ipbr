@@ -3,7 +3,7 @@ import os
 
 class conf():
     def __init__(self):
-        self.config_path = "../resources/config.ini"
+        self.config_path = "resources/config.ini"
         self.config = configparser.ConfigParser()
 
         # check if config.ini exists and creates if not
