@@ -300,6 +300,7 @@ if __name__ == "__main__":
         global isHomeBool
         #access essential variable
         global input_folder_path
+        global input_array
         #assign it with data from event
         input_folder_path = event.data
 
