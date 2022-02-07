@@ -7,7 +7,7 @@ import os, os.path
 import sys
 from threading import *
 sys.path.append('scripts')
-import ipbr
+# import ipbr
 import config
 
 if __name__ == "__main__":
@@ -99,12 +99,13 @@ if __name__ == "__main__":
 
         temp = tk.BooleanVar()
         temp.set(ifcheck_var)
+        inputsize_checkbox = tk.BooleanVar()
 
         height_entry_var.set(str(height_var))
         width_entry_var.set(str(width_var))
 
         setting_panel = tk.Frame(mainwindow, height=720, width=350, bg="#161010")
-        setting_panel.place(relx=0.72, rely=0)
+        setting_panel.place(relx=0.730, rely=0)
         tk.Button(setting_panel, height=2, width=10, text="Cancel", font=("Roboto", 11), fg="white", bg="#ba6032",
                   cursor="hand2", command=setting_panel.destroy).place(relx = 0.70, rely=0.015)
         tk.Button(setting_panel, height=2, width=25, text="Apply Changes", font=("Roboto", 11), fg="white", bg="#127DF4",
@@ -126,32 +127,48 @@ if __name__ == "__main__":
         tk.Button(setting_panel, height=0, width=3, text="...", font=("Roboto", 15), fg="#D6D2D2", bg="#161010", bd=2,
                   relief="groove", command=lambda: [get_output_loc(output_loc_entry)]).place(relx=0.7, rely=0.15)
 
-        tk.Label(setting_panel, text="Use Custom Resolution", font=("Roboto", 13), fg="#D6D2D2", bg="#161010").place(
-            relx=0.05, rely=0.25)
+        tk.Label(setting_panel, text = "Use Input Sizes", font = ("Roboto", 13), fg="#D6D2D2", bg="#161010").place(relx = 0.05, rely = 0.3)
 
-        tk.Checkbutton(setting_panel, variable= temp, font=("Roboto", 12), bg="#161010",
-                       command=lambda: [checkbox(height_entry, width_entry)]).place(relx=0.60, rely=0.248)
+        tk.Checkbutton(setting_panel, variable = inputsize_checkbox, bg="#161010", command = lambda: use_input_reso_handler(inputsize_checkbox.get(),customreso_cbeckbox, height_entry, width_entry)).place(relx = 0.6, rely = 0.298)
 
-        tk.Label(setting_panel, text="Height (Pixels): ", font=("Roboto", 12), fg="#D6D2D2", bg="#161010").place(relx=0.05,
-                                                                                                                 rely=0.3)
+        tk.Label(setting_panel, text="Use Custom Resolution", font=("Roboto", 13), fg="#D6D2D2", bg="#161010").place(relx=0.05, rely=0.35)
+
+        customreso_cbeckbox = tk.Checkbutton(setting_panel, variable= temp, bg="#161010",command=lambda: [checkbox(height_entry, width_entry)])
+        customreso_cbeckbox.place(relx=0.60, rely=0.348)
+
+        tk.Label(setting_panel, text="Height (Pixels): ", font=("Roboto", 12), fg="#D6D2D2", bg="#161010").place(relx=0.05,rely=0.4)
         height_entry = tk.Entry(setting_panel, state='readonly',  textvariable=height_entry_var, width=5,
                                 font=("Roboto", 12), fg="#D6D2D2", bg="#161010", bd=3)
 
-        height_entry.place(relx=0.4, rely=0.3)
+        height_entry.place(relx=0.4, rely=0.4)
 
-        tk.Label(setting_panel, text="Width (Pixels): ", font=("Roboto", 12), fg="#D6D2D2", bg="#161010").place(relx=0.05,rely=0.35)
+        tk.Label(setting_panel, text="Width (Pixels): ", font=("Roboto", 12), fg="#D6D2D2", bg="#161010").place(relx=0.05,rely=0.45)
 
         width_entry = tk.Entry(setting_panel, state='readonly', textvariable=width_entry_var, width=5, font=("Roboto", 12),
                                fg="#D6D2D2", bg="#161010", bd=3)
 
-        width_entry.place(relx=0.4, rely=0.35)
+        width_entry.place(relx=0.4, rely=0.45)
         height_error_label = tk.Label(setting_panel, font=("Roboto", 10), fg="#ff7045", bg="#161010")
-        height_error_label.place(relx=0.575, rely=0.305)
+        height_error_label.place(relx=0.575, rely=0.405)
         width_error_label = tk.Label(setting_panel, font=("Roboto", 10), fg="#ff7045", bg="#161010")
-        width_error_label.place(relx=0.575, rely=0.355)
+        width_error_label.place(relx=0.575, rely=0.455)
+
+        tk.Label(setting_panel)
+
         checkbox(height_entry, width_entry)
 
-        return height_error_label, width_error_label, output_error_label, output_loc_entry, setting_panel
+        return height_error_label, width_error_label, output_error_label, output_loc_entry, setting_panel, customreso_cbeckbox, height_entry, width_entry
+
+    def use_input_reso_handler(inputsize_checkbox,customreso_cbeckbox,  height_entry, width_entry):
+        if inputsize_checkbox == True:
+            customreso_cbeckbox.configure(state = "disabled")
+            height_entry.configure(state = "disabled")
+            width_entry.configure(state = "disabled")
+        else:
+            customreso_cbeckbox.configure(state="normal")
+            height_entry.configure(state="normal")
+            width_entry.configure(state="normal")
+
 
     def checkbox(height_entry, width_entry):
         # check if checkbox is checked or not
@@ -261,7 +278,7 @@ if __name__ == "__main__":
                 try:
                     img = Image.open(os.path.join(input_folder_path, im))
                     name = im.split('.')[0] + '.png'
-                    img = main.process(img, background, (width_var, height_var)).save(os.path.join(output_loc, name))
+                    # img = main.process(img, background, (width_var, height_var)).save(os.path.join(output_loc, name))
                     check_gallery()
                 except:
                     print("Cannot Process: ", im)
@@ -397,7 +414,7 @@ if __name__ == "__main__":
     mainwindow = TkinterDnD.Tk()
 
     # initialize ipbr
-    main = ipbr.main()
+    # main = ipbr.main()
 
     # load config
     conf = config.conf()
