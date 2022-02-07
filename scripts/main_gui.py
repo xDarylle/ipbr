@@ -7,7 +7,7 @@ import os, os.path
 import sys
 from threading import *
 sys.path.append('scripts')
-# import ipbr
+import ipbr
 import config
 
 if __name__ == "__main__":
@@ -258,6 +258,7 @@ if __name__ == "__main__":
             output_error_label.configure(text="Path Not Found!")
 
     def start_thread():
+        global preview
         t1 = Thread(target=start_process)
         t1.start()
 
@@ -268,6 +269,8 @@ if __name__ == "__main__":
         global width_var
         global height_var
         global output_loc
+        global preview
+        global imm
 
         #check if all needed variables are populated
         if(background_path != None and input_folder_path != "" and width_var != 0 and width_var != 0 and output_loc != ""):
@@ -276,12 +279,19 @@ if __name__ == "__main__":
             for im in input_array:
                 print("Processing: " + im)
                 try:
-                    img = Image.open(os.path.join(input_folder_path, im))
-                    name = im.split('.')[0] + '.png'
-                    # img = main.process(img, background, (width_var, height_var)).save(os.path.join(output_loc, name))
+                    img = Image.open(im)
+                    name = os.path.basename(im)
+                    name = name.split('.')[0] + '.png'
+                    img = main.process(img, background, (width_var, height_var))
+                    img.save(os.path.join(output_loc, name))
+                    imm = img
+                    imm.thumbnail((400, 400), resample=1)
+                    p = ImageTk.PhotoImage(imm)
+                    preview.configure(height= 330, width= 315, image=p)
                     check_gallery()
-                except:
-                    print("Cannot Process: ", im)
+                except Exception as e:
+                    print(e)
+
             print("DONE!")
         else:
             print("Some Needed Parameters are not defined!")
@@ -292,6 +302,15 @@ if __name__ == "__main__":
         global input_folder_path
         #assign it with data from event
         input_folder_path = event.data
+
+        if input_folder_path:
+            print(input_folder_path)
+            for file in os.listdir(input_folder_path):
+                if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
+                    input_array.append(os.path.join(input_folder_path, file))
+
+            input_gallery_gui(input_array)
+
         isHomeBool = False
         checkI_home_handler()
 
@@ -445,7 +464,7 @@ if __name__ == "__main__":
     mainwindow = TkinterDnD.Tk()
 
     # initialize ipbr
-    # main = ipbr.main()
+    main = ipbr.main()
 
     # load config
     conf = config.conf()
@@ -475,6 +494,7 @@ if __name__ == "__main__":
     view_frame = None
     input_folder_path = ""
     input_array = []
+    imm = None
     col_d = 0
     row_d = 0
     isHomeBool = True
@@ -512,6 +532,7 @@ if __name__ == "__main__":
     tk.Label(foreground_input_list_box, text= "Drop image folder here", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.25, rely = 0.35)
     tk.Label(foreground_input_list_box, text= "or", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.35, rely = 0.41)
     tk.Button(foreground_input_list_box, text = "Browse", height = 1, width=20, font = ("Roboto", 17),  fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command= get_input_handler).place(relx= 0.255, rely = 0.50)
+
     #create menu frame widget
     menu_frame = tk.Frame(mainwindow, height= 720, width=350, relief="groove", bg = "#323232")
     menu_frame.place(relx= 0.73, rely= 0)
@@ -519,6 +540,10 @@ if __name__ == "__main__":
     background_preview = tk.Button(menu_frame, height = 10, width = 43, bg = "#2C2B2B", bd =2, relief = "groove", borderwidth= 0, highlightthickness=0)
     background_preview.place(relx = 0.05, rely = 0.03)
     background_preview.configure(height = 160, width = 310, image = background_image)
+    preview_frame = tk.Frame(menu_frame, height= 330, width= 315, bg = "#323232")
+    preview_frame.place(relx=0.055, rely=0.39)
+    preview = tk.Label(preview_frame, height= 330, width= 315, bg = "#2C2B2B")
+    preview.place(relx = 0, rely =0)
     tk.Button(menu_frame, height = 1, width = 26, text = "Change Background", font = ("Roboto", 16), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command=background_panel_gui).place(relx= 0.05, rely= 0.27)
     tk.Button(menu_frame, height = 1, width = 26, text = "Settings", font = ("Roboto", 16), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0,command = open_settings).place(relx= 0.05, rely= 0.34)
     tk.Button(menu_frame, height = 3, width = 26, text = "START", font = ("Roboto", 16), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command = start_thread).place(relx= 0.05, rely= 0.87)
