@@ -287,12 +287,16 @@ if __name__ == "__main__":
             print("Some Needed Parameters are not defined!")
 
     def drop_inside_list_box(event):
+        global isHomeBool
         #access essential variable
         global input_folder_path
         #assign it with data from event
         input_folder_path = event.data
+        isHomeBool = False
+        checkI_home_handler()
 
     def get_input_handler():
+        global isHomeBool
         #access essential variable
         global input_folder_path
         #assign it with data from event
@@ -305,10 +309,13 @@ if __name__ == "__main__":
                     input_array.append(os.path.join(input_folder_path, file))
 
             input_gallery_gui(input_array)
+        isHomeBool = False
+        checkI_home_handler()
 
     def clear():
         global foreground_input_list_box
         global input_array
+        global isHomeBool
 
         input_array.clear()
 
@@ -321,6 +328,9 @@ if __name__ == "__main__":
                                                                                                               rely=0.41)
         tk.Button(foreground_input_list_box, text="Browse", height=1, width=20, font=("Roboto", 17), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor="hand2", borderwidth=0, highlightthickness=0, command=get_input_handler).place(
             relx=0.255, rely=0.50)
+
+        isHomeBool = True
+        checkI_home_handler()
 
     def show_input_thread():
         t3 = Thread(target = create_container)
@@ -410,6 +420,27 @@ if __name__ == "__main__":
         print(col_d)
         print("")
 
+
+    def checkI_home_handler():
+        global isHomeBool
+        if isHomeBool == True:
+            print(isHomeBool)
+            add_btn.configure(state = "disabled")
+            del_btn.configure(state = "disabled")
+            onecol_tbn.configure(state = "disabled")
+            twocol_tbn.configure(state = "disabled")
+            threecol_tbn.configure(state = "disabled")
+            clean_btn.configure(state = "disabled")
+        else:
+            print(isHomeBool)
+            add_btn.configure(state = "normal")
+            del_btn.configure(state = "normal")
+            onecol_tbn.configure(state = "normal")
+            twocol_tbn.configure(state = "normal")
+            threecol_tbn.configure(state = "normal")
+            clean_btn.configure(state = "normal")
+
+
     # start of main gui creationg with TkinterDnD wrapper
     mainwindow = TkinterDnD.Tk()
 
@@ -446,6 +477,7 @@ if __name__ == "__main__":
     input_array = []
     col_d = 0
     row_d = 0
+    isHomeBool = True
 
     #create and assign icons image
     add_background_icon = tk.PhotoImage(file = "resources/images/add_background_icon.png")
@@ -460,8 +492,19 @@ if __name__ == "__main__":
 
     #create main window widgets
     frame1 = tk.Frame(mainwindow, height= 50, width = 900, bg = "#323232").place(x=0,y=0)
-    tk.Button(frame1, height = 1, width = 10, text = "Clear",font = ("Roboto", 14), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command = lambda: clear()).place(relx = 0.640, rely = 0.035)
-
+    clean_btn = tk.Button(frame1, height = 1, width = 10, text = "Clear",font = ("Roboto", 14), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command = lambda: clear())
+    clean_btn.place(relx = 0.640, rely = 0.035)
+    add_btn = tk.Button(frame1, height = 1, width = 10, text = "Add Image", font = ("Roboto", 14), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor = "hand2", borderwidth= 0, highlightthickness= 0,)
+    add_btn.place(relx = 0.05, rely = 0.035)
+    del_btn = tk.Button(frame1, height = 1, width = 10, text = "Delete", font = ("Roboto", 14), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", cursor = "hand2", borderwidth= 0, highlightthickness= 0,)
+    del_btn.place(relx = 0.2, rely = 0.035)
+    tk.Label(frame1, text="Change Column", font = ("Roboto", 12), fg = "#D6D2D2", bg = "#2C2B2B").place(relx = 0.415, rely = 0.005)
+    onecol_tbn = tk.Button(frame1, text = "1", font = ("Roboto", 10),height = 1, width = 2 , cursor = "hand2", activebackground="#4a9eff")
+    onecol_tbn.place(relx = 0.4, rely = 0.045)
+    twocol_tbn = tk.Button(frame1, text = "2", font = ("Roboto", 10),height = 1, width = 2, cursor = "hand2",activebackground="#4a9eff")
+    twocol_tbn.place(relx = 0.45, rely = 0.045)
+    threecol_tbn = tk.Button(frame1, text = "3", font = ("Roboto", 10),height = 1, width = 2, cursor = "hand2", activebackground="#4a9eff")
+    threecol_tbn.place(relx = 0.5, rely = 0.045)
     foreground_input_list_box = tk.Listbox(mainwindow, selectmode= tk.SINGLE, width = 200, height = 40, bg = "#2C2B2B", bd = 1, relief = "groove", borderwidth= 0, highlightthickness=0 )
     foreground_input_list_box.drop_target_register(DND_FILES)
     foreground_input_list_box.dnd_bind("<<Drop>>", drop_inside_list_box)
@@ -469,7 +512,6 @@ if __name__ == "__main__":
     tk.Label(foreground_input_list_box, text= "Drop image folder here", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.25, rely = 0.35)
     tk.Label(foreground_input_list_box, text= "or", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.35, rely = 0.41)
     tk.Button(foreground_input_list_box, text = "Browse", height = 1, width=20, font = ("Roboto", 17),  fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command= get_input_handler).place(relx= 0.255, rely = 0.50)
-
     #create menu frame widget
     menu_frame = tk.Frame(mainwindow, height= 720, width=350, relief="groove", bg = "#323232")
     menu_frame.place(relx= 0.73, rely= 0)
@@ -480,6 +522,8 @@ if __name__ == "__main__":
     tk.Button(menu_frame, height = 1, width = 26, text = "Change Background", font = ("Roboto", 16), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command=background_panel_gui).place(relx= 0.05, rely= 0.27)
     tk.Button(menu_frame, height = 1, width = 26, text = "Settings", font = ("Roboto", 16), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0,command = open_settings).place(relx= 0.05, rely= 0.34)
     tk.Button(menu_frame, height = 3, width = 26, text = "START", font = ("Roboto", 16), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command = start_thread).place(relx= 0.05, rely= 0.87)
+
+    checkI_home_handler()
 
     #make main window display in loop
     mainwindow.mainloop()
