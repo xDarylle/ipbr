@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 from TkinterDnD2 import DND_FILES, TkinterDnD
 import os, os.path
 import sys
+from threading import *
 sys.path.append('scripts')
 import ipbr
 import config
@@ -239,6 +240,10 @@ if __name__ == "__main__":
         else:
             output_error_label.configure(text="Path Not Found!")
 
+    def start_thread():
+        t1 = Thread(target = start_process)
+        t1.start()
+
     def start_process():
         #access permanent variables
         global background_path
@@ -246,12 +251,6 @@ if __name__ == "__main__":
         global width_var
         global height_var
         global output_loc
-
-        print(background_path)
-        print(input_folder_path)
-        print(width_var)
-        print(height_var)
-        print(output_loc)
 
         #check if all needed variables are populated
         if(background_path != None and input_folder_path != "" and width_var != 0 and width_var != 0 and output_loc != ""):
@@ -364,7 +363,6 @@ if __name__ == "__main__":
 
         check_gallery()
 
-
     col_d = 0
     row_d = 0
 
@@ -462,7 +460,7 @@ if __name__ == "__main__":
     background_preview.configure(height = 160, width = 310, image = background_image)
     tk.Button(menu_frame, height = 2, width = 34, text = "Change Background", font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command=background_panel_gui).place(relx= 0.05, rely= 0.30)
     tk.Button(menu_frame, height = 2, width = 34, text = "Settings", font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor ="hand2",borderwidth= 0, highlightthickness= 0,command = open_settings).place(relx= 0.05, rely= 0.38)
-    tk.Button(menu_frame, height = 4, width = 34, text = "Start Process", font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command = start_process).place(relx= 0.05, rely= 0.85)
+    tk.Button(menu_frame, height = 4, width = 34, text = "Start Process", font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command = start_thread).place(relx= 0.05, rely= 0.85)
 
     #make main window display in loop
     mainwindow.mainloop()
