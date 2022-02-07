@@ -256,19 +256,16 @@ if __name__ == "__main__":
         if(background_path != None and input_folder_path != "" and width_var != 0 and width_var != 0 and output_loc != ""):
             print("Ok!")
             background = Image.open(background_path)
-            im_names = os.listdir(input_folder_path)
-            for im in im_names:
-                if im.endswith(".png") or im.endswith(".jpg") or im.endswith(".jpeg"):
-                    print("Processing: " + im)
-                    try:
-                        img = Image.open(os.path.join(input_folder_path, im))
-                        name = im.split('.')[0] + '.png'
-                        img = main.process(img, background, (width_var, height_var)).save(os.path.join(output_loc, name))
-                        check_gallery()
-                    except:
-                        print("Cannot Process: ", im)
+            for im in input_array:
+                print("Processing: " + im)
+                try:
+                    img = Image.open(os.path.join(input_folder_path, im))
+                    name = im.split('.')[0] + '.png'
+                    img = main.process(img, background, (width_var, height_var)).save(os.path.join(output_loc, name))
+                    check_gallery()
+                except:
+                    print("Cannot Process: ", im)
             print("DONE!")
-
         else:
             print("Some Needed Parameters are not defined!")
 
@@ -285,11 +282,18 @@ if __name__ == "__main__":
         input_folder_path = filedialog.askdirectory(initialdir = "/Desktop" if input_folder_path is None else input_folder_path,title = "Select Input Path")
 
         if input_folder_path:
-            input_gallery_gui(input_folder_path)
+            print(input_folder_path)
+            for file in os.listdir(input_folder_path):
+                if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
+                    input_array.append(os.path.join(input_folder_path, file))
 
+            input_gallery_gui(input_array)
 
     def clear():
         global foreground_input_list_box
+        global input_array
+
+        input_array.clear()
 
         for widgets in foreground_input_list_box.winfo_children():
             widgets.destroy()
@@ -298,11 +302,50 @@ if __name__ == "__main__":
                  bg="#2C2B2B").place(relx=0.25, rely=0.35)
         tk.Label(foreground_input_list_box, text="or", font=("Roboto", 20), fg="#D6D2D2", bg="#2C2B2B").place(relx=0.35,
                                                                                                               rely=0.41)
-        tk.Button(foreground_input_list_box, text="Browse", height=1, width=20, font=("Roboto", 17), fg="white",
-                  bg="#127DF4", cursor="hand2", borderwidth=0, highlightthickness=0, command=get_input_handler).place(
+        tk.Button(foreground_input_list_box, text="Browse", height=1, width=20, font=("Roboto", 17), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor="hand2", borderwidth=0, highlightthickness=0, command=get_input_handler).place(
             relx=0.255, rely=0.50)
 
-    def input_gallery_gui(input_folder_path):
+    def show_input_thread():
+        t3 = Thread(target = create_container)
+        t3.start()
+
+    def create_container():
+        global view_frame
+
+        row_dimension = 0
+        column_cimension = 0
+
+        for file in input_array:
+            # validate if file is a valid image file using imghdr.what() module
+            # if file is an image then create an image widget
+            try:
+                image = Image.open(file)
+                image.thumbnail((200, 220), resample=1)
+                image = ImageTk.PhotoImage(image)
+                images.append(image)
+
+                if column_cimension < 4:
+                    image_frame = tk.Frame(view_frame, height=200, width=220, bg="#2C2B2B", bd=0, relief="groove")
+                    image_frame.grid(row=row_dimension, column=column_cimension)
+                    # change the h and w of tk.Button when trying display the image
+                    tk.Label(image_frame, image=image, borderwidth= 0).place(relx=0.15, rely=0.1)
+                    column_cimension += 1
+
+                if column_cimension == 4:
+                    row_dimension += 1
+                    column_cimension = 0
+            except:
+                if column_cimension < 4:
+                    image_frame = tk.Frame(view_frame, height=200, width=220, bg="#2C2B2B", bd=0, relief="groove")
+                    image_frame.grid(row=row_dimension, column=column_cimension)
+                    # change the h and w of tk.Button when trying display the image
+                    tk.Label(image_frame, text= "CORRUPTED IMAGE", bg="BLACK", fg= "#FFFFFF", width=20, height=10 ).place(relx=0.15, rely=0.1)
+                    column_cimension += 1
+                if column_cimension == 4:
+                    row_dimension += 1
+                    column_cimension = 0
+
+    def input_gallery_gui(input_array):
         global images
         global view_frame
         global foreground_input_list_box
@@ -313,55 +356,16 @@ if __name__ == "__main__":
 
         display_frame = tk.Frame(foreground_input_list_box, height=720, width=927, bg="#2C2B2B")
         display_frame.place(relx=0, rely=0)
-        display_canvas = tk.Canvas(display_frame, bg="#2C2B2B", height=720, width=927, borderwidth=0, highlightthickness=0)
+        display_canvas = tk.Canvas(display_frame, bg="#2C2B2B", height=650, width=927, borderwidth=0, highlightthickness=0)
         display_canvas.place(relx=0, rely=0)
         view_frame = tk.Frame(display_canvas, bg="#2C2B2B")
         view_frame.bind('<Configure>', on_configure)
         display_canvas.create_window(0, 0, window=view_frame)
-        scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview, orient= "vertical")
-        scrollbar.place(relx=1, rely=0, relheight=1, anchor='ne')
+        scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
+        scrollbar.place(relx=1, rely=0, relheight=0.89, anchor='ne')
         display_canvas.configure(yscrollcommand=scrollbar.set)
 
-        row_dimension = 0
-        column_cimension = 0
-        i=0
-        for file in os.listdir(input_folder_path):
-            # validate if file is a valid image file using imghdr.what() module
-            i += 1
-            print(i)
-            if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
-                # if file is an image then create an image widget
-                try:
-                    image = Image.open(os.path.join(input_folder_path, file))
-                    image.thumbnail((200, 220), resample=1)
-                    image = ImageTk.PhotoImage(image)
-                    images.append(image)
-
-                    if column_cimension < 4:
-                        image_frame = tk.Frame(view_frame, height=200, width=220, bg="#2C2B2B", bd=0, relief="groove")
-                        image_frame.grid(row=row_dimension, column=column_cimension)
-                        # change the h and w of tk.Button when trying display the image
-                        tk.Label(image_frame, image=image, borderwidth= 0).place(relx=0.15, rely=0.1)
-                        column_cimension += 1
-
-                    if column_cimension == 4:
-                        row_dimension += 1
-                        column_cimension = 0
-                except:
-
-                    if column_cimension < 4:
-                        image_frame = tk.Frame(view_frame, height=200, width=220, bg="#2C2B2B", bd=0, relief="groove")
-                        image_frame.grid(row=row_dimension, column=column_cimension)
-                        # change the h and w of tk.Button when trying display the image
-                        tk.Label(image_frame, text= "CORRUPTED IMAGE", bg="BLACK", fg= "#FFFFFF", width=20, height=10 ).place(relx=0.15, rely=0.1)
-                        column_cimension += 1
-
-                    if column_cimension == 4:
-                        row_dimension += 1
-                        column_cimension = 0
-
-    col_d = 0
-    row_d = 0
+        show_input_thread()
 
     def check_gallery():
         global col_d
@@ -422,6 +426,9 @@ if __name__ == "__main__":
     im_index = 0
     view_frame = None
     input_folder_path = ""
+    input_array = []
+    col_d = 0
+    row_d = 0
 
     #create and assign icons image
     add_background_icon = tk.PhotoImage(file = "resources/images/add_background_icon.png")
@@ -436,7 +443,7 @@ if __name__ == "__main__":
 
     #create main window widgets
     frame1 = tk.Frame(mainwindow, height= 50, width = 900, bg = "#323232").place(x=0,y=0)
-    tk.Button(frame1, height = 1, width = 10, text = "Clear",font = ("Roboto", 14), fg = "white", bg = "#127DF4", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command = lambda: clear()).place(relx = 0.640, rely = 0.035)
+    tk.Button(frame1, height = 1, width = 10, text = "Clear",font = ("Roboto", 14), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command = lambda: clear()).place(relx = 0.640, rely = 0.035)
 
     foreground_input_list_box = tk.Listbox(mainwindow, selectmode= tk.SINGLE, width = 200, height = 40, bg = "#2C2B2B", bd = 1, relief = "groove", borderwidth= 0, highlightthickness=0 )
     foreground_input_list_box.drop_target_register(DND_FILES)
@@ -444,7 +451,7 @@ if __name__ == "__main__":
     foreground_input_list_box.place(relx= 0.005, rely=0.1)
     tk.Label(foreground_input_list_box, text= "Drop image folder here", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.25, rely = 0.35)
     tk.Label(foreground_input_list_box, text= "or", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.35, rely = 0.41)
-    tk.Button(foreground_input_list_box, text = "Browse", height = 1, width=20, font = ("Roboto", 17),  fg = "white", bg = "#127DF4", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command= get_input_handler).place(relx= 0.255, rely = 0.50)
+    tk.Button(foreground_input_list_box, text = "Browse", height = 1, width=20, font = ("Roboto", 17),  fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command= get_input_handler).place(relx= 0.255, rely = 0.50)
 
     #create menu frame widget
     menu_frame = tk.Frame(mainwindow, height= 720, width=350, relief="groove", bg = "#323232")
@@ -453,9 +460,9 @@ if __name__ == "__main__":
     background_preview = tk.Button(menu_frame, height = 10, width = 43, bg = "#2C2B2B", bd =2, relief = "groove", borderwidth= 0, highlightthickness=0)
     background_preview.place(relx = 0.05, rely = 0.03)
     background_preview.configure(height = 160, width = 310, image = background_image)
-    tk.Button(menu_frame, height = 2, width = 34, text = "Change Background", font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command=background_panel_gui).place(relx= 0.05, rely= 0.30)
-    tk.Button(menu_frame, height = 2, width = 34, text = "Settings", font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor ="hand2",borderwidth= 0, highlightthickness= 0,command = open_settings).place(relx= 0.05, rely= 0.38)
-    tk.Button(menu_frame, height = 4, width = 34, text = "Start Process", font = ("Roboto", 12), fg = "white", bg = "#127DF4", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command = start_thread).place(relx= 0.05, rely= 0.85)
+    tk.Button(menu_frame, height = 1, width = 26, text = "Change Background", font = ("Roboto", 16), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command=background_panel_gui).place(relx= 0.05, rely= 0.27)
+    tk.Button(menu_frame, height = 1, width = 26, text = "Settings", font = ("Roboto", 16), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0,command = open_settings).place(relx= 0.05, rely= 0.34)
+    tk.Button(menu_frame, height = 3, width = 26, text = "START", font = ("Roboto", 16), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command = start_thread).place(relx= 0.05, rely= 0.87)
 
     #make main window display in loop
     mainwindow.mainloop()
