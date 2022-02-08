@@ -49,7 +49,6 @@ if __name__ == "__main__":
         # acces y index
         global yindex
         global im_index
-        print(image_url)
         img = Image.open(image_url)
         img.thumbnail((250, 250))
         img = ImageTk.PhotoImage(img)
@@ -62,16 +61,14 @@ if __name__ == "__main__":
                   command=lambda: (image_view.destroy(), panel.destroy(), deletebackground(image_url))).place(relx=0.95,
                                                                                                               rely=0.00)
         im_index += 1
-        # increase yindex for proper margin of suceeding image
+        # increase yindex for proper margin of succeeding image
         yindex += 0.3
 
         return panel
 
     def deletebackground(image_url):
         global backgrounds_array
-        print(len(backgrounds_array))
         backgrounds_array.remove(image_url)
-        print(len(backgrounds_array))
         conf.set_array_backgrounds(backgrounds_array)
         conf.write()
         background_panel_gui()
@@ -96,10 +93,10 @@ if __name__ == "__main__":
         global ifcheck_var
         global ch
         global temp
+        global inputsize_checkbox
 
-        temp = tk.BooleanVar()
         temp.set(ifcheck_var)
-        inputsize_checkbox = tk.BooleanVar()
+        inputsize_checkbox.set(0 if ifcheck_var == 1 else 1)
 
         height_entry_var.set(str(height_var))
         width_entry_var.set(str(width_var))
@@ -160,27 +157,33 @@ if __name__ == "__main__":
         return height_error_label, width_error_label, output_error_label, output_loc_entry, setting_panel, customreso_cbeckbox, height_entry, width_entry
 
     def use_input_reso_handler(inputsize_checkbox,customreso_cbeckbox,  height_entry, width_entry):
+        global ifcheck_var
         if inputsize_checkbox == True:
-            customreso_cbeckbox.configure(state = "disabled")
+            ifcheck_var = 0
+            temp.set(0)
             height_entry.configure(state = "disabled")
             width_entry.configure(state = "disabled")
         else:
+            ifcheck_var = 1
+            temp.set(1)
             customreso_cbeckbox.configure(state="normal")
             height_entry.configure(state="normal")
             width_entry.configure(state="normal")
 
-
     def checkbox(height_entry, width_entry):
         # check if checkbox is checked or not
         global ifcheck_var
+        global temp
+        global inputsize_checkbox
+
         if temp.get() is True:
+            inputsize_checkbox.set(0)
             height_entry.configure(state="normal")
             width_entry.configure(state="normal")
 
         else:
             height_entry.configure(state="readonly")
             width_entry.configure(state="readonly")
-            print("false")
 
         ifcheck_var = temp.get()
 
@@ -271,10 +274,10 @@ if __name__ == "__main__":
         global output_loc
         global preview
         global imm
+        global inputsize_checkbox
 
         #check if all needed variables are populated
         if(background_path != None and input_folder_path != "" and width_var != 0 and width_var != 0 and output_loc != ""):
-            print("Ok!")
             background = Image.open(background_path)
             for im in input_array:
                 print("Processing: " + im)
@@ -282,7 +285,12 @@ if __name__ == "__main__":
                     img = Image.open(im)
                     name = os.path.basename(im)
                     name = name.split('.')[0] + '.png'
-                    img = main.process(img, background, (width_var, height_var))
+
+                    if inputsize_checkbox.get():
+                        img = main.process_v2(img, background)
+                    else:
+                        img = main.process(img, background, (width_var, height_var))
+
                     img.save(os.path.join(output_loc, name))
                     imm = img
                     imm.thumbnail((400, 400), resample=1)
@@ -305,7 +313,6 @@ if __name__ == "__main__":
         input_folder_path = event.data
 
         if input_folder_path:
-            print(input_folder_path)
             for file in os.listdir(input_folder_path):
                 if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
                     input_array.append(os.path.join(input_folder_path, file))
@@ -323,7 +330,6 @@ if __name__ == "__main__":
         input_folder_path = filedialog.askdirectory(initialdir = "/Desktop" if input_folder_path is None else input_folder_path,title = "Select Input Path")
 
         if input_folder_path:
-            print(input_folder_path)
             for file in os.listdir(input_folder_path):
                 if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
                     input_array.append(os.path.join(input_folder_path, file))
@@ -436,15 +442,10 @@ if __name__ == "__main__":
             label = tk.Label(view_frame, text = " Finish! ", font = ("Roboto", 24), fg = "orange",bg = "black")
             label.grid(row = row_d, column = col_d - 1)
         col_d +=1
-        print(row_d)
-        print(col_d)
-        print("")
-
 
     def checkI_home_handler():
         global isHomeBool
         if isHomeBool == True:
-            print(isHomeBool)
             add_btn.configure(state = "disabled")
             del_btn.configure(state = "disabled")
             onecol_tbn.configure(state = "disabled")
@@ -452,14 +453,12 @@ if __name__ == "__main__":
             threecol_tbn.configure(state = "disabled")
             clean_btn.configure(state = "disabled")
         else:
-            print(isHomeBool)
             add_btn.configure(state = "normal")
             del_btn.configure(state = "normal")
             onecol_tbn.configure(state = "normal")
             twocol_tbn.configure(state = "normal")
             threecol_tbn.configure(state = "normal")
             clean_btn.configure(state = "normal")
-
 
     # start of main gui creationg with TkinterDnD wrapper
     mainwindow = TkinterDnD.Tk()
@@ -476,7 +475,7 @@ if __name__ == "__main__":
     height_var = int(height_var)
 
     # convert int to bool
-    ifcheck_var = bool(ifcheck_var)
+    ifcheck_var = ifcheck_var
 
     # set default background preview
     try:
@@ -489,6 +488,8 @@ if __name__ == "__main__":
     #global variables
     height_entry_var = tk.StringVar()
     width_entry_var = tk.StringVar()
+    temp = tk.BooleanVar()
+    inputsize_checkbox = tk.BooleanVar()
     temp_output_loc = output_loc
     yindex = 0.1
     im_index = 0

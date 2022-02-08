@@ -6,6 +6,7 @@ class _image_():
 
     # unify channel to 3
     def unify_channel(self, im):
+        im = np.array(im)
 
         if len(im.shape) == 2:
             im = im[:, :, None]
@@ -14,7 +15,7 @@ class _image_():
         elif im.shape[2] == 4:
             im = im[:, :, 0:3]
 
-        return im
+        return Image.fromarray(im)
 
     # combine background ang foreground
     def change_background(self, image, matte, background):
@@ -68,15 +69,18 @@ class _image_():
         if type is False:
             # scale background to height
             if width > height:
+                extenstion = baseheight*.1
+                baseheight = int(baseheight + extenstion)
                 new_width = int(baseheight * width / height)
                 img = img.resize((new_width, baseheight), Image.ANTIALIAS)
             # scale background to width
             if width < height:
+                extenstion = basewidth * .1
+                basewidth = int(basewidth + extenstion)
                 new_height = int(height * basewidth / width)
                 img = img.resize((basewidth, new_height), Image.ANTIALIAS)
 
         return img
-
 
     # create a container for image
     def paste(self, img, matte, size):
@@ -93,10 +97,3 @@ class _image_():
 
         temp.paste(img, (x,y), matte)
         return temp
-
-
-
-
-
-
-

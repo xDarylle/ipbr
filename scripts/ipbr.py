@@ -56,7 +56,12 @@ class main():
         # create container for background
         bg = self.im.paste(bg, bg, img.size)
 
-        # change bg
+        # unify channels to 3
+        img = self.im.unify_channel(img)
+        matte = self.im.unify_channel(matte)
+        bg =  self.im.unify_channel(bg)
+
+        # change background
         new_image = self.im.change_background(img, matte, bg)
 
         return new_image
