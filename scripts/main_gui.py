@@ -8,7 +8,7 @@ import sys
 import copy
 from threading import *
 sys.path.append('scripts')
-import ipbr
+# import ipbr
 import config
 
 if __name__ == "__main__":
@@ -409,6 +409,7 @@ if __name__ == "__main__":
             checkbox_array.clear()
             clicked = False
 
+
     def delete_selected():
         global clicked
         global is_selected
@@ -425,6 +426,7 @@ if __name__ == "__main__":
         clicked = False
         is_selected.clear()
         checkbox_array.clear()
+        del_btn.configure(state="disabled")
 
     def click_image(id):
         if len(is_selected) > 0:
@@ -538,17 +540,18 @@ if __name__ == "__main__":
         global isHomeBool
         if isHomeBool == True:
             add_btn.configure(state = "disabled")
-            del_btn.configure(state = "disabled")
             twocol_tbn.configure(state = "disabled")
             threecol_tbn.configure(state = "disabled")
             fourcol_btn.configure(state = "disabled")
+            select_btn.configure(state = "disabled")
+            del_btn.configure(state="disabled")
             clean_btn.configure(state = "disabled")
         else:
             add_btn.configure(state = "normal")
-            del_btn.configure(state = "normal")
             twocol_tbn.configure(state = "normal")
             threecol_tbn.configure(state = "normal")
             fourcol_btn.configure(state = "normal")
+            select_btn.configure(state = "normal")
             clean_btn.configure(state = "normal")
 
     def add_image_handler():
@@ -576,7 +579,7 @@ if __name__ == "__main__":
     mainwindow = TkinterDnD.Tk()
 
     # initialize ipbr
-    main = ipbr.main()
+    # main = ipbr.main()
 
     # load config
     conf = config.conf()
@@ -638,8 +641,7 @@ if __name__ == "__main__":
     add_btn.place(relx = 0.01, rely = 0.045)
     del_btn = tk.Button(frame1, command = delete_selected, height = 1, width = 10, text = "Delete", font = ("Roboto", 14), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", cursor = "hand2", borderwidth= 0, highlightthickness= 0,)
     del_btn.place(relx = 0.21, rely = 0.045)
-
-    select_btn = tk.Button(frame1, command = select_img, height = 1, width = 10, text = "Select", font = ("Roboto", 14), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", cursor = "hand2", borderwidth= 0, highlightthickness= 0)
+    select_btn = tk.Button(frame1, command = lambda : [del_btn.configure(state="normal"), select_img()], height = 1, width = 10, text = "Select", font = ("Roboto", 14), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", cursor = "hand2", borderwidth= 0, highlightthickness= 0)
     select_btn.place(relx=0.11,rely=0.045)
 
     tk.Label(frame1, text="Change Column", font = ("Roboto", 12), fg = "#D6D2D2", bg = "#2C2B2B").place(relx = 0.415, rely = 0.005)
