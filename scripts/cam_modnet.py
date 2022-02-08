@@ -57,18 +57,18 @@ class cam_modnet():
 
         def_size = (600,900)
 
-        # rescale
-        frame = self.im.rescale(frame, def_size, 1)
-        matte = self.im.rescale(matte, def_size, 1)
-        bg = self.im.rescale(bg, def_size, 1)
+        #  rescale
+        frame = self.im.rescale(frame, def_size, True)
+        matte = self.im.rescale(matte, def_size, True)
+        bg = self.im.rescale(bg, def_size, False)
 
         # paste
         foreground = self.im.paste(frame, matte, def_size)
         matte = self.im.paste(matte, matte, def_size)
         background = self.im.paste(bg, bg, def_size)
 
-        # replace background of the frame
+        #replace background of the frame
         new_image = self.im.change_background(foreground, matte, background)
 
-        return new_image
+        return np.array(new_image)
 
