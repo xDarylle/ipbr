@@ -260,8 +260,16 @@ if __name__ == "__main__":
         else:
             output_error_label.configure(text="Path Not Found!")
 
-    def start_thread():
+    def update_preview(img):
+        global imm
         global preview
+
+        img.thumbnail((400, 400), resample=1)
+        p = ImageTk.PhotoImage(img)
+        imm.append(p)
+        preview.configure(height=330, width=315, image=p)
+
+    def start_thread():
         t1 = Thread(target=start_process)
         t1.start()
 
@@ -273,13 +281,19 @@ if __name__ == "__main__":
         global height_var
         global output_loc
         global preview
-        global imm
         global inputsize_checkbox
 
         #check if all needed variables are populated
         if(background_path != None and input_folder_path != "" and width_var != 0 and width_var != 0 and output_loc != ""):
             background = Image.open(background_path)
+            i = 0
             for im in input_array:
+                im_label_array[i].configure(text= "Processing")
+                im_label_array[i].place(relx=0.15, rely=0.1)
+
+                if i > 0:
+                    im_label_array[i-1].configure(text= "Done")
+
                 print("Processing: " + im)
                 try:
                     img = Image.open(im)
@@ -292,13 +306,15 @@ if __name__ == "__main__":
                         img = main.process(img, background, (width_var, height_var))
 
                     img.save(os.path.join(output_loc, name))
-                    imm = img
-                    imm.thumbnail((400, 400), resample=1)
-                    p = ImageTk.PhotoImage(imm)
-                    preview.configure(height= 330, width= 315, image=p)
-                    check_gallery()
+                    update_preview(img)
                 except Exception as e:
                     print(e)
+
+                if i == len(input_array) - 1:
+                    im_label_array[i].configure(text="Done")
+
+                i += 1
+
 
             print("DONE!")
         else:
@@ -317,7 +333,7 @@ if __name__ == "__main__":
                 if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
                     input_array.append(os.path.join(input_folder_path, file))
 
-            input_gallery_gui(input_array)
+            input_gallery_gui()
 
         isHomeBool = False
         checkI_home_handler()
@@ -334,7 +350,7 @@ if __name__ == "__main__":
                 if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
                     input_array.append(os.path.join(input_folder_path, file))
 
-            input_gallery_gui(input_array)
+            input_gallery_gui()
         isHomeBool = False
         checkI_home_handler()
 
@@ -342,8 +358,14 @@ if __name__ == "__main__":
         global foreground_input_list_box
         global input_array
         global isHomeBool
+        global preview
+        global imm
+        global im_label_array
 
         input_array.clear()
+        imm.clear()
+        im_label_array.clear()
+        preview.configure(image = None)
 
         for widgets in foreground_input_list_box.winfo_children():
             widgets.destroy()
@@ -364,6 +386,7 @@ if __name__ == "__main__":
 
     def create_container():
         global view_frame
+        global im_label_array
 
         row_dimension = 0
         column_cimension = 0
@@ -382,6 +405,8 @@ if __name__ == "__main__":
                     image_frame.grid(row=row_dimension, column=column_cimension)
                     # change the h and w of tk.Button when trying display the image
                     tk.Label(image_frame, image=image, borderwidth= 0).place(relx=0.15, rely=0.1)
+                    im_label = tk.Label(image_frame)
+                    im_label_array.append(im_label)
                     column_cimension += 1
 
                 if column_cimension == 4:
@@ -398,11 +423,9 @@ if __name__ == "__main__":
                     row_dimension += 1
                     column_cimension = 0
 
-    def input_gallery_gui(input_array):
-        global images
+    def input_gallery_gui():
         global view_frame
         global foreground_input_list_box
-        images = []
 
         def on_configure(event):
             display_canvas.configure(scrollregion=display_canvas.bbox('all'))
@@ -419,29 +442,6 @@ if __name__ == "__main__":
         display_canvas.configure(yscrollcommand=scrollbar.set)
 
         show_input_thread()
-
-    def check_gallery():
-        global col_d
-        global row_d
-        global view_frame
-
-        if col_d == 4:
-            row_d += 1
-            col_d = 0
-
-        if col_d == 0 and row_d != 0:
-            label = tk.Label(view_frame, text = " Finish! ", font = ("Roboto", 24), fg = "orange", bg = "black")
-            label.grid(row = row_d - 1, column = 3)
-
-        if col_d == 0:
-            label = tk.Label(view_frame, text = "Current!", font = ("Roboto", 24), fg = "orange", bg = "black")
-            label.grid(row = row_d, column = col_d)
-        else:
-            label = tk.Label(view_frame, text = "Current!", font = ("Roboto", 24), fg = "orange",bg = "black")
-            label.grid(row = row_d, column = col_d)
-            label = tk.Label(view_frame, text = " Finish! ", font = ("Roboto", 24), fg = "orange",bg = "black")
-            label.grid(row = row_d, column = col_d - 1)
-        col_d +=1
 
     def checkI_home_handler():
         global isHomeBool
@@ -496,7 +496,9 @@ if __name__ == "__main__":
     view_frame = None
     input_folder_path = ""
     input_array = []
-    imm = None
+    im_label_array = []
+    imm = []
+    images = []
     col_d = 0
     row_d = 0
     isHomeBool = True
@@ -543,8 +545,8 @@ if __name__ == "__main__":
     background_preview.place(relx = 0.05, rely = 0.03)
     background_preview.configure(height = 160, width = 310, image = background_image)
     preview_frame = tk.Frame(menu_frame, height= 330, width= 315, bg = "#323232")
-    preview_frame.place(relx=0.055, rely=0.39)
-    preview = tk.Label(preview_frame, height= 330, width= 315, bg = "#2C2B2B")
+    preview_frame.place(relx=0.055, rely=0.40)
+    preview = tk.Label(preview_frame, height= 33, width= 315, bg = "#2C2B2B" )
     preview.place(relx = 0, rely =0)
     tk.Button(menu_frame, height = 1, width = 26, text = "Change Background", font = ("Roboto", 16), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command=background_panel_gui).place(relx= 0.05, rely= 0.27)
     tk.Button(menu_frame, height = 1, width = 26, text = "Settings", font = ("Roboto", 16), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0,command = open_settings).place(relx= 0.05, rely= 0.34)
