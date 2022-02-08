@@ -7,7 +7,7 @@ import os, os.path
 import sys
 from threading import *
 sys.path.append('scripts')
-import ipbr
+# import ipbr
 import config
 
 if __name__ == "__main__":
@@ -281,6 +281,8 @@ if __name__ == "__main__":
         global height_var
         global output_loc
         global preview
+        global imm
+        global column_size
         global inputsize_checkbox
 
         #check if all needed variables are populated
@@ -299,11 +301,12 @@ if __name__ == "__main__":
                     img = Image.open(im)
                     name = os.path.basename(im)
                     name = name.split('.')[0] + '.png'
+                    # img = main.process(img, background, (width_var, height_var))
 
-                    if inputsize_checkbox.get():
-                        img = main.process_v2(img, background)
-                    else:
-                        img = main.process(img, background, (width_var, height_var))
+                    # if inputsize_checkbox.get():
+                    #     img = main.process_v2(img, background)
+                    # else:
+                    #     img = main.process(img, background, (width_var, height_var))
 
                     img.save(os.path.join(output_loc, name))
                     update_preview(img)
@@ -319,6 +322,8 @@ if __name__ == "__main__":
             print("DONE!")
         else:
             print("Some Needed Parameters are not defined!")
+
+        column_size = 4
 
     def drop_inside_list_box(event):
         global isHomeBool
@@ -358,6 +363,7 @@ if __name__ == "__main__":
         global foreground_input_list_box
         global input_array
         global isHomeBool
+        global column_size
         global preview
         global imm
         global im_label_array
@@ -378,6 +384,7 @@ if __name__ == "__main__":
             relx=0.255, rely=0.50)
 
         isHomeBool = True
+        column_size = 4
         checkI_home_handler()
 
     def show_input_thread():
@@ -400,7 +407,7 @@ if __name__ == "__main__":
                 image = ImageTk.PhotoImage(image)
                 images.append(image)
 
-                if column_cimension < 4:
+                if column_cimension < column_size:
                     image_frame = tk.Frame(view_frame, height=200, width=220, bg="#2C2B2B", bd=0, relief="groove")
                     image_frame.grid(row=row_dimension, column=column_cimension)
                     # change the h and w of tk.Button when trying display the image
@@ -409,21 +416,26 @@ if __name__ == "__main__":
                     im_label_array.append(im_label)
                     column_cimension += 1
 
-                if column_cimension == 4:
+                if column_cimension == column_size:
                     row_dimension += 1
                     column_cimension = 0
             except:
-                if column_cimension < 4:
+                if column_cimension < column_size:
                     image_frame = tk.Frame(view_frame, height=200, width=220, bg="#2C2B2B", bd=0, relief="groove")
                     image_frame.grid(row=row_dimension, column=column_cimension)
                     # change the h and w of tk.Button when trying display the image
                     tk.Label(image_frame, text= "CORRUPTED IMAGE", bg="BLACK", fg= "#FFFFFF", width=20, height=10 ).place(relx=0.15, rely=0.1)
                     column_cimension += 1
-                if column_cimension == 4:
+                if column_cimension == column_size:
                     row_dimension += 1
                     column_cimension = 0
 
     def input_gallery_gui():
+        global images
+        global view_frame
+        global foreground_input_list_box
+        global input_array
+        images = []
         global view_frame
         global foreground_input_list_box
 
@@ -443,28 +455,75 @@ if __name__ == "__main__":
 
         show_input_thread()
 
+    def check_gallery():
+        global col_d
+        global row_d
+        global view_frame
+
+        if col_d == column_size:
+            row_d += 1
+            col_d = 0
+
+        if col_d == 0 and row_d != 0:
+            label = tk.Label(view_frame, text = " Finish! ", font = ("Roboto", 24), fg = "orange", bg = "black")
+            label.grid(row = row_d - 1, column = 3)
+
+        if col_d == 0:
+            label = tk.Label(view_frame, text = "Current!", font = ("Roboto", 24), fg = "orange", bg = "black")
+            label.grid(row = row_d, column = col_d)
+        else:
+            label = tk.Label(view_frame, text = "Current!", font = ("Roboto", 24), fg = "orange",bg = "black")
+            label.grid(row = row_d, column = col_d)
+            label = tk.Label(view_frame, text = " Finish! ", font = ("Roboto", 24), fg = "orange",bg = "black")
+            label.grid(row = row_d, column = col_d - 1)
+        col_d +=1
+        print(row_d)
+        print(col_d)
+        print("")
+
+
     def checkI_home_handler():
         global isHomeBool
         if isHomeBool == True:
             add_btn.configure(state = "disabled")
             del_btn.configure(state = "disabled")
-            onecol_tbn.configure(state = "disabled")
             twocol_tbn.configure(state = "disabled")
             threecol_tbn.configure(state = "disabled")
+            fourcol_btn.configure(state = "disabled")
             clean_btn.configure(state = "disabled")
         else:
             add_btn.configure(state = "normal")
             del_btn.configure(state = "normal")
-            onecol_tbn.configure(state = "normal")
             twocol_tbn.configure(state = "normal")
             threecol_tbn.configure(state = "normal")
+            fourcol_btn.configure(state = "normal")
             clean_btn.configure(state = "normal")
+
+    def add_image_handler():
+        global input_array
+
+        added_images = []
+        for image in filedialog.askopenfilenames(initialdir = "/Desktop", title = "Add Image/s", filetypes = (("image files",".jpg"),("image files",".png"))):
+            added_images.append(image)
+
+        input_array += added_images
+        update_column_handler(column_size)
+
+    def update_column_handler(colsize):
+        global column_size
+        global view_frame
+        column_size = colsize
+        for widget in foreground_input_list_box.winfo_children():
+            widget.destroy()
+
+        input_gallery_gui()
+        print(column_size)
 
     # start of main gui creationg with TkinterDnD wrapper
     mainwindow = TkinterDnD.Tk()
 
     # initialize ipbr
-    main = ipbr.main()
+    # main = ipbr.main()
 
     # load config
     conf = config.conf()
@@ -502,6 +561,7 @@ if __name__ == "__main__":
     col_d = 0
     row_d = 0
     isHomeBool = True
+    column_size = 4
 
     #create and assign icons image
     add_background_icon = tk.PhotoImage(file = "resources/images/add_background_icon.png")
@@ -518,17 +578,17 @@ if __name__ == "__main__":
     frame1 = tk.Frame(mainwindow, height= 50, width = 900, bg = "#323232").place(x=0,y=0)
     clean_btn = tk.Button(frame1, height = 1, width = 10, text = "Clear",font = ("Roboto", 14), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command = lambda: clear())
     clean_btn.place(relx = 0.640, rely = 0.035)
-    add_btn = tk.Button(frame1, height = 1, width = 10, text = "Add Image", font = ("Roboto", 14), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor = "hand2", borderwidth= 0, highlightthickness= 0,)
+    add_btn = tk.Button(frame1, height = 1, width = 10, text = "Add Image", font = ("Roboto", 14), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor = "hand2", borderwidth= 0, highlightthickness= 0, command = add_image_handler)
     add_btn.place(relx = 0.05, rely = 0.035)
     del_btn = tk.Button(frame1, height = 1, width = 10, text = "Delete", font = ("Roboto", 14), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", cursor = "hand2", borderwidth= 0, highlightthickness= 0,)
     del_btn.place(relx = 0.2, rely = 0.035)
     tk.Label(frame1, text="Change Column", font = ("Roboto", 12), fg = "#D6D2D2", bg = "#2C2B2B").place(relx = 0.415, rely = 0.005)
-    onecol_tbn = tk.Button(frame1, text = "1", font = ("Roboto", 10),height = 1, width = 2 , cursor = "hand2", activebackground="#4a9eff")
-    onecol_tbn.place(relx = 0.4, rely = 0.045)
-    twocol_tbn = tk.Button(frame1, text = "2", font = ("Roboto", 10),height = 1, width = 2, cursor = "hand2",activebackground="#4a9eff")
-    twocol_tbn.place(relx = 0.45, rely = 0.045)
-    threecol_tbn = tk.Button(frame1, text = "3", font = ("Roboto", 10),height = 1, width = 2, cursor = "hand2", activebackground="#4a9eff")
-    threecol_tbn.place(relx = 0.5, rely = 0.045)
+    twocol_tbn = tk.Button(frame1, text = "2", font = ("Roboto", 10),height = 1, width = 2, cursor = "hand2",activebackground="#4a9eff", command = lambda: update_column_handler(2))
+    twocol_tbn.place(relx = 0.4, rely = 0.045)
+    threecol_tbn = tk.Button(frame1, text = "3", font = ("Roboto", 10),height = 1, width = 2, cursor = "hand2", activebackground="#4a9eff",  command = lambda: update_column_handler(3))
+    threecol_tbn.place(relx = 0.45, rely = 0.045)
+    fourcol_btn = tk.Button(frame1, text = "4", font = ("Roboto", 10),height = 1, width = 2 , cursor = "hand2", activebackground="#4a9eff",  command = lambda: update_column_handler(4))
+    fourcol_btn.place(relx = 0.5, rely = 0.045)
     foreground_input_list_box = tk.Listbox(mainwindow, selectmode= tk.SINGLE, width = 200, height = 40, bg = "#2C2B2B", bd = 1, relief = "groove", borderwidth= 0, highlightthickness=0 )
     foreground_input_list_box.drop_target_register(DND_FILES)
     foreground_input_list_box.dnd_bind("<<Drop>>", drop_inside_list_box)
