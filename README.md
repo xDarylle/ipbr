@@ -9,7 +9,7 @@ This is based on [MODNet: Trimap-Free Portrait Matting in Real Time](https://git
 ## Instruction
 1. Clone this repository:
 ```
-git clone https://github.com/xShiro2/intelligent_portrait_background_replacement.git
+git clone https://github.com/xShiro2/ipbr.git
 cd intelligent_portrait_background_replacement
 ```
 2. Download pre-trained model from this [link](https://drive.google.com/drive/folders/1umYmlCulvIFNaqPjwod1SayFmSRHziyR) and put it into the folder `MODNet/pretrained`
