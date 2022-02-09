@@ -1,6 +1,7 @@
 import tkinter
 import tkinter as tk
 from tkinter import ttk
+from tkinter.ttk import *
 from tkinter import filedialog
 from PIL import Image, ImageTk
 from TkinterDnD2 import DND_FILES, TkinterDnD
@@ -8,7 +9,7 @@ import os, os.path
 import sys
 from threading import *
 sys.path.append('scripts')
-import ipbr
+# import ipbr
 import config
 
 if __name__ == "__main__":
@@ -319,12 +320,12 @@ if __name__ == "__main__":
                     img = Image.open(im)
                     name = os.path.basename(im)
                     name = name.split('.')[0] + '.png'
-                    img = main.process(img, background, (width_var, height_var))
-
-                    if inputsize_checkbox.get():
-                        img = main.process_v2(img, background)
-                    else:
-                        img = main.process(img, background, (width_var, height_var))
+                    # img = main.process(img, background, (width_var, height_var))
+                    #
+                    # if inputsize_checkbox.get():
+                    #     img = main.process_v2(img, background)
+                    # else:
+                    #     img = main.process(img, background, (width_var, height_var))
 
                     img.save(os.path.join(output_loc, name))
                     update_preview(img)
@@ -536,6 +537,10 @@ if __name__ == "__main__":
         def on_configure(event):
             display_canvas.configure(scrollregion=display_canvas.bbox('all'))
 
+        ttkstyle = ttk.Style()
+        ttkstyle.theme_use("classic")
+        ttkstyle.configure("Vertical.TScrollbar", background="#127DF4",arrowsize = 1, bordercolor="white", troughcolor = "#2C2B2B", relief = "groove")
+
         display_frame = tk.Frame(foreground_input_list_box, height=720, width=927, bg="#2C2B2B")
         display_frame.place(relx=0, rely=0)
         display_canvas = tk.Canvas(display_frame, bg="#2C2B2B", height=630, width=927, borderwidth=0, highlightthickness=0)
@@ -625,7 +630,7 @@ if __name__ == "__main__":
     mainwindow = TkinterDnD.Tk()
 
     # initialize ipbr
-    main = ipbr.main()
+    # main = ipbr.main()
 
     # load config
     conf = config.conf()
