@@ -391,6 +391,7 @@ if __name__ == "__main__":
         global checkbox_array
         global is_selected
         global clicked
+        global isHomeBool
 
         if not clicked:
             i=0
@@ -527,22 +528,36 @@ if __name__ == "__main__":
 
     def checkI_home_handler():
         global isHomeBool
-        if isHomeBool == True:
-            twocol_tbn.configure(state = "disabled")
-            threecol_tbn.configure(state = "disabled")
-            fourcol_btn.configure(state = "disabled")
-            select_btn.configure(state = "disabled")
-            del_btn.configure(state="disabled")
-            clean_btn.configure(state = "disabled")
+        global input_array
+
+        if len(input_array) > 0:
+            if isHomeBool == True:
+                twocol_tbn.configure(state = "disabled")
+                threecol_tbn.configure(state = "disabled")
+                fourcol_btn.configure(state = "disabled")
+                select_btn.configure(state = "disabled")
+                del_btn.configure(state="disabled")
+                clean_btn.configure(state = "disabled")
+            else:
+                twocol_tbn.configure(state = "normal")
+                threecol_tbn.configure(state = "normal")
+                fourcol_btn.configure(state = "normal")
+                select_btn.configure(state = "normal")
+                clean_btn.configure(state = "normal")
         else:
-            twocol_tbn.configure(state = "normal")
-            threecol_tbn.configure(state = "normal")
-            fourcol_btn.configure(state = "normal")
-            select_btn.configure(state = "normal")
-            clean_btn.configure(state = "normal")
+            isHomeBool = True
+            twocol_tbn.configure(state="disabled")
+            threecol_tbn.configure(state="disabled")
+            fourcol_btn.configure(state="disabled")
+            select_btn.configure(state="disabled")
+            del_btn.configure(state="disabled")
+            clean_btn.configure(state="disabled")
+        print(isHomeBool)
+        print(len(input_array))
 
     def add_image_handler():
         global input_array
+        global isHomeBool
         temp_len = len(input_array)
         #added_images = []
         for image in filedialog.askopenfilenames(initialdir = "/Desktop" if input_folder_path is None else input_folder_path, title = "Add Image/s", filetypes = (("image files",".jpg"),("image files",".png"), ("image files",".jpeg"))):
@@ -551,6 +566,8 @@ if __name__ == "__main__":
         #input_array += added_images
         if len(input_array) > temp_len:
             update_column_handler(column_size)
+        isHomeBool = False
+        checkI_home_handler()
 
     def update_column_handler(colsize):
         global column_size
