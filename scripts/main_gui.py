@@ -20,7 +20,7 @@ if __name__ == "__main__":
         yindex = 0.1
 
         # create main panel
-        background_panel = tk.Frame(mainwindow, height=720, width=350, relief="groove", bg="#161010")
+        background_panel = tk.Frame(mainwindow, height=720, width=360, relief="groove", bg="#161010")
         background_panel.place(relx=0.72, rely=0)
         # create button widgets
         tk.Button(background_panel, height=20, width=20, bd=0, image=add_background_icon, cursor="hand2",
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     def add_background(panel):
         global backgrounds_array
         if len(backgrounds_array) <= 2:
-            image_url = filedialog.askopenfilename(initialdir=os.path.dirname(backgrounds_array[-1]),
+            image_url = filedialog.askopenfilename(initialdir="/Desktop" if len(backgrounds_array) == 0 else  os.path.dirname(backgrounds_array[-1]),
                                                    filetypes=(("image files", ".jpg"), ("image files", ".png")))
             if image_url:
                 create_background_gallery(image_url, panel)
@@ -50,16 +50,21 @@ if __name__ == "__main__":
         # acces y index
         global yindex
         global im_index
+
         img = Image.open(image_url)
         img.thumbnail((250, 250))
         img = ImageTk.PhotoImage(img)
         # create the image in image gallery, I used button for command attribute
-        image_view = tk.Button(panel, name=str(im_index), height=175, width=275, image=img, bg="#383d3a", cursor="hand2",
+        image_view = tk.Button(panel, name=str(im_index), height=img.height(), width=img.width(), image=img, bg="#383d3a", cursor="hand2", borderwidth=0, highlightthickness=0,
                                command=lambda: choosebackground(img,image_url, panel))
-        image_view.place(relx=0.1, rely=(yindex))
+        mainwindow.update()
+        x = ((panel.winfo_width()-img.width())/2)/panel.winfo_width()
+        image_view.place(relx=x, rely=(yindex))
         # create a delete button
+        mainwindow.update()
+        bx = (image_view.winfo_width() - 20)/image_view.winfo_width()
         tk.Button(image_view, height="1", width="2", bg="white", cursor="hand2",
-                  command=lambda: (image_view.destroy(), panel.destroy(), deletebackground(image_url))).place(relx=0.95,
+                  command=lambda: (image_view.destroy(), panel.destroy(), deletebackground(image_url))).place(relx=bx,
                                                                                                               rely=0.00)
         im_index += 1
         # increase yindex for proper margin of succeeding image
@@ -69,7 +74,12 @@ if __name__ == "__main__":
 
     def deletebackground(image_url):
         global backgrounds_array
+
         backgrounds_array.remove(image_url)
+        if len(backgrounds_array) == 0:
+            background_preview.configure(image = "")
+            conf.set_background("")
+
         conf.set_array_backgrounds(backgrounds_array)
         conf.write()
         background_panel_gui()
@@ -370,6 +380,8 @@ if __name__ == "__main__":
 
         input_array.clear()
         imm.clear()
+        is_selected.clear()
+        checkbox_array.clear()
         im_label_array.clear()
         preview.configure(image = None)
 
@@ -440,6 +452,9 @@ if __name__ == "__main__":
         select_btn.configure(text="Select")
 
     def click_image(id):
+        if not clicked:
+            select_img()
+
         if len(is_selected) > 0:
             if not is_selected[id].get():
                 is_selected[id].set(1)
@@ -488,6 +503,7 @@ if __name__ == "__main__":
                     row_dimension += 1
                     column_cimension = 0
                 i+=1
+
             except Exception as e:
                 if column_cimension < column_size:
                     image_frame = tk.Frame(view_frame, height=200, width=220, bg="#2C2B2B", bd=0, relief="groove")
@@ -550,6 +566,11 @@ if __name__ == "__main__":
 
         #input_array += added_images
         if len(input_array) > temp_len:
+            select_btn.configure(state="normal")
+            clean_btn.configure(state="normal")
+            twocol_tbn.configure(state="normal")
+            threecol_tbn.configure(state="normal")
+            fourcol_btn.configure(state="normal")
             update_column_handler(column_size)
 
     def update_column_handler(colsize):
@@ -578,11 +599,11 @@ if __name__ == "__main__":
     height_var = int(height_var)
 
     # set default background preview
-    try:
+    if  len(backgrounds_array) > 0:
         background_image = Image.open(background_path)
         background_image.thumbnail((250, 250))
         background_image = ImageTk.PhotoImage(background_image)
-    except:
+    else:
         background_image = None
 
     #global variables
@@ -650,7 +671,7 @@ if __name__ == "__main__":
     menu_frame = tk.Frame(mainwindow, height= 720, width=350, relief="groove", bg = "#323232")
     menu_frame.place(relx= 0.73, rely= 0)
     #tk.Label(menu_frame, text = "Chosen Background Image Preview: ", font = ("Roboto", 12), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.05, rely = 0.02)
-    background_preview = tk.Button(menu_frame, height = 10, width = 43, bg = "#2C2B2B", bd =2, relief = "groove", borderwidth= 0, highlightthickness=0)
+    background_preview = tk.Label(menu_frame, height = 10, width = 43, bg = "#2C2B2B", bd =2, relief = "groove", borderwidth= 0, highlightthickness=0)
     background_preview.place(relx = 0.05, rely = 0.03)
     background_preview.configure(height = 160, width = 310, image = background_image)
     preview_frame = tk.Frame(menu_frame, height= 330, width= 315, bg = "#323232")
