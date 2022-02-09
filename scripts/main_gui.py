@@ -408,7 +408,7 @@ if __name__ == "__main__":
         if not clicked:
             i=0
             select_btn.configure(text="Deselect")
-            del_btn.configure(state="normal")
+            del_btn.configure(state="normal", cursor = "hand2")
             for frame in view_frame.winfo_children():
                 is_selected.append(tk.BooleanVar())
                 checkbox = tk.Checkbutton(frame, variable=is_selected[i])
@@ -420,7 +420,7 @@ if __name__ == "__main__":
             clicked = True
         else:
             select_btn.configure(text="Select")
-            del_btn.configure(state= "disabled")
+            del_btn.configure(state= "disabled", cursor = "arrow")
             for checkbox in checkbox_array:
                 checkbox.destroy()
             is_selected.clear()
@@ -449,7 +449,7 @@ if __name__ == "__main__":
             checkbox_array.clear()
 
         clicked = False
-        del_btn.configure(state="disabled")
+        del_btn.configure(state="disabled", cursor = "arrow")
         select_btn.configure(text="Select")
 
     def click_image(id):
@@ -548,26 +548,30 @@ if __name__ == "__main__":
 
         if len(input_array) > 0:
             if isHomeBool == True:
-                twocol_tbn.configure(state = "disabled")
-                threecol_tbn.configure(state = "disabled")
-                fourcol_btn.configure(state = "disabled")
-                select_btn.configure(state = "disabled")
-                del_btn.configure(state="disabled")
-                clean_btn.configure(state = "disabled")
+                twocol_tbn.configure(state = "disabled",cursor="arrow")
+                threecol_tbn.configure(state = "disabled",cursor="arrow")
+                fourcol_btn.configure(state = "disabled",cursor="arrow")
+                select_btn.configure(state = "disabled",cursor="arrow")
+                del_btn.configure(state="disabled",cursor="arrow")
+                clean_btn.configure(state = "disabled",cursor="arrow")
+                use_cam_btn.configure(state="normal", cursor="hand2")
             else:
-                twocol_tbn.configure(state = "normal")
-                threecol_tbn.configure(state = "normal")
-                fourcol_btn.configure(state = "normal")
-                select_btn.configure(state = "normal")
-                clean_btn.configure(state = "normal")
+                twocol_tbn.configure(state = "normal", cursor = "hand2")
+                threecol_tbn.configure(state = "normal", cursor = "hand2")
+                fourcol_btn.configure(state = "normal", cursor = "hand2")
+                select_btn.configure(state = "normal", cursor = "hand2")
+                clean_btn.configure(state = "normal", cursor = "hand2")
+                use_cam_btn.configure(state="disabled",cursor="arrow")
         else:
             isHomeBool = True
-            twocol_tbn.configure(state="disabled")
-            threecol_tbn.configure(state="disabled")
-            fourcol_btn.configure(state="disabled")
-            select_btn.configure(state="disabled")
-            del_btn.configure(state="disabled")
-            clean_btn.configure(state="disabled")
+            twocol_tbn.configure(state="disabled",cursor="arrow")
+            threecol_tbn.configure(state="disabled",cursor="arrow")
+            fourcol_btn.configure(state="disabled",cursor="arrow")
+            select_btn.configure(state="disabled",cursor="arrow")
+            del_btn.configure(state="disabled",cursor="arrow")
+            clean_btn.configure(state="disabled",cursor="arrow")
+            use_cam_btn.configure(state="normal", cursor="hand2")
+
         print(isHomeBool)
         print(len(input_array))
 
@@ -600,6 +604,15 @@ if __name__ == "__main__":
 
         input_gallery_gui()
         print(column_size)
+
+    def use_camera_handler():
+        use_camera_frame = tk.Frame(mainwindow, height= 720, width=940, bg = "#323232")
+        use_camera_frame.place(relx = 0, rely = 0)
+        # delete this label later just to display this is camera frame
+        tk.Label(use_camera_frame, font = ("Roboto", 24), text = "Welcome To Camera Frame", fg = "#D6D2D2", bg = "#323232").place(relx = 0.3, rely = 0.45)
+
+        tk.Button(use_camera_frame,height = 1, width = 12, text = "Exit", font = ("Roboto", 14), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,cursor = "hand2",command =use_camera_frame.destroy).place(relx=0.85,rely=0.045)
+
 
     # start of main gui creationg with TkinterDnD wrapper
     mainwindow = TkinterDnD.Tk()
@@ -660,22 +673,24 @@ if __name__ == "__main__":
 
     #create main window widgets
     frame1 = tk.Frame(mainwindow, height= 50, width = 900, bg = "#323232").place(x=0,y=0)
-    clean_btn = tk.Button(frame1, height = 1, width = 10, text = "Clear",font = ("Roboto", 14), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command = lambda: clear())
-    clean_btn.place(relx = 0.640, rely = 0.045)
-    add_btn = tk.Button(frame1, height = 1, width = 10, text = "Add Image", font = ("Roboto", 14), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor = "hand2", borderwidth= 0, highlightthickness= 0, command = add_image_handler)
+    clean_btn = tk.Button(frame1, height = 1, width = 10, text = "Clear",font = ("Roboto", 14), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", borderwidth= 0, highlightthickness= 0,command = lambda: clear())
+    clean_btn.place(relx = 0.430, rely = 0.045)
+    add_btn = tk.Button(frame1, height = 1, width = 10, text = "Add Image", font = ("Roboto", 14), fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", borderwidth= 0, highlightthickness= 0, command = add_image_handler, cursor = "hand2")
     add_btn.place(relx = 0.01, rely = 0.045)
-    del_btn = tk.Button(frame1, command = delete_selected, height = 1, width = 10, text = "Delete", font = ("Roboto", 14), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", cursor = "hand2", borderwidth= 0, highlightthickness= 0,)
+    del_btn = tk.Button(frame1, command = delete_selected, height = 1, width = 10, text = "Delete", font = ("Roboto", 14), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,)
     del_btn.place(relx = 0.21, rely = 0.045)
-    select_btn = tk.Button(frame1, command = lambda : [del_btn.configure(state="normal"), select_img()], height = 1, width = 10, text = "Select", font = ("Roboto", 14), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", cursor = "hand2", borderwidth= 0, highlightthickness= 0)
+    select_btn = tk.Button(frame1, command = lambda : [del_btn.configure(state="normal"), select_img()], height = 1, width = 10, text = "Select", font = ("Roboto", 14), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0)
     select_btn.place(relx=0.11,rely=0.045)
+    use_cam_btn = tk.Button(frame1, command =use_camera_handler, height = 1, width = 12, text = "Use Camera", font = ("Roboto", 14), fg = "#e0efff", bg = "#127DF4", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0)
+    use_cam_btn.place(relx=0.625,rely=0.045)
 
-    tk.Label(frame1, text="Change Column", font = ("Roboto", 12), fg = "#D6D2D2", bg = "#2C2B2B").place(relx = 0.415, rely = 0.005)
-    twocol_tbn = tk.Button(frame1, text = "2", font = ("Roboto", 10),height = 1, width = 2, cursor = "hand2",activebackground="#4a9eff", command = lambda: update_column_handler(2))
-    twocol_tbn.place(relx = 0.4, rely = 0.045)
-    threecol_tbn = tk.Button(frame1, text = "3", font = ("Roboto", 10),height = 1, width = 2, cursor = "hand2", activebackground="#4a9eff",  command = lambda: update_column_handler(3))
-    threecol_tbn.place(relx = 0.45, rely = 0.045)
-    fourcol_btn = tk.Button(frame1, text = "4", font = ("Roboto", 10),height = 1, width = 2 , cursor = "hand2", activebackground="#4a9eff",  command = lambda: update_column_handler(4))
-    fourcol_btn.place(relx = 0.5, rely = 0.045)
+    tk.Label(frame1, text="Change Column", font = ("Roboto", 12), fg = "#D6D2D2", bg = "#2C2B2B").place(relx = 0.318, rely = 0.005)
+    twocol_tbn = tk.Button(frame1, text = "2", font = ("Roboto", 10),height = 1, width = 2,activebackground="#4a9eff", command = lambda: update_column_handler(2))
+    twocol_tbn.place(relx = 0.325, rely = 0.045)
+    threecol_tbn = tk.Button(frame1, text = "3", font = ("Roboto", 10),height = 1, width = 2, activebackground="#4a9eff",  command = lambda: update_column_handler(3))
+    threecol_tbn.place(relx = 0.355, rely = 0.045)
+    fourcol_btn = tk.Button(frame1, text = "4", font = ("Roboto", 10),height = 1, width = 2, activebackground="#4a9eff",  command = lambda: update_column_handler(4))
+    fourcol_btn.place(relx = 0.385, rely = 0.045)
     foreground_input_list_box = tk.Listbox(mainwindow, selectmode= tk.SINGLE, width = 200, height = 40, bg = "#2C2B2B", bd = 1, relief = "groove", borderwidth= 0, highlightthickness=0 )
     foreground_input_list_box.drop_target_register(DND_FILES)
     foreground_input_list_box.dnd_bind("<<Drop>>", drop_inside_list_box)
