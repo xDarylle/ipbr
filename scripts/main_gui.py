@@ -1,3 +1,4 @@
+import tkinter
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
@@ -55,25 +56,31 @@ if __name__ == "__main__":
         img.thumbnail((250, 250))
         img = ImageTk.PhotoImage(img)
         # create the image in image gallery, I used button for command attribute
-        image_view = tk.Button(panel, name=str(im_index), height=img.height(), width=img.width(), image=img, bg="#383d3a", cursor="hand2", borderwidth=0, highlightthickness=0,
-                               command=lambda: choosebackground(img,image_url, panel))
+        image_panel = tk.Frame(panel, height=img.height(), width=img.width(),)
         mainwindow.update()
-        x = ((panel.winfo_width()-img.width())/2)/panel.winfo_width()
-        image_view.place(relx=x, rely=(yindex))
+        x = ((panel.winfo_width() - img.width()) / 2) / panel.winfo_width()
+        image_panel.place(relx=x, rely=(yindex))
+        image_view = tk.Button(image_panel, text="view", height=img.height(), width=img.width(), image=img, bg="#383d3a", cursor="hand2", borderwidth=0, highlightthickness=0,
+                               command=lambda: choosebackground(img,image_url, panel))
+        image_view.place(relx=0,rely=0)
+
         # create a delete button
         mainwindow.update()
         bx = (image_view.winfo_width() - 20)/image_view.winfo_width()
-        tk.Button(image_view, height="1", width="2", bg="white", cursor="hand2",
-                  command=lambda: (image_view.destroy(), panel.destroy(), deletebackground(image_url))).place(relx=bx,
-                                                                                                              rely=0.00)
+        delete = tk.Button(image_panel, height="1", width="2", bg="white", cursor="hand2",
+                  command=lambda: (deletebackground(image_url, image_view, panel)))
+        delete.place(relx=bx, rely=0.00)
+
         im_index += 1
         # increase yindex for proper margin of succeeding image
         yindex += 0.3
 
         return panel
 
-    def deletebackground(image_url):
+    def deletebackground(image_url, image_view, panel):
         global backgrounds_array
+        image_view.destroy()
+        panel.destroy()
 
         backgrounds_array.remove(image_url)
         if len(backgrounds_array) == 0:
@@ -617,9 +624,12 @@ if __name__ == "__main__":
 
     # set default background preview
     if  len(backgrounds_array) > 0:
-        background_image = Image.open(background_path)
-        background_image.thumbnail((250, 250))
-        background_image = ImageTk.PhotoImage(background_image)
+        if background_path:
+            background_image = Image.open(background_path)
+            background_image.thumbnail((250, 250))
+            background_image = ImageTk.PhotoImage(background_image)
+        else:
+            background_image = None
     else:
         background_image = None
 
