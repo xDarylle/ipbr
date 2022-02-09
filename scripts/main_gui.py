@@ -5,10 +5,9 @@ from PIL import Image, ImageTk
 from TkinterDnD2 import DND_FILES, TkinterDnD
 import os, os.path
 import sys
-import copy
 from threading import *
 sys.path.append('scripts')
-# import ipbr
+import ipbr
 import config
 
 if __name__ == "__main__":
@@ -288,12 +287,12 @@ if __name__ == "__main__":
         global inputsize_checkbox
 
         #check if all needed variables are populated
-        if(background_path != None and input_folder_path != "" and width_var != 0 and width_var != 0 and output_loc != ""):
+        if(background_path != None and input_array != "" and width_var != 0 and width_var != 0 and output_loc != ""):
             background = Image.open(background_path)
             i = 0
             for im in input_array:
                 im_label_array[i].configure(text= "Processing")
-                im_label_array[i].place(relx=0.15, rely=0.1)
+                im_label_array[i].place(relx=0.1, rely=0.1)
 
                 if i > 0:
                     im_label_array[i-1].configure(text= "Done")
@@ -395,20 +394,25 @@ if __name__ == "__main__":
 
         if not clicked:
             i=0
+            select_btn.configure(text="Deselect")
+            del_btn.configure(state="normal")
             for frame in view_frame.winfo_children():
                 is_selected.append(tk.BooleanVar())
                 checkbox = tk.Checkbutton(frame, variable=is_selected[i])
                 checkbox_array.append(checkbox)
-                checkbox.place(relx=0.9,rely=0.1)
+                x = (int(frame.winfo_width()) - 25) / int(frame.winfo_width())
+                checkbox.place(relx=x,rely=0.1)
+
                 i += 1
             clicked = True
         else:
+            select_btn.configure(text="Select")
+            del_btn.configure(state= "disabled")
             for checkbox in checkbox_array:
                 checkbox.destroy()
             is_selected.clear()
             checkbox_array.clear()
             clicked = False
-
 
     def delete_selected():
         global clicked
@@ -417,16 +421,23 @@ if __name__ == "__main__":
 
         i = 0
         j = -1
+
         for selected in is_selected:
             if selected.get():
                 j += 1
                 del input_array[i - j]
             i += 1
-        input_gallery_gui()
+
+        if len(input_array) == 0:
+            clear()
+        else:
+            input_gallery_gui()
+            is_selected.clear()
+            checkbox_array.clear()
+
         clicked = False
-        is_selected.clear()
-        checkbox_array.clear()
         del_btn.configure(state="disabled")
+        select_btn.configure(text="Select")
 
     def click_image(id):
         if len(is_selected) > 0:
@@ -449,11 +460,16 @@ if __name__ == "__main__":
         column_cimension = 0
         i = 0
         for file in input_array:
-            # validate if file is a valid image file using imghdr.what() module
             # if file is an image then create an image widget
             try:
                 image = Image.open(file)
-                image.thumbnail((200, 220), resample=1)
+                if column_size == 4:
+                    image.thumbnail((220, 220), resample=1)
+                if column_size == 3:
+                    image.thumbnail((300, 300), resample=1)
+                if column_size == 2:
+                    image.thumbnail((420, 420), resample=1)
+
                 image = ImageTk.PhotoImage(image)
                 images.append(image)
 
@@ -463,7 +479,7 @@ if __name__ == "__main__":
                     # change the h and w of tk.Button when trying display the image
                     container = tk.Button(image_frame, image=image, borderwidth= 0, highlightthickness=0, command=lambda id=i :click_image(id))
                     container_array.append(container)
-                    container.place(relx=0.15, rely=0.1)
+                    container.place(relx=0.1, rely=0.1)
                     im_label = tk.Label(image_frame)
                     im_label_array.append(im_label)
                     column_cimension += 1
@@ -473,16 +489,15 @@ if __name__ == "__main__":
                     column_cimension = 0
                 i+=1
             except Exception as e:
-                print(e)
-                # if column_cimension < column_size:
-                #     image_frame = tk.Frame(view_frame, height=200, width=220, bg="#2C2B2B", bd=0, relief="groove")
-                #     image_frame.grid(row=row_dimension, column=column_cimension)
-                #     # change the h and w of tk.Button when trying display the image
-                #     tk.Label(image_frame, text= "CORRUPTED IMAGE", bg="BLACK", fg= "#FFFFFF", width=20, height=10 ).place(relx=0.15, rely=0.1)
-                #     column_cimension += 1
-                # if column_cimension == column_size:
-                #     row_dimension += 1
-                #     column_cimension = 0
+                if column_cimension < column_size:
+                    image_frame = tk.Frame(view_frame, height=200, width=220, bg="#2C2B2B", bd=0, relief="groove")
+                    image_frame.grid(row=row_dimension, column=column_cimension)
+                    # change the h and w of tk.Button when trying display the image
+                    tk.Label(image_frame, text= "CORRUPTED IMAGE", bg="BLACK", fg= "#FFFFFF", width=20, height=10 ).place(relx=0.15, rely=0.1)
+                    column_cimension += 1
+                if column_cimension == column_size:
+                    row_dimension += 1
+                    column_cimension = 0
 
     def input_gallery_gui():
         global images
@@ -499,7 +514,7 @@ if __name__ == "__main__":
 
         display_frame = tk.Frame(foreground_input_list_box, height=720, width=927, bg="#2C2B2B")
         display_frame.place(relx=0, rely=0)
-        display_canvas = tk.Canvas(display_frame, bg="#2C2B2B", height=650, width=927, borderwidth=0, highlightthickness=0)
+        display_canvas = tk.Canvas(display_frame, bg="#2C2B2B", height=630, width=927, borderwidth=0, highlightthickness=0)
         display_canvas.place(relx=0, rely=0)
         view_frame = tk.Frame(display_canvas, bg="#2C2B2B")
         view_frame.bind('<Configure>', on_configure)
@@ -510,36 +525,9 @@ if __name__ == "__main__":
 
         show_input_thread()
 
-    def check_gallery():
-        global col_d
-        global row_d
-        global view_frame
-
-        if col_d == column_size:
-            row_d += 1
-            col_d = 0
-
-        if col_d == 0 and row_d != 0:
-            label = tk.Label(view_frame, text = " Finish! ", font = ("Roboto", 24), fg = "orange", bg = "black")
-            label.grid(row = row_d - 1, column = 3)
-
-        if col_d == 0:
-            label = tk.Label(view_frame, text = "Current!", font = ("Roboto", 24), fg = "orange", bg = "black")
-            label.grid(row = row_d, column = col_d)
-        else:
-            label = tk.Label(view_frame, text = "Current!", font = ("Roboto", 24), fg = "orange",bg = "black")
-            label.grid(row = row_d, column = col_d)
-            label = tk.Label(view_frame, text = " Finish! ", font = ("Roboto", 24), fg = "orange",bg = "black")
-            label.grid(row = row_d, column = col_d - 1)
-        col_d +=1
-        print(row_d)
-        print(col_d)
-        print("")
-
     def checkI_home_handler():
         global isHomeBool
         if isHomeBool == True:
-            add_btn.configure(state = "disabled")
             twocol_tbn.configure(state = "disabled")
             threecol_tbn.configure(state = "disabled")
             fourcol_btn.configure(state = "disabled")
@@ -547,7 +535,6 @@ if __name__ == "__main__":
             del_btn.configure(state="disabled")
             clean_btn.configure(state = "disabled")
         else:
-            add_btn.configure(state = "normal")
             twocol_tbn.configure(state = "normal")
             threecol_tbn.configure(state = "normal")
             fourcol_btn.configure(state = "normal")
@@ -556,13 +543,14 @@ if __name__ == "__main__":
 
     def add_image_handler():
         global input_array
-
+        temp_len = len(input_array)
         #added_images = []
         for image in filedialog.askopenfilenames(initialdir = "/Desktop" if input_folder_path is None else input_folder_path, title = "Add Image/s", filetypes = (("image files",".jpg"),("image files",".png"), ("image files",".jpeg"))):
             input_array.append(image)
 
         #input_array += added_images
-        update_column_handler(column_size)
+        if len(input_array) > temp_len:
+            update_column_handler(column_size)
 
     def update_column_handler(colsize):
         global column_size
@@ -579,7 +567,7 @@ if __name__ == "__main__":
     mainwindow = TkinterDnD.Tk()
 
     # initialize ipbr
-    # main = ipbr.main()
+    main = ipbr.main()
 
     # load config
     conf = config.conf()
@@ -620,7 +608,6 @@ if __name__ == "__main__":
     isHomeBool = True
     column_size = 4
     clicked = False
-
 
     #create and assign icons image
     add_background_icon = tk.PhotoImage(file = "resources/images/add_background_icon.png")
