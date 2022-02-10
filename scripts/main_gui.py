@@ -658,7 +658,7 @@ if __name__ == "__main__":
         global cmodnet
 
         pretrained_ckpt = "pretrained/modnet_webcam_portrait_matting.ckpt"
-        cmodnet = cam_modnet.cam_modnet(pretrained_ckpt)
+        # cmodnet = cam_modnet.cam_modnet(pretrained_ckpt)
         streamer = ThreadedCamera(camera)
 
     def press(event):
@@ -741,6 +741,8 @@ if __name__ == "__main__":
         global isClick_camera
         global streaming
 
+        device_type = tk.StringVar()
+
         if not isClick_camera:
             mainwindow.bind('<KeyPress>', press)
             streaming = True
@@ -754,7 +756,24 @@ if __name__ == "__main__":
 
             tk.Button(use_camera_frame,height = 1, width = 12, text = "Exit", font = ("Roboto", 14), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,cursor = "hand2",command = lambda: exit(use_camera_frame)).place(relx=0.85,rely=0.045)
             isClick_camera = True
+            outer_frame = tk.Frame(use_camera_frame, height=160, width=210, bg="#127DF4")
+            outer_frame.place(relx=0.774, rely=0.14)
+            inner_frame = tk.Frame(outer_frame, height = 150, width = 200, bg = "#323232")
+            inner_frame.place(relx = 0.025, rely = 0.03)
+            tk.Label(inner_frame, text = "Choose Device Type:", font = ("Roboto", 14), fg = "#D6D2D2", bg = "#2C2B2B").place(relx=0.025,rely=0.025)
+            tk.Label(inner_frame, text="Phone", font=("Roboto", 14), fg = "#D6D2D2", bg = "#2C2B2B").place(relx=0.165,rely=0.3)
+            tk.Label(inner_frame, text="Camera", font=("Roboto", 14), fg = "#D6D2D2", bg = "#2C2B2B").place(relx=0.1, rely=0.6)
+            tk.Checkbutton(inner_frame, variable = device_type, activebackground = "#323232", bg = "#323232", onvalue = "phone", offvalue = "", cursor = "hand2", command = lambda : select_image_handler(device_type.get())).place(relx=0.5, rely=0.325)
+            tk.Checkbutton(inner_frame, variable=device_type, activebackground="#323232", bg="#323232",onvalue="camera", offvalue="", cursor = "hand2", command=lambda: select_image_handler(device_type.get())).place(relx=0.5, rely=0.625)
 
+            # just for simulation
+            # delete the function and change command to call the correct function and pass the device_type.get()  as parameter
+
+            def select_image_handler(device):
+                if device == "":
+                    print("No Value")
+                else:
+                    print(device)
 
     # start of main gui creationg with TkinterDnD wrapper
     mainwindow = TkinterDnD.Tk()
