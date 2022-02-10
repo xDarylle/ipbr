@@ -8,9 +8,41 @@ from TkinterDnD2 import DND_FILES, TkinterDnD
 import os, os.path
 import sys
 from threading import *
+import cv2
 sys.path.append('scripts')
-# import ipbr
+import ipbr
 import config
+import cam_modnet
+
+class ThreadedCamera(object):
+    def __init__(self, source):
+
+        self.capture = cv2.VideoCapture(source)
+        self.thread = Thread(target = self.update, args = ())
+        self.thread.daemon = True
+        self.stopped = False
+        self.thread.start()
+
+        self.status = False
+        self.frame  = None
+
+    def update(self):
+        while True:
+            if not self.stopped:
+                if self.capture.isOpened():
+                    (self.status, self.frame) = self.capture.read()
+
+            if self.stopped:
+                break
+
+    def grab_frame(self):
+        if self.status:
+            return self.frame
+        return None
+
+    def stop(self):
+        self.stopped = True
+        print("camera stopped", self.stopped)
 
 if __name__ == "__main__":
     def background_panel_gui():
@@ -177,6 +209,7 @@ if __name__ == "__main__":
 
     def use_input_reso_handler(inputsize_checkbox,customreso_cbeckbox,  height_entry, width_entry):
         global ifcheck_var
+
         if inputsize_checkbox == True:
             ifcheck_var = 0
             temp.set(0)
@@ -320,12 +353,11 @@ if __name__ == "__main__":
                     img = Image.open(im)
                     name = os.path.basename(im)
                     name = name.split('.')[0] + '.png'
-                    # img = main.process(img, background, (width_var, height_var))
-                    #
-                    # if inputsize_checkbox.get():
-                    #     img = main.process_v2(img, background)
-                    # else:
-                    #     img = main.process(img, background, (width_var, height_var))
+
+                    if inputsize_checkbox.get():
+                        img = main.process_v2(img, background)
+                    else:
+                        img = main.process(img, background, (width_var, height_var))
 
                     img.save(os.path.join(output_loc, name))
                     update_preview(img)
@@ -617,41 +649,120 @@ if __name__ == "__main__":
         input_gallery_gui()
         print(column_size)
 
-    def use_camera_handler():
-        use_camera_frame = tk.Frame(mainwindow, height= 720, width=940, bg = "#323232")
-        use_camera_frame.place(relx = 0, rely = 0)
-        # delete this label later just to display this is camera frame
-        tk.Label(use_camera_frame, font = ("Roboto", 24), text = "Welcome To Camera Frame", fg = "#D6D2D2", bg = "#323232").place(relx = 0.3, rely = 0.45)
+    def setup_stream(camera):
+        global streamer
+        global cmodnet
 
-        tk.Button(use_camera_frame,height = 1, width = 12, text = "Exit", font = ("Roboto", 14), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,cursor = "hand2",command =use_camera_frame.destroy).place(relx=0.85,rely=0.045)
+        pretrained_ckpt = "pretrained/modnet_webcam_portrait_matting.ckpt"
+        cmodnet = cam_modnet.cam_modnet(pretrained_ckpt)
+        streamer = ThreadedCamera(camera)
+
+    def press(event):
+        global frame_update
+        global preview_frame
+        global imm
+
+        if frame_update is not None:
+            img = Image.fromarray(frame_update)
+            img.thumbnail((400,400))
+            imgtk = ImageTk.PhotoImage(image=img)
+            imm.append(imgtk)
+            preview.configure(height=330, width=315, image = imgtk)
+
+    def thread_process_stream():
+        global frame_update
+        global streaming
+        global frame_np
+        global preview_stream
+        global t1
+
+        bg = Image.open(background_path)
+        while True:
+            try:
+                if frame_np is not None:
+                    frame = cv2.resize(frame_np, (910, 512), cv2.INTER_AREA)
+                    frame = frame[:, 120:792, :]
+                    frame = cv2.flip(frame, 1)
+
+                    frame_update = cmodnet.update(frame, bg)
+
+                    img = Image.fromarray(frame_update)
+                    imgtk = ImageTk.PhotoImage(image=img)
+                    preview_stream.config(image=imgtk)
+                    preview_stream.image = imgtk
+
+            except:
+                print("t2 stopped")
+                break
+
+    def stream():
+        url = "http://192.168.1.11:8080/video"
+        setup_stream(0)
+        global streaming
+        global streamer
+        global frame_np
+        global fg_np
+
+        t2 = Thread(target = thread_process_stream)
+
+        while True:
+            try:
+                frame = streamer.grab_frame()
+
+                if frame is not None:
+                    frame_np = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+                    if not t2.is_alive():
+                        t2.start()
+
+            except Exception as e:
+                print(e)
+
+            if not streaming:
+                streaming = False
+                print("stopped")
+                streamer.stop()
+                break
+
+    def exit(camera_frame):
+        global isClick_camera
+        global streaming
+
+        streaming = False
+        camera_frame.destroy()
+        isClick_camera = False
+
+    def use_camera_handler():
+        global preview_stream
+        global isClick_camera
+        global streaming
+
+        if not isClick_camera:
+            mainwindow.bind('<KeyPress>', press)
+            streaming = True
+            t1 = Thread(target=stream)
+            t1.start()
+            use_camera_frame = tk.Frame(mainwindow, height= 720, width=940, bg = "#323232")
+            use_camera_frame.place(relx = 0, rely = 0)
+            # delete this label later just to display this is camera frame
+            preview_stream = tk.Label(use_camera_frame, text = "Camera Preview", font = ("Roboto", 24), fg = "#D6D2D2", bg = "#323232")
+            preview_stream.place(relx = 0, rely = 0)
+
+            tk.Button(use_camera_frame,height = 1, width = 12, text = "Exit", font = ("Roboto", 14), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,cursor = "hand2",command = lambda: exit(use_camera_frame)).place(relx=0.85,rely=0.045)
+            isClick_camera = True
 
 
     # start of main gui creationg with TkinterDnD wrapper
     mainwindow = TkinterDnD.Tk()
 
     # initialize ipbr
-    # main = ipbr.main()
+    main = ipbr.main()
 
     # load config
     conf = config.conf()
     output_loc, background_path, ifcheck_var, width_var, height_var, backgrounds_array = conf.get_conf()
 
-    # convert str to int
-    width_var = int(width_var)
-    height_var = int(height_var)
-
-    # set default background preview
-    if  len(backgrounds_array) > 0:
-        if background_path:
-            background_image = Image.open(background_path)
-            background_image.thumbnail((250, 250))
-            background_image = ImageTk.PhotoImage(background_image)
-        else:
-            background_image = None
-    else:
-        background_image = None
-
-    #global variables
+    # global variables
     height_entry_var = tk.StringVar()
     width_entry_var = tk.StringVar()
     temp = tk.BooleanVar()
@@ -674,6 +785,24 @@ if __name__ == "__main__":
     isHomeBool = True
     column_size = 4
     clicked = False
+    isClick_camera = False
+
+    # convert str to int
+    width_var = int(width_var)
+    height_var = int(height_var)
+
+    inputsize_checkbox.set(0 if ifcheck_var == 1 else 1)
+
+    # set default background preview
+    if  len(backgrounds_array) > 0:
+        if background_path:
+            background_image = Image.open(background_path)
+            background_image.thumbnail((250, 250))
+            background_image = ImageTk.PhotoImage(background_image)
+        else:
+            background_image = None
+    else:
+        background_image = None
 
     #create and assign icons image
     add_background_icon = tk.PhotoImage(file = "resources/images/add_background_icon.png")
