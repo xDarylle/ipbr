@@ -653,13 +653,25 @@ if __name__ == "__main__":
         input_gallery_gui()
         print(column_size)
 
-    def setup_stream(camera):
+    def setup_stream():
         global streamer
-        global cmodnet
+        global camera
 
+        if camera is not None:
+            streamer = ThreadedCamera(camera)
+        else:
+            print("No camera")
+
+    def set_camera(cam):
+        global camera
+
+        camera = cam
+
+
+    def initialize_stream():
+        global cmodnet
         pretrained_ckpt = "pretrained/modnet_webcam_portrait_matting.ckpt"
-        # cmodnet = cam_modnet.cam_modnet(pretrained_ckpt)
-        streamer = ThreadedCamera(camera)
+        cmodnet = cam_modnet.cam_modnet(pretrained_ckpt)
 
     def press(event):
         global frame_update
@@ -699,9 +711,11 @@ if __name__ == "__main__":
                 print("t2 stopped")
                 break
 
+
     def stream():
         url = "http://192.168.1.11:8080/video"
-        setup_stream(0)
+        set_camera(0)
+        setup_stream()
         global streaming
         global streamer
         global frame_np
@@ -741,13 +755,13 @@ if __name__ == "__main__":
         global isClick_camera
         global streaming
 
-        device_type = tk.StringVar()
-
         if not isClick_camera:
             mainwindow.bind('<KeyPress>', press)
             streaming = True
-            t1 = Thread(target=stream)
-            t1.start()
+            init_thread = Thread(target=initialize_stream)
+            init_thread.start()
+            #t1 = Thread(target=stream)
+            #t1.start()
             use_camera_frame = tk.Frame(mainwindow, height= 720, width=940, bg = "#323232")
             use_camera_frame.place(relx = 0, rely = 0)
             # delete this label later just to display this is camera frame
@@ -756,30 +770,17 @@ if __name__ == "__main__":
 
             tk.Button(use_camera_frame,height = 1, width = 12, text = "Exit", font = ("Roboto", 14), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,cursor = "hand2",command = lambda: exit(use_camera_frame)).place(relx=0.85,rely=0.045)
             isClick_camera = True
-            outer_frame = tk.Frame(use_camera_frame, height=160, width=210, bg="#127DF4")
-            outer_frame.place(relx=0.774, rely=0.14)
-            inner_frame = tk.Frame(outer_frame, height = 150, width = 200, bg = "#323232")
-            inner_frame.place(relx = 0.025, rely = 0.03)
-            tk.Label(inner_frame, text = "Choose Device Type:", font = ("Roboto", 14), fg = "#D6D2D2", bg = "#2C2B2B").place(relx=0.025,rely=0.025)
-            tk.Label(inner_frame, text="Phone", font=("Roboto", 14), fg = "#D6D2D2", bg = "#2C2B2B").place(relx=0.165,rely=0.3)
-            tk.Label(inner_frame, text="Camera", font=("Roboto", 14), fg = "#D6D2D2", bg = "#2C2B2B").place(relx=0.1, rely=0.6)
-            tk.Checkbutton(inner_frame, variable = device_type, activebackground = "#323232", bg = "#323232", onvalue = "phone", offvalue = "", cursor = "hand2", command = lambda : select_image_handler(device_type.get())).place(relx=0.5, rely=0.325)
-            tk.Checkbutton(inner_frame, variable=device_type, activebackground="#323232", bg="#323232",onvalue="camera", offvalue="", cursor = "hand2", command=lambda: select_image_handler(device_type.get())).place(relx=0.5, rely=0.625)
-
-            # just for simulation
-            # delete the function and change command to call the correct function and pass the device_type.get()  as parameter
-
-            def select_image_handler(device):
-                if device == "":
-                    print("No Value")
-                else:
-                    print(device)
 
     # start of main gui creationg with TkinterDnD wrapper
     mainwindow = TkinterDnD.Tk()
 
     # initialize ipbr
-    main = ipbr.main()
+    def initialize_ipbr():
+        global main
+        main = ipbr.main()
+
+    init_ipbr = Thread(target=initialize_ipbr)
+    init_ipbr.start()
 
     # load config
     conf = config.conf()
