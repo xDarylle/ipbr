@@ -569,16 +569,20 @@ if __name__ == "__main__":
         def on_configure(event):
             display_canvas.configure(scrollregion=display_canvas.bbox('all'))
 
+        def _on_mousewheel(event):
+            display_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
         ttkstyle = ttk.Style()
         ttkstyle.theme_use("classic")
-        ttkstyle.configure("Vertical.TScrollbar", background="#127DF4",arrowsize = 1, bordercolor="white", troughcolor = "#2C2B2B", relief = "groove")
+        ttkstyle.configure("Vertical.TScrollbar", background="#363434",arrowsize = 1, borderwidth = 0, troughcolor = "#2b2a2a", relief = "groove")
 
         display_frame = tk.Frame(foreground_input_list_box, height=720, width=927, bg="#2C2B2B")
         display_frame.place(relx=0, rely=0)
-        display_canvas = tk.Canvas(display_frame, bg="#2C2B2B", height=630, width=927, borderwidth=0, highlightthickness=0)
+        display_canvas = tk.Canvas(display_frame, bg="#2C2B2B", height=630, width=927, borderwidth=0, highlightthickness=0, )
         display_canvas.place(relx=0, rely=0)
         view_frame = tk.Frame(display_canvas, bg="#2C2B2B")
         view_frame.bind('<Configure>', on_configure)
+        mainwindow.bind("<MouseWheel>", _on_mousewheel)
         display_canvas.create_window(0, 0, window=view_frame)
         scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
         scrollbar.place(relx=1, rely=0, relheight=0.89, anchor='ne')
