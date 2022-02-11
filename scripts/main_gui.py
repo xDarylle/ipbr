@@ -1,7 +1,5 @@
-import tkinter
 import tkinter as tk
 from tkinter import ttk
-from tkinter.ttk import *
 from tkinter import filedialog
 from PIL import Image, ImageTk
 from TkinterDnD2 import DND_FILES, TkinterDnD
@@ -9,11 +7,10 @@ import os, os.path
 import sys
 from threading import *
 import cv2
-
-from scripts.config import conf
+from pygrabber.dshow_graph import FilterGraph
 
 sys.path.append('scripts')
-# import ipbr
+import ipbr
 import config
 import cam_modnet
 import thread_camera
@@ -33,8 +30,8 @@ if __name__ == "__main__":
         # create button widgets
         tk.Button(background_panel, height=20, width=20, bd=0, image=add_background_icon, cursor="hand2",
                   command=lambda: add_background(background_panel)).place(relx=0.05, rely=0.025)
-        tk.Button(background_panel, height = 1, width = 15, text = "Add Background", font = ("Roboto", 12), fg = "#ffffff", bg = "#161010", activebackground = "#858585", cursor = "hand2", command=lambda: add_background(background_panel)).place(relx=0.15, rely=0.02)
-        tk.Button(background_panel, height = 1, width = 8, text = "Close", font = ("Roboto", 12), cursor = "hand2", fg="white", bg="#303E8C", command = background_panel.destroy).place(relx = 0.75, rely = 0.015)
+        tk.Button(background_panel, height = 1, width = 15, text = "Add Background", font = ("Roboto", 12), fg = "#ffffff", bg = "#161010", activebackground = "#858585", cursor = "hand2", borderwidth=0, highlightthickness=0,command=lambda: add_background(background_panel)).place(relx=0.15, rely=0.02)
+        tk.Button(background_panel, height = 1, width = 8, text = "Close", font = ("Roboto", 12),borderwidth=0, highlightthickness=0, cursor = "hand2", fg="white", bg="#303E8C", command = background_panel.destroy).place(relx = 0.75, rely = 0.015)
         # recreate the image gallery with current image and panel as paramenter
         for img in backgrounds_array:
             create_background_gallery(img, background_panel)
@@ -129,7 +126,7 @@ if __name__ == "__main__":
 
         setting_panel = tk.Frame(mainwindow, height=720, width=350, bg="#161010")
         setting_panel.place(relx=0.730, rely=0)
-        tk.Label(setting_panel, text="Settings", font=("Roboto", 20), fg="#127DF4", bg="#161010").place(relx=0.05,
+        tk.Label(setting_panel, text="Settings", font=("Roboto", 20), fg="#4369D9", bg="#161010").place(relx=0.05,
                                                                                                         rely=0.025)
         tk.Label(setting_panel, text="Output Location", font=("Roboto", 14), fg="#D6D2D2", bg="#161010").place(relx=0.05,
                                                                                                                rely=0.1)
@@ -170,9 +167,9 @@ if __name__ == "__main__":
         width_error_label = tk.Label(setting_panel, font=("Roboto", 10), fg="#ff7045", bg="#161010")
         width_error_label.place(relx=0.575, rely=0.455)
 
-        tk.Button(setting_panel, height=2, width=30, text="Cancel", font=("Roboto", 13), fg="white", bg="#DC4343",
+        tk.Button(setting_panel, height=2, width=30, text="Cancel", font=("Roboto", 13), fg="white", bg="#DC4343", borderwidth=0, highlightthickness=0,
                   cursor="hand2", command=setting_panel.destroy).place(relx = 0.1, rely=0.85)
-        tk.Button(setting_panel, height=2, width=30, text="Apply Changes", font=("Roboto", 13), fg="white", bg="#303E8C",
+        tk.Button(setting_panel, height=2, width=30, text="Apply Changes", font=("Roboto", 13), fg="white", bg="#303E8C", borderwidth=0, highlightthickness=0,
                   cursor="hand2", command=lambda: [
                 save_settings(height_error_label, width_error_label, output_error_label, setting_panel,  ifcheck_var)]).place(
             relx=0.1, rely=0.75)
@@ -490,6 +487,7 @@ if __name__ == "__main__":
 
         row_dimension = 0
         column_cimension = 0
+
         i = 0
         for file in input_array:
             # if file is an image then create an image widget
@@ -504,6 +502,12 @@ if __name__ == "__main__":
 
                 image = ImageTk.PhotoImage(image)
                 images.append(image)
+
+                view_frame.update()
+                if view_frame is not None and view_frame.winfo_height() > 630:
+                    scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
+                    scrollbar.place(relx=1, rely=0, relheight=0.89, anchor='ne')
+                    display_canvas.configure(yscrollcommand=scrollbar.set)
 
                 if column_cimension < column_size:
                     image_frame = tk.Frame(view_frame, height=image.height(), width=image.width(), bg="#2C2B2B", bd=0, relief="groove")
@@ -539,6 +543,8 @@ if __name__ == "__main__":
         global input_array
         global view_frame
         global foreground_input_list_box
+        global display_frame
+        global display_canvas
 
         im_label_array.clear()
 
@@ -560,9 +566,6 @@ if __name__ == "__main__":
         view_frame.bind('<Configure>', on_configure)
         mainwindow.bind("<MouseWheel>", _on_mousewheel)
         display_canvas.create_window(0, 0, window=view_frame)
-        scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
-        scrollbar.place(relx=1, rely=0, relheight=0.89, anchor='ne')
-        display_canvas.configure(yscrollcommand=scrollbar.set)
 
         show_input_thread()
 
@@ -592,9 +595,6 @@ if __name__ == "__main__":
             use_cam_btn.configure(state="normal", cursor="hand2")
             column_handler_btn.configure(state="disabled", cursor="arrow")
 
-        print(isHomeBool)
-        print(len(input_array))
-
     def add_image_handler():
         global input_array
         global isHomeBool
@@ -607,13 +607,16 @@ if __name__ == "__main__":
         if len(input_array) > temp_len:
             select_btn.configure(state="normal")
             clean_btn.configure(state="normal")
-            # update_column_handler()
+            update_column_handler()
+
         isHomeBool = False
         checkI_home_handler()
 
     def update_column_handler():
         global column_size
         global view_frame
+        global display_frame
+        global display_canvas
 
         if column_size == 4:
             column_size = 2
@@ -621,20 +624,26 @@ if __name__ == "__main__":
             column_size += 1
         if column_size == 4:
             column_handler_btn.configure(image = large_image)
-            column_label.configure(text = "Large")
+            column_label.configure(text = "Small", bg = "#323232")
+            column_label.place(relx=0.24)
         elif column_size == 3:
             column_handler_btn.configure(image = medium_image)
-            column_label.configure(text="Medium")
+            column_label.configure(text="Medium", bg = "#323232")
+            column_label.place(relx = 0.235)
         elif column_size == 2:
             column_handler_btn.configure(image = small_image)
-            column_label.configure(text="Small")
+            column_label.configure(text="Large", bg = "#323232")
+            column_label.place(relx=0.24)
 
+            if view_frame is not None and view_frame.winfo_height() > 630:
+                scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
+                scrollbar.place(relx=1, rely=0, relheight=0.89, anchor='ne')
+                display_canvas.configure(yscrollcommand=scrollbar.set)
 
         for widget in foreground_input_list_box.winfo_children():
             widget.destroy()
 
         input_gallery_gui()
-        print(column_size)
 
     def setup_stream():
         global streamer
@@ -695,12 +704,12 @@ if __name__ == "__main__":
                 break
 
     def stream():
-        set_camera(0)
-        setup_stream()
         global streaming
         global streamer
         global frame_np
         global fg_np
+
+        streaming = True
 
         t2 = Thread(target = thread_process_stream)
 
@@ -731,38 +740,50 @@ if __name__ == "__main__":
         camera_frame.destroy()
         isClick_camera = False
 
+    def start_stream():
+        global streaming
+        global camera_chosen
+
+        # setup camera
+        set_camera(cam_lists.index(camera_chosen.get()))
+        setup_stream()
+
+        t1 = Thread(target=stream)
+        t1.start()
+
+        mainwindow.bind('<KeyPress>', press)
+
     def use_camera_handler():
         global preview_stream
         global isClick_camera
-        global streaming
+        global camera_chosen
+        global cam_lists
+        global init_thread
 
         if not isClick_camera:
-            # mainwindow.bind('<KeyPress>', press)
-            # streaming = True
-            # init_thread = Thread(target=initialize_stream)
-            # init_thread.start()
-            #t1 = Thread(target=stream)
-            #t1.start()
+            init_thread = Thread(target=initialize_stream)
+            init_thread.start()
 
             camera_chosen = tk.StringVar()
-            dummycameralist = [
-                "Monday",
-                "Tuesday",
-                "Wednesday",
-                "Thursday",
-                "Friday",
-                "Saturday",
-                "Sunday"
-            ]
+
+            # get camera lists
+            graph = FilterGraph()
+            cam_lists = graph.get_input_devices()
 
             use_camera_frame = tk.Frame(mainwindow, height= 720, width=940, bg = "#323232")
             use_camera_frame.place(relx = 0, rely = 0)
 
-            dropdown = ttk.OptionMenu(use_camera_frame, camera_chosen, *dummycameralist)
-            camera_chosen.set(dummycameralist[0])
+            frame_preview = tk.Frame(use_camera_frame, width = 930, height = 609,bg = "#2C2B2B")
+            frame_preview.place(relx= 0.005, rely=0.141)
+
+            camera_chosen.set(cam_lists[0])
+            dropdown = ttk.OptionMenu(use_camera_frame, camera_chosen, cam_lists[0], *cam_lists)
             dropdown.place(relx = 0.05, rely = 0.05)
 
-            tk.Button(use_camera_frame, height = 3, width = 25, text = "Start Camera Capture", font = ("Roboto", 14), fg = "#ffffff", bg = "#4369D9",activebackground="#314d9e", borderwidth= 0, highlightthickness= 0,cursor = "hand2").place(relx=0.35,rely=0.45 )
+            tk.Button(frame_preview, height = 3, width = 25, text = "Start Camera Capture", font = ("Roboto", 14), fg = "#ffffff", bg = "#4369D9",activebackground="#314d9e", borderwidth= 0, highlightthickness= 0,cursor = "hand2", command = start_stream).place(relx=0.35,rely=0.40 )
+
+            preview_stream = tk.Label(frame_preview, bg = "#2C2B2B")
+            preview_stream.place(relx=0.1, rely=0.05)
 
             tk.Button(use_camera_frame,height = 1, width = 8, text = "Stop", font = ("Roboto", 12), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,cursor = "hand2",command = lambda: exit(use_camera_frame)).place(relx=0.85,rely=0.045)
             isClick_camera = True
@@ -869,42 +890,41 @@ if __name__ == "__main__":
 
     #create main window widgets
     frame1 = tk.Frame(mainwindow, height= 55, width = 900, bg = "#323232").place(x=0,y=0)
-    add_btn = tk.Button(frame1, image = add_image_icon,bg = "#323232", height = 50, width = 50,  bd = 2, command = add_image_handler, cursor = "hand2")
+    add_btn = tk.Button(frame1, image = add_image_icon,bg = "#323232", height = 50, width = 50,  bd = 2, command = add_image_handler, cursor = "hand2", borderwidth= 0 , highlightthickness= 0)
     add_btn.place(relx = 0.015, rely = 0.015)
-    tk.Label(frame1, text = "Add Image", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#2C2B2B").place(relx = 0.0075, rely = 0.1)
-    select_btn = tk.Button(frame1, image = select_image, command = lambda : [del_btn.configure(state="normal"), select_img()], bg = "#323232", height = 50, width = 50, )
+    tk.Label(frame1, text = "Add", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232").place(relx = 0.02, rely = 0.1)
+    select_btn = tk.Button(frame1, image = select_image, command = lambda : [del_btn.configure(state="normal"), select_img()], bg = "#323232", height = 50, width = 50, borderwidth= 0 , highlightthickness= 0)
     select_btn.place(relx=0.07,rely=0.015)
-    tk.Label(frame1, text="Select", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#2C2B2B").place(relx = 0.0725, rely = 0.1)
-    del_btn = tk.Button(frame1, image = delete_image, command = delete_selected, bg = "#323232", height = 50, width = 50,)
+    tk.Label(frame1, text="Select", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232").place(relx = 0.0725, rely = 0.1)
+    del_btn = tk.Button(frame1, image = delete_image, command = delete_selected, bg = "#323232", height = 50, width = 50,borderwidth= 0 , highlightthickness= 0)
     del_btn.place(relx = 0.125, rely = 0.015)
-    tk.Label(frame1, text="Delete", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#2C2B2B").place(relx = 0.1275, rely = 0.1)
-    clean_btn = tk.Button(frame1, image = clear_image, bg = "#323232", height = 50, width = 50,command = clear)
+    tk.Label(frame1, text="Delete", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232").place(relx = 0.1275, rely = 0.1)
+    clean_btn = tk.Button(frame1, image = clear_image, bg = "#323232", height = 50, width = 50,command = clear, borderwidth= 0 , highlightthickness= 0)
     clean_btn.place(relx = 0.18, rely = 0.015)
-    tk.Label(frame1, text="Clear", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#2C2B2B").place(relx = 0.1865, rely = 0.1)
-    column_handler_btn = tk.Button(frame1, image = large_image, bg = "#323232", height = 50, width = 50, command = update_column_handler)
+    tk.Label(frame1, text="Clear", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232").place(relx = 0.1865, rely = 0.1)
+    column_handler_btn = tk.Button(frame1, image = large_image, bg = "#323232", height = 50, width = 50, command = update_column_handler, borderwidth= 0 , highlightthickness= 0)
     column_handler_btn.place(relx=0.235,rely=0.015)
-    column_label = tk.Label(frame1, text = "Large", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#2C2B2B")
+    column_label = tk.Label(frame1, text = "Large", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232")
     column_label.place(relx = 0.24, rely = 0.1)
-    use_cam_btn = tk.Button(frame1, image = camera_image, command =use_camera_handler,bg = "#323232", height = 50, width = 50,)
+    use_cam_btn = tk.Button(frame1, image = camera_image, command =use_camera_handler,bg = "#323232", height = 50, width = 50,borderwidth= 0 , highlightthickness= 0)
     use_cam_btn.place(relx=0.655,rely=0.015)
-    tk.Label(frame1, text="Use Camera", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#2C2B2B").place(relx = 0.6425, rely = 0.1)
+    tk.Label(frame1, text="Use Camera", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232").place(relx = 0.6425, rely = 0.1)
 
-
-    foreground_input_list_box = tk.Listbox(mainwindow, selectmode= tk.SINGLE, width = 200, height = 35, bg = "#2C2B2B", bd = 1, relief = "groove", borderwidth= 0, highlightthickness=0 )
+    foreground_input_list_box = tk.Listbox(mainwindow, selectmode= tk.SINGLE, width = 200, height = 38, bg = "#2C2B2B", bd = 1, relief = "groove", borderwidth= 0, highlightthickness=0 )
     foreground_input_list_box.drop_target_register(DND_FILES)
     foreground_input_list_box.dnd_bind("<<Drop>>", drop_inside_list_box)
-    foreground_input_list_box.place(relx= 0.005, rely=0.15)
+    foreground_input_list_box.place(relx= 0.005, rely=0.141)
     tk.Label(foreground_input_list_box, text= "Drop image folder here", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.25, rely = 0.35)
     tk.Label(foreground_input_list_box, text= "or", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.35, rely = 0.41)
-    tk.Button(foreground_input_list_box, text = "Browse", height = 1, width=20, font = ("Roboto", 17),  fg = "#e0efff", bg = "#127DF4", activebackground="#4a9eff", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command= get_input_handler).place(relx= 0.255, rely = 0.50)
+    tk.Button(foreground_input_list_box, text = "Browse", height = 1, width=20, font = ("Roboto", 17),  fg = "#e0efff", bg = "#4369D9", activebackground="#4a9eff", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command= get_input_handler).place(relx= 0.255, rely = 0.50)
 
     #create menu frame widget
     menu_frame = tk.Frame(mainwindow, height= 720, width=350, relief="groove", bg = "#323232")
     menu_frame.place(relx= 0.73, rely= 0)
     #tk.Label(menu_frame, text = "Chosen Background Image Preview: ", font = ("Roboto", 12), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.05, rely = 0.02)
-    background_preview = tk.Label(menu_frame, height = 10, width = 43, bg = "#2C2B2B", bd =2, relief = "groove", borderwidth= 0, highlightthickness=0)
+    background_preview = tk.Label(menu_frame, height = 10, width = 44, bg = "#2C2B2B", bd =2, relief = "groove", borderwidth= 0, highlightthickness=0)
     background_preview.place(relx = 0.05, rely = 0.03)
-    background_preview.configure(height = 160, width = 310, image = background_image)
+    background_preview.configure(height=160, width=310, image=background_image)
     preview_frame = tk.Frame(menu_frame, height= 330, width= 315, bg = "#323232")
     preview_frame.place(relx=0.055, rely=0.40)
     preview = tk.Label(preview_frame, height= 33, width= 315, bg = "#2C2B2B" )
