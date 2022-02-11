@@ -13,36 +13,7 @@ sys.path.append('scripts')
 import ipbr
 import config
 import cam_modnet
-
-class ThreadedCamera(object):
-    def __init__(self, source):
-
-        self.capture = cv2.VideoCapture(source)
-        self.thread = Thread(target = self.update, args = ())
-        self.thread.daemon = True
-        self.stopped = False
-        self.thread.start()
-
-        self.status = False
-        self.frame  = None
-
-    def update(self):
-        while True:
-            if not self.stopped:
-                if self.capture.isOpened():
-                    (self.status, self.frame) = self.capture.read()
-
-            if self.stopped:
-                break
-
-    def grab_frame(self):
-        if self.status:
-            return self.frame
-        return None
-
-    def stop(self):
-        self.stopped = True
-        print("camera stopped", self.stopped)
+import thread_camera
 
 if __name__ == "__main__":
     def background_panel_gui():
@@ -658,7 +629,7 @@ if __name__ == "__main__":
         global camera
 
         if camera is not None:
-            streamer = ThreadedCamera(camera)
+            streamer = thread_camera.ThreadedCamera(camera)
         else:
             print("No camera")
 
@@ -667,9 +638,9 @@ if __name__ == "__main__":
 
         camera = cam
 
-
     def initialize_stream():
         global cmodnet
+
         pretrained_ckpt = "pretrained/modnet_webcam_portrait_matting.ckpt"
         cmodnet = cam_modnet.cam_modnet(pretrained_ckpt)
 
@@ -711,9 +682,7 @@ if __name__ == "__main__":
                 print("t2 stopped")
                 break
 
-
     def stream():
-        url = "http://192.168.1.11:8080/video"
         set_camera(0)
         setup_stream()
         global streaming
