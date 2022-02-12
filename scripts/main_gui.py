@@ -8,12 +8,13 @@ import sys
 from threading import *
 import cv2
 from pygrabber.dshow_graph import FilterGraph
+import time
+import numpy as np
 
 sys.path.append('scripts')
 import ipbr
 import config
 import cam_modnet
-import thread_camera
 
 if __name__ == "__main__":
     def background_panel_gui():
@@ -645,19 +646,14 @@ if __name__ == "__main__":
 
         input_gallery_gui()
 
-    def setup_stream():
-        global streamer
-        global camera
-
-        if camera is not None:
-            streamer = thread_camera.ThreadedCamera(camera)
-        else:
-            print("No camera")
-
-    def set_camera(cam):
-        global camera
-
-        camera = cam
+    # def setup_stream():
+    #     global streamer
+    #     global camera
+    #
+    #     if camera is not None:
+    #         streamer = thread_camera.ThreadedCamera(camera)
+    #     else:
+    #         print("No camera")
 
     def initialize_stream():
         global cmodnet
@@ -671,7 +667,11 @@ if __name__ == "__main__":
         global imm
 
         if frame_update is not None:
-            img = Image.fromarray(frame_update)
+            img = Image.fromarray(np.uint8(frame_update))
+
+            name = time.strftime("%Y%m%d-%H%M%S") + '.png'
+            img.save(os.path.join(output_loc, name))
+
             img.thumbnail((400,400))
             imgtk = ImageTk.PhotoImage(image=img)
             imm.append(imgtk)
@@ -683,8 +683,13 @@ if __name__ == "__main__":
         global frame_np
         global preview_stream
         global t1
+        global load_lbl
+        global camera
+        global width_var
+        global height_var
 
         bg = Image.open(background_path)
+
         while True:
             try:
                 if frame_np is not None:
@@ -694,6 +699,7 @@ if __name__ == "__main__":
 
                     frame_update = cmodnet.update(frame, bg)
 
+                    load_lbl.destroy()
                     img = Image.fromarray(frame_update)
                     imgtk = ImageTk.PhotoImage(image=img)
                     preview_stream.config(image=imgtk)
@@ -708,47 +714,66 @@ if __name__ == "__main__":
         global streamer
         global frame_np
         global fg_np
+        global load_lbl
+        global cap
 
         streaming = True
 
         t2 = Thread(target = thread_process_stream)
+        load_lbl.configure(text = "Connecting to camera")
+
+        cap = cv2.VideoCapture(camera)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
         while True:
-            try:
-                frame = streamer.grab_frame()
+            _, frame = cap.read()
 
-                if frame is not None:
-                    frame_np = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            if frame is not None:
+                frame_np = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-                    if not t2.is_alive():
-                        t2.start()
-
-            except Exception as e:
-                print(e)
+                if not t2.is_alive():
+                    t2.start()
 
             if not streaming:
                 streaming = False
                 print("stopped")
-                streamer.stop()
                 break
 
     def exit(camera_frame):
         global isClick_camera
         global streaming
+        global cap
+
+        cap.release()
+        cv2.destroyAllWindows()
 
         streaming = False
-        camera_frame.destroy()
         isClick_camera = False
+
+        camera_frame.destroy()
 
     def start_stream():
         global streaming
         global camera_chosen
+        global camera
+        global cmodnet
+        global start_cam_btn
+        global frame_preview
+        global load_lbl
+
+        start_cam_btn.destroy()
+        load_lbl = tk.Label(frame_preview, text="Setting up camera", font=("Roboto", 20), fg="#D6D2D2",
+                            bg="#2C2B2B")
+        load_lbl.place(relx=0.35, rely=0.40)
 
         # setup camera
-        set_camera(cam_lists.index(camera_chosen.get()))
-        setup_stream()
+        camera = cam_lists.index(camera_chosen.get())
+        #thread_setup = Thread(target = setup_stream)
+        #thread_setup.start()
 
         t1 = Thread(target=stream)
+        time.sleep(2)
         t1.start()
 
         mainwindow.bind('<KeyPress>', press)
@@ -759,6 +784,8 @@ if __name__ == "__main__":
         global camera_chosen
         global cam_lists
         global init_thread
+        global start_cam_btn
+        global frame_preview
 
         if not isClick_camera:
             init_thread = Thread(target=initialize_stream)
@@ -780,7 +807,8 @@ if __name__ == "__main__":
             dropdown = ttk.OptionMenu(use_camera_frame, camera_chosen, cam_lists[0], *cam_lists)
             dropdown.place(relx = 0.05, rely = 0.05)
 
-            tk.Button(frame_preview, height = 3, width = 25, text = "Start Camera Capture", font = ("Roboto", 14), fg = "#ffffff", bg = "#4369D9",activebackground="#314d9e", borderwidth= 0, highlightthickness= 0,cursor = "hand2", command = start_stream).place(relx=0.35,rely=0.40 )
+            start_cam_btn = tk.Button(frame_preview, height = 3, width = 25, text = "Start Camera Capture", font = ("Roboto", 14), fg = "#ffffff", bg = "#4369D9",activebackground="#314d9e", borderwidth= 0, highlightthickness= 0,cursor = "hand2", command = start_stream)
+            start_cam_btn.place(relx=0.35,rely=0.40 )
 
             preview_stream = tk.Label(frame_preview, bg = "#2C2B2B")
             preview_stream.place(relx=0.1, rely=0.05)
@@ -794,7 +822,7 @@ if __name__ == "__main__":
     # initialize ipbr
     def initialize_ipbr():
         global main
-        # main = ipbr.main()
+        main = ipbr.main()
 
     init_ipbr = Thread(target=initialize_ipbr)
     init_ipbr.start()
