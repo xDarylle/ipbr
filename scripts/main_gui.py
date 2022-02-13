@@ -10,11 +10,12 @@ import cv2
 from pygrabber.dshow_graph import FilterGraph
 import time
 import numpy as np
+from error_panel import error_handler
 
 sys.path.append('scripts')
-import ipbr
+# import ipbr
 import config
-import cam_modnet
+# import cam_modnet
 
 if __name__ == "__main__":
     def background_panel_gui():
@@ -328,10 +329,10 @@ if __name__ == "__main__":
                     name = os.path.basename(im)
                     name = name.split('.')[0] + '.png'
 
-                    if inputsize_checkbox.get():
-                        img = main.process_v2(img, background)
-                    else:
-                        img = main.process(img, background, (width_var, height_var))
+                    # if inputsize_checkbox.get():
+                    #     img = main.process_v2(img, background)
+                    # else:
+                    #     img = main.process(img, background, (width_var, height_var))
 
                     img.save(os.path.join(output_loc, name))
                     update_preview(img)
@@ -660,7 +661,7 @@ if __name__ == "__main__":
         global cmodnet
 
         pretrained_ckpt = "pretrained/modnet_webcam_portrait_matting.ckpt"
-        cmodnet = cam_modnet.cam_modnet(pretrained_ckpt)
+        # cmodnet = cam_modnet.cam_modnet(pretrained_ckpt)
 
     def press(event):
         global frame_update
@@ -743,10 +744,12 @@ if __name__ == "__main__":
                 if not t2.is_alive():
                     t2.start()
 
-    def exit(camera_frame):
+    def stop_camera_handler():
         global isClick_camera
         global streaming
         global cap
+
+        print("Clicked stop_camera_handler")
 
         streaming = False
 
@@ -757,7 +760,6 @@ if __name__ == "__main__":
             streaming = False
 
         isClick_camera = False
-        camera_frame.destroy()
 
     def start_stream():
         global camera_chosen
@@ -800,7 +802,7 @@ if __name__ == "__main__":
         if not isClick_camera:
             init_thread = Thread(target=initialize_stream)
             init_thread.daemon = True
-            init_thread.start()
+            # init_thread.start()
 
             camera_chosen = tk.StringVar()
 
@@ -815,16 +817,22 @@ if __name__ == "__main__":
             frame_preview.place(relx= 0.005, rely=0.141)
 
             camera_chosen.set(cam_lists[0])
+            tk.Label(use_camera_frame, font = ("Roboto", 12), text = "Choose Camera Device: ", fg = "#D6D2D2", bg = "#2C2B2B").place(relx = 0.095, rely = 0.065)
             dropdown = ttk.OptionMenu(use_camera_frame, camera_chosen, cam_lists[0], *cam_lists)
-            dropdown.place(relx = 0.05, rely = 0.05)
+            dropdown.place(relx = 0.1, rely = 0.1)
 
             start_cam_btn = tk.Button(frame_preview, height = 3, width = 25, text = "Start Camera Capture", font = ("Roboto", 14), fg = "#ffffff", bg = "#4369D9",activebackground="#314d9e", borderwidth= 0, highlightthickness= 0,cursor = "hand2", command = start_stream)
             start_cam_btn.place(relx=0.35,rely=0.40 )
 
             preview_stream = tk.Label(frame_preview, bg = "#2C2B2B")
 
-            tk.Button(use_camera_frame,height = 1, width = 8, text = "Stop", font = ("Roboto", 12), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,cursor = "hand2",command = lambda: exit(use_camera_frame)).place(relx=0.85,rely=0.045)
+            tk.Button(use_camera_frame,height = 1, width = 8, text = "Stop", font = ("Roboto", 12), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,cursor = "hand2",command = stop_camera_handler).place(relx=0.75,rely=0.045)
+            tk.Button(use_camera_frame,height = 1, width = 8, text = "Exit", font = ("Roboto", 12), fg = "#e0efff", bg = "#8f2615", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,cursor = "hand2",command = lambda: [use_camera_frame.destroy(),exit_handler()]).place(relx=0.85,rely=0.045)
             isClick_camera = True
+
+            def exit_handler():
+                global isClick_camera
+                isClick_camera = False
 
     # start of main gui creationg with TkinterDnD wrapper
     mainwindow = TkinterDnD.Tk()
@@ -832,7 +840,7 @@ if __name__ == "__main__":
     # initialize ipbr
     def initialize_ipbr():
         global main
-        main = ipbr.main()
+        # main = ipbr.main()
 
     init_ipbr = Thread(target=initialize_ipbr)
     init_ipbr.start()
@@ -865,6 +873,8 @@ if __name__ == "__main__":
     column_size = 4
     clicked = False
     isClick_camera = False
+    mainwindow_width = 1200
+    mainwindow_height = 720
 
     # convert str to int
     width_var = int(width_var)
@@ -922,9 +932,13 @@ if __name__ == "__main__":
     add_background_icon = tk.PhotoImage(file = "resources/images/add_background_icon.png")
     icon2 = ("resources/images/logo.ico")
 
+
+    # set mainwindow to pop in center
+    screen_width = mainwindow.winfo_screenwidth()
+    screen_height = mainwindow.winfo_screenheight()
     #configure mainwindow / root
     mainwindow.iconbitmap(icon2)
-    mainwindow.geometry("1280x720")
+    mainwindow.geometry(f"{mainwindow_width}x{mainwindow_height}+{int((screen_width / 2) - (mainwindow_width / 2))}+{int((screen_height / 2) - (mainwindow_height / 2))}")
     mainwindow.title("Intelligent Portrait Background Replacement")
     mainwindow.configure(bg = "#323232")
     mainwindow.resizable(False, False)
@@ -950,6 +964,9 @@ if __name__ == "__main__":
     use_cam_btn = tk.Button(frame1, image = camera_image, command =use_camera_handler,bg = "#323232", height = 50, width = 50,borderwidth= 0 , highlightthickness= 0)
     use_cam_btn.place(relx=0.655,rely=0.015)
     tk.Label(frame1, text="Use Camera", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232").place(relx = 0.6425, rely = 0.1)
+    # delete this. only for testing purposes
+    sample_error = "This is the error message"
+    tk.Button(frame1, text = "test", height = 2, width = 10, command = lambda: error_handler(sample_error)).place(relx = 0.45, rely = 0.05)
 
     foreground_input_list_box = tk.Listbox(mainwindow, selectmode= tk.SINGLE, width = 200, height = 38, bg = "#2C2B2B", bd = 1, relief = "groove", borderwidth= 0, highlightthickness=0 )
     foreground_input_list_box.drop_target_register(DND_FILES)
