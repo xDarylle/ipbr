@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
 import image
+import cv2
 
 from scripts.MODNet.src.models.modnet import MODNet
 
@@ -37,8 +38,18 @@ class cam_modnet():
         self.im = image._image_()
 
     # replace background of current frame
-    def update(self, frame, bg):
-        frame_PIL = Image.fromarray(frame)
+    def update(self, frame, bg, is_not_custom, size):
+        container = Image.new("RGBA", (910, 512), "WHITE")
+        frame = Image.fromarray(frame).convert("RGBA")
+
+        new_height = int(frame.height * 920 / frame.width)
+        frame = frame.resize((910, new_height), Image.ANTIALIAS)
+
+        container.paste(frame, (0, 0), frame)
+        frame_np = cv2.cvtColor(np.array(container), cv2.COLOR_BGR2RGB)
+        frame_np = frame_np[:, 120:792, :]
+
+        frame_PIL = Image.fromarray(frame_np)
         frame_tensor = self.im_transform(frame_PIL)
         frame_tensor = frame_tensor[None, :, :, :]
 
@@ -52,26 +63,30 @@ class cam_modnet():
         matte_tensor = matte_tensor.repeat(1, 3, 1, 1)
         matte_np = matte_tensor[0].data.cpu().numpy().transpose(1, 2, 0)
 
-        matte = Image.fromarray(np.uint8(matte_np * 255))
-        frame = Image.fromarray(frame)
+        frame_np = cv2.cvtColor(frame_np, cv2.COLOR_RGB2BGR)
 
-        def_size = frame.size
-        #
-        # #  rescale
-        # frame = self.im.rescale(frame, def_size, True)
-        # matte = self.im.rescale(matte, def_size, True)
+        if is_not_custom:
+            h,w = frame_np.shape[0:2]
+            def_size = (w,h)
+        else:
+            def_size = size
+            frame_np = Image.fromarray(frame_np).convert("RGBA")
+            matte_np = Image.fromarray(np.uint8(matte_np * 255)).convert("RGBA")
+            frame_np = self.im.rescale(frame_np, def_size, False)
+            matte_np = self.im.rescale(matte_np, def_size, False)
+            frame_np = self.im.paste(frame_np, matte_np, def_size)
+            matte_np = self.im.paste(matte_np, matte_np, def_size)
+            frame_np = self.im.unify_channel(frame_np)
+            matte_np = self.im.unify_channel(matte_np)
+            frame_np = np.array(frame_np)
+            matte_np = np.array(matte_np)/255
+
         bg = self.im.rescale(bg, def_size, False)
-        #
-        # # paste
-        # foreground = self.im.paste(frame, matte, def_size)
-        # matte = self.im.paste(matte, matte, def_size)
-        background = self.im.paste(bg, bg, def_size)
+        bg = self.im.paste(bg, bg, def_size)
+        bg = self.im.unify_channel(bg)
+        bg = np.array(bg)
 
-        #replace background of the frame
-        frame = self.im.unify_channel(frame)
-        matte = self.im.unify_channel(matte)
-        background = self.im.unify_channel(background)
-        new_image = self.im.change_background(frame, matte, background)
+        fg_np = matte_np * frame_np + (1 - matte_np) * bg
 
-        return np.array(new_image)
+        return np.array(np.uint8(fg_np))
 

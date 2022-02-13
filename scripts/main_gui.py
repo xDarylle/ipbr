@@ -120,7 +120,6 @@ if __name__ == "__main__":
         global inputsize_checkbox
 
         temp.set(ifcheck_var)
-        inputsize_checkbox.set(0 if ifcheck_var == 1 else 1)
 
         height_entry_var.set(str(height_var))
         width_entry_var.set(str(width_var))
@@ -297,6 +296,7 @@ if __name__ == "__main__":
 
     def start_thread():
         t1 = Thread(target=start_process)
+        t1.daemon = True
         t1.start()
 
     def start_process():
@@ -478,6 +478,7 @@ if __name__ == "__main__":
 
     def show_input_thread():
         t3 = Thread(target = create_container)
+        t3.daemon = True
         t3.start()
 
     def create_container():
@@ -682,31 +683,35 @@ if __name__ == "__main__":
         global streaming
         global frame_np
         global preview_stream
-        global t1
         global load_lbl
         global camera
         global width_var
         global height_var
+        global t1
 
         bg = Image.open(background_path)
 
         while True:
             try:
-                if frame_np is not None:
-                    frame = cv2.resize(frame_np, (910, 512), cv2.INTER_AREA)
-                    frame = frame[:, 120:792, :]
-                    frame = cv2.flip(frame, 1)
-
-                    frame_update = cmodnet.update(frame, bg)
+                if frame_np is not None and streaming:
+                    frame_update = cmodnet.update(frame_np, bg, inputsize_checkbox.get(), (width_var, height_var))
 
                     load_lbl.destroy()
                     img = Image.fromarray(frame_update)
+                    img.thumbnail((900,600))
                     imgtk = ImageTk.PhotoImage(image=img)
                     preview_stream.config(image=imgtk)
                     preview_stream.image = imgtk
 
-            except:
+                    x = ((930 - img.width) / 2) / 930
+
+                    y = ((600 - img.height) / 2) / 600
+
+                    preview_stream.place(relx=x, rely=y)
+
+            except Exception as e:
                 print("t2 stopped")
+                streaming = False
                 break
 
     def stream():
@@ -717,50 +722,54 @@ if __name__ == "__main__":
         global load_lbl
         global cap
 
-        streaming = True
-
         t2 = Thread(target = thread_process_stream)
+        t2.daemon = True
         load_lbl.configure(text = "Connecting to camera")
 
-        cap = cv2.VideoCapture(camera)
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+        cap = cv2.VideoCapture(camera, cv2.CAP_DSHOW)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
         while True:
+            if not streaming:
+                print("stopped")
+                break
+
             _, frame = cap.read()
 
-            if frame is not None:
+            if frame is not None and streaming:
                 frame_np = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
                 if not t2.is_alive():
                     t2.start()
-
-            if not streaming:
-                streaming = False
-                print("stopped")
-                break
 
     def exit(camera_frame):
         global isClick_camera
         global streaming
         global cap
 
-        cap.release()
-        cv2.destroyAllWindows()
-
         streaming = False
-        isClick_camera = False
 
+        try:
+            cap.release()
+            cv2.destroyAllWindows()
+        except:
+            streaming = False
+
+        isClick_camera = False
         camera_frame.destroy()
 
     def start_stream():
-        global streaming
         global camera_chosen
         global camera
         global cmodnet
         global start_cam_btn
         global frame_preview
         global load_lbl
+        global streaming
+        global t1
+
+        streaming = True
 
         start_cam_btn.destroy()
         load_lbl = tk.Label(frame_preview, text="Setting up camera", font=("Roboto", 20), fg="#D6D2D2",
@@ -773,6 +782,7 @@ if __name__ == "__main__":
         #thread_setup.start()
 
         t1 = Thread(target=stream)
+        t1.daemon = True
         time.sleep(2)
         t1.start()
 
@@ -789,6 +799,7 @@ if __name__ == "__main__":
 
         if not isClick_camera:
             init_thread = Thread(target=initialize_stream)
+            init_thread.daemon = True
             init_thread.start()
 
             camera_chosen = tk.StringVar()
@@ -811,7 +822,6 @@ if __name__ == "__main__":
             start_cam_btn.place(relx=0.35,rely=0.40 )
 
             preview_stream = tk.Label(frame_preview, bg = "#2C2B2B")
-            preview_stream.place(relx=0.1, rely=0.05)
 
             tk.Button(use_camera_frame,height = 1, width = 8, text = "Stop", font = ("Roboto", 12), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,cursor = "hand2",command = lambda: exit(use_camera_frame)).place(relx=0.85,rely=0.045)
             isClick_camera = True
@@ -860,7 +870,10 @@ if __name__ == "__main__":
     width_var = int(width_var)
     height_var = int(height_var)
 
-    inputsize_checkbox.set(0 if ifcheck_var == 1 else 1)
+    if ifcheck_var == '1':
+        inputsize_checkbox.set(False)
+    else:
+        inputsize_checkbox.set(True)
 
     # set default background preview
     if  len(backgrounds_array) > 0:
