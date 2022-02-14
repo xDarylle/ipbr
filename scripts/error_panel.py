@@ -8,4 +8,7 @@ def error_handler(error):
     error_window.title("ERROR!")
     error_window.configure(bg = "#383737")
 
-    label = tk.Label(error_window, text= error, font = ("Roboto", 22), fg = "#ffffff", bg = "#383737").place(relx = 0.075, rely = 0.3)
+    label = tk.Label(error_window, text= error, font = ("Roboto", 15), fg = "#ffffff", bg = "#383737")
+    label.place(relx=0.5, rely=0.5, anchor='center')
+
+

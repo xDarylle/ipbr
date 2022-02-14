@@ -13,9 +13,9 @@ import numpy as np
 from error_panel import error_handler
 
 sys.path.append('scripts')
-# import ipbr
+import ipbr
 import config
-# import cam_modnet
+import cam_modnet
 
 if __name__ == "__main__":
     def background_panel_gui():
@@ -33,7 +33,7 @@ if __name__ == "__main__":
         tk.Button(background_panel, height=20, width=20, bd=0, image=add_background_icon, cursor="hand2",
                   command=lambda: add_background(background_panel)).place(relx=0.05, rely=0.025)
         tk.Button(background_panel, height = 1, width = 15, text = "Add Background", font = ("Roboto", 12), fg = "#ffffff", bg = "#161010", activebackground = "#858585", cursor = "hand2", borderwidth=0, highlightthickness=0,command=lambda: add_background(background_panel)).place(relx=0.15, rely=0.02)
-        tk.Button(background_panel, height = 1, width = 8, text = "Close", font = ("Roboto", 12),borderwidth=0, highlightthickness=0, cursor = "hand2", fg="white", bg="#303E8C", command = background_panel.destroy).place(relx = 0.75, rely = 0.015)
+        tk.Button(background_panel, height = 1, width = 8, text = "Close", font = ("Roboto", 12),borderwidth=0, highlightthickness=0, cursor = "hand2", fg="white", bg="#303E8C", command = background_panel.destroy).place(relx = 0.7, rely = 0.02)
         # recreate the image gallery with current image and panel as paramenter
         for img in backgrounds_array:
             create_background_gallery(img, background_panel)
@@ -52,7 +52,8 @@ if __name__ == "__main__":
                 conf.set_array_backgrounds(backgrounds_array)
                 conf.write()
         else:
-            print("Exceeded Number of Backgrounds")
+            text = "Exceeded Number of Backgrounds"
+            error_handler(text)
 
     def create_background_gallery(image_url, panel):
         # acces y index
@@ -91,7 +92,7 @@ if __name__ == "__main__":
 
         backgrounds_array.remove(image_url)
         if len(backgrounds_array) == 0:
-            background_preview.configure(image = "")
+            background_preview.configure(height=160, width=310, image = "")
             conf.set_background("")
 
         conf.set_array_backgrounds(backgrounds_array)
@@ -313,7 +314,7 @@ if __name__ == "__main__":
         global inputsize_checkbox
 
         #check if all needed variables are populated
-        if(background_path != None and input_array != "" and width_var != 0 and width_var != 0 and output_loc != ""):
+        try:
             background = Image.open(background_path)
             i = 0
             for im in input_array:
@@ -323,30 +324,28 @@ if __name__ == "__main__":
                 if i > 0:
                     im_label_array[i-1].configure(text= "Done")
 
-                print("Processing: " + im)
                 try:
                     img = Image.open(im)
                     name = os.path.basename(im)
                     name = name.split('.')[0] + '.png'
 
-                    # if inputsize_checkbox.get():
-                    #     img = main.process_v2(img, background)
-                    # else:
-                    #     img = main.process(img, background, (width_var, height_var))
+                    if inputsize_checkbox.get():
+                         img = main.process_v2(img, background)
+                    else:
+                         img = main.process(img, background, (width_var, height_var))
 
                     img.save(os.path.join(output_loc, name))
                     update_preview(img)
                 except Exception as e:
-                    print(e)
+                    error_handler(e)
 
                 if i == len(input_array) - 1:
                     im_label_array[i].configure(text="Done")
 
                 i += 1
-
-            print("DONE!")
-        else:
-            print("Some Needed Parameters are not defined!")
+        except:
+            text = "Some Parameters are not defined!"
+            error_handler(text)
 
         column_size = 4
 
@@ -497,9 +496,9 @@ if __name__ == "__main__":
             try:
                 image = Image.open(file)
                 if column_size == 4:
-                    image.thumbnail((220, 220), resample=1)
+                    image.thumbnail((205, 205), resample=1)
                 if column_size == 3:
-                    image.thumbnail((300, 300), resample=1)
+                    image.thumbnail((280, 280), resample=1)
                 if column_size == 2:
                     image.thumbnail((420, 420), resample=1)
 
@@ -518,7 +517,7 @@ if __name__ == "__main__":
                     # change the h and w of tk.Button when trying display the image
                     container = tk.Button(image_frame, image=image, borderwidth= 0, highlightthickness=0, command=lambda id=i :click_image(id))
                     container_array.append(container)
-                    container.place(relx=0.1, rely=0.1)
+                    container.place(relx=0.05, rely=0.1)
                     im_label = tk.Label(image_frame)
                     im_label_array.append(im_label)
                     column_cimension += 1
@@ -561,9 +560,9 @@ if __name__ == "__main__":
         ttkstyle.theme_use("classic")
         ttkstyle.configure("Vertical.TScrollbar", background="#363434",arrowsize = 1, borderwidth = 0, troughcolor = "#2b2a2a", relief = "groove")
 
-        display_frame = tk.Frame(foreground_input_list_box, height=720, width=927, bg="#2C2B2B")
+        display_frame = tk.Frame(foreground_input_list_box, height=720, width=870, bg="#2C2B2B")
         display_frame.place(relx=0, rely=0)
-        display_canvas = tk.Canvas(display_frame, bg="#2C2B2B", height=630, width=927, borderwidth=0, highlightthickness=0, )
+        display_canvas = tk.Canvas(display_frame, bg="#2C2B2B", height=630, width=960, borderwidth=0, highlightthickness=0, )
         display_canvas.place(relx=0, rely=0)
         view_frame = tk.Frame(display_canvas, bg="#2C2B2B")
         view_frame.bind('<Configure>', on_configure)
@@ -648,20 +647,15 @@ if __name__ == "__main__":
 
         input_gallery_gui()
 
-    # def setup_stream():
-    #     global streamer
-    #     global camera
-    #
-    #     if camera is not None:
-    #         streamer = thread_camera.ThreadedCamera(camera)
-    #     else:
-    #         print("No camera")
-
     def initialize_stream():
         global cmodnet
 
-        pretrained_ckpt = "pretrained/modnet_webcam_portrait_matting.ckpt"
-        # cmodnet = cam_modnet.cam_modnet(pretrained_ckpt)
+        try:
+            pretrained_ckpt = "pretrained/modnet_webcam_portrait_matting.ckpt"
+            cmodnet = cam_modnet.cam_modnet(pretrained_ckpt)
+        except:
+            text = "Pretrained model is not present!"
+            error_handler(text)
 
     def press(event):
         global frame_update
@@ -689,8 +683,7 @@ if __name__ == "__main__":
         global width_var
         global height_var
         global t1
-
-        bg = Image.open(background_path)
+        global bg
 
         while True:
             try:
@@ -705,13 +698,11 @@ if __name__ == "__main__":
                     preview_stream.image = imgtk
 
                     x = ((930 - img.width) / 2) / 930
-
                     y = ((600 - img.height) / 2) / 600
 
                     preview_stream.place(relx=x, rely=y)
 
             except Exception as e:
-                print("t2 stopped")
                 streaming = False
                 break
 
@@ -733,7 +724,6 @@ if __name__ == "__main__":
 
         while True:
             if not streaming:
-                print("stopped")
                 break
 
             _, frame = cap.read()
@@ -748,18 +738,23 @@ if __name__ == "__main__":
         global isClick_camera
         global streaming
         global cap
-
-        print("Clicked stop_camera_handler")
+        global preview_stream
+        global start_cam_btn
 
         streaming = False
+
+        preview_stream.destroy()
+
+        start_cam_btn = tk.Button(frame_preview, height=3, width=25, text="Start Camera Capture", font=("Roboto", 14),
+                                  fg="#ffffff", bg="#4369D9", activebackground="#314d9e", borderwidth=0,
+                                  highlightthickness=0, cursor="hand2", command=start_stream)
+        start_cam_btn.place(relx=0.35, rely=0.40)
 
         try:
             cap.release()
             cv2.destroyAllWindows()
         except:
             streaming = False
-
-        isClick_camera = False
 
     def start_stream():
         global camera_chosen
@@ -770,28 +765,35 @@ if __name__ == "__main__":
         global load_lbl
         global streaming
         global t1
+        global bg
+        global preview_stream
 
-        streaming = True
+        preview_stream = tk.Label(frame_preview, bg="#2C2B2B")
 
-        start_cam_btn.destroy()
-        load_lbl = tk.Label(frame_preview, text="Setting up camera", font=("Roboto", 20), fg="#D6D2D2",
-                            bg="#2C2B2B")
-        load_lbl.place(relx=0.35, rely=0.40)
+        try:
+            bg = Image.open(background_path)
+            streaming = True
 
-        # setup camera
-        camera = cam_lists.index(camera_chosen.get())
-        #thread_setup = Thread(target = setup_stream)
-        #thread_setup.start()
+            start_cam_btn.destroy()
+            load_lbl = tk.Label(frame_preview, text="Setting up camera", font=("Roboto", 20), fg="#D6D2D2",
+                                bg="#2C2B2B")
+            load_lbl.place(relx=0.35, rely=0.40)
 
-        t1 = Thread(target=stream)
-        t1.daemon = True
-        time.sleep(2)
-        t1.start()
+            # setup camera
+            camera = cam_lists.index(camera_chosen.get())
 
-        mainwindow.bind('<KeyPress>', press)
+            t1 = Thread(target=stream)
+            t1.daemon = True
+            time.sleep(2)
+            t1.start()
+
+            mainwindow.bind('<KeyPress>', press)
+
+        except AttributeError:
+            text = "Cannot open background!"
+            error_handler(text)
 
     def use_camera_handler():
-        global preview_stream
         global isClick_camera
         global camera_chosen
         global cam_lists
@@ -802,7 +804,7 @@ if __name__ == "__main__":
         if not isClick_camera:
             init_thread = Thread(target=initialize_stream)
             init_thread.daemon = True
-            # init_thread.start()
+            init_thread.start()
 
             camera_chosen = tk.StringVar()
 
@@ -810,29 +812,33 @@ if __name__ == "__main__":
             graph = FilterGraph()
             cam_lists = graph.get_input_devices()
 
-            use_camera_frame = tk.Frame(mainwindow, height= 720, width=940, bg = "#323232")
+            use_camera_frame = tk.Frame(mainwindow, height= 720, width=850, bg = "#323232")
             use_camera_frame.place(relx = 0, rely = 0)
 
             frame_preview = tk.Frame(use_camera_frame, width = 930, height = 609,bg = "#2C2B2B")
             frame_preview.place(relx= 0.005, rely=0.141)
 
             camera_chosen.set(cam_lists[0])
-            tk.Label(use_camera_frame, font = ("Roboto", 12), text = "Choose Camera Device: ", fg = "#D6D2D2", bg = "#2C2B2B").place(relx = 0.095, rely = 0.065)
+            tk.Label(use_camera_frame, font = ("Roboto", 12), text = "Choose Camera Device: ", fg = "#D6D2D2", bg = "#323232").place(relx = 0.01, rely = 0.03)
             dropdown = ttk.OptionMenu(use_camera_frame, camera_chosen, cam_lists[0], *cam_lists)
-            dropdown.place(relx = 0.1, rely = 0.1)
+            dropdown.place(relx = 0.02, rely = 0.08)
 
             start_cam_btn = tk.Button(frame_preview, height = 3, width = 25, text = "Start Camera Capture", font = ("Roboto", 14), fg = "#ffffff", bg = "#4369D9",activebackground="#314d9e", borderwidth= 0, highlightthickness= 0,cursor = "hand2", command = start_stream)
             start_cam_btn.place(relx=0.35,rely=0.40 )
 
-            preview_stream = tk.Label(frame_preview, bg = "#2C2B2B")
+            capturebtn = tk.Button(menu_frame, height=3, width=25, text="CAPTURE", font=("Roboto", 16), fg="#e0efff", bg="#4369D9",
+                      activebackground="#4a9eff", cursor="hand2", borderwidth=0, highlightthickness=0,
+                      command=press)
+            capturebtn.place(relx=0.025, rely=0.87)
 
-            tk.Button(use_camera_frame,height = 1, width = 8, text = "Stop", font = ("Roboto", 12), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,cursor = "hand2",command = stop_camera_handler).place(relx=0.75,rely=0.045)
-            tk.Button(use_camera_frame,height = 1, width = 8, text = "Exit", font = ("Roboto", 12), fg = "#e0efff", bg = "#8f2615", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,cursor = "hand2",command = lambda: [use_camera_frame.destroy(),exit_handler()]).place(relx=0.85,rely=0.045)
+            tk.Button(use_camera_frame,height = 2, width = 9, text = "Stop", font = ("Roboto", 12), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,cursor = "hand2",command = stop_camera_handler).place(relx=0.78,rely=0.05)
+            tk.Button(use_camera_frame,height = 2, width = 9, text = "Exit", font = ("Roboto", 12), fg = "#e0efff", bg = "#8f2615", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,cursor = "hand2",command = lambda: [use_camera_frame.destroy(),exit_handler()]).place(relx=0.9,rely=0.05)
             isClick_camera = True
 
             def exit_handler():
                 global isClick_camera
                 isClick_camera = False
+                capturebtn.destroy()
 
     # start of main gui creationg with TkinterDnD wrapper
     mainwindow = TkinterDnD.Tk()
@@ -840,7 +846,7 @@ if __name__ == "__main__":
     # initialize ipbr
     def initialize_ipbr():
         global main
-        # main = ipbr.main()
+        main = ipbr.main()
 
     init_ipbr = Thread(target=initialize_ipbr)
     init_ipbr.start()
@@ -964,9 +970,6 @@ if __name__ == "__main__":
     use_cam_btn = tk.Button(frame1, image = camera_image, command =use_camera_handler,bg = "#323232", height = 50, width = 50,borderwidth= 0 , highlightthickness= 0)
     use_cam_btn.place(relx=0.655,rely=0.015)
     tk.Label(frame1, text="Use Camera", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232").place(relx = 0.6425, rely = 0.1)
-    # delete this. only for testing purposes
-    sample_error = "This is the error message"
-    tk.Button(frame1, text = "test", height = 2, width = 10, command = lambda: error_handler(sample_error)).place(relx = 0.45, rely = 0.05)
 
     foreground_input_list_box = tk.Listbox(mainwindow, selectmode= tk.SINGLE, width = 200, height = 38, bg = "#2C2B2B", bd = 1, relief = "groove", borderwidth= 0, highlightthickness=0 )
     foreground_input_list_box.drop_target_register(DND_FILES)
@@ -980,17 +983,16 @@ if __name__ == "__main__":
     menu_frame = tk.Frame(mainwindow, height= 720, width=350, relief="groove", bg = "#323232")
     menu_frame.place(relx= 0.73, rely= 0)
     #tk.Label(menu_frame, text = "Chosen Background Image Preview: ", font = ("Roboto", 12), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.05, rely = 0.02)
-    background_preview = tk.Label(menu_frame, height = 10, width = 44, bg = "#2C2B2B", bd =2, relief = "groove", borderwidth= 0, highlightthickness=0)
-    background_preview.place(relx = 0.05, rely = 0.03)
+    background_preview = tk.Label(menu_frame, bg = "#2C2B2B", bd =2, relief = "groove", borderwidth= 0, highlightthickness=0)
+    background_preview.place(relx = 0.02, rely = 0.02)
     background_preview.configure(height=160, width=310, image=background_image)
-    preview_frame = tk.Frame(menu_frame, height= 330, width= 315, bg = "#323232")
-    preview_frame.place(relx=0.055, rely=0.40)
-    preview = tk.Label(preview_frame, height= 33, width= 315, bg = "#2C2B2B" )
+    preview_frame = tk.Frame(menu_frame, height= 500, width= 310, bg = "#323232")
+    preview_frame.place(relx=0.02, rely=0.385)
+    preview = tk.Label(preview_frame, height= 22, width= 315, bg = "#2C2B2B" )
     preview.place(relx = 0, rely =0)
-    tk.Button(menu_frame, height = 1, width = 26, text = "Change Background", font = ("Roboto", 16), fg = "#e0efff", bg = "#303E8C", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command=background_panel_gui).place(relx= 0.05, rely= 0.27)
-    tk.Button(menu_frame, height = 1, width = 26, text = "Settings", font = ("Roboto", 16), fg = "#e0efff", bg = "#303E8C", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0,command = open_settings).place(relx= 0.05, rely= 0.34)
-    tk.Button(menu_frame, height = 3, width = 26, text = "START", font = ("Roboto", 16), fg = "#e0efff", bg = "#4369D9", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command = start_thread).place(relx= 0.05, rely= 0.87)
-
+    tk.Button(menu_frame, height = 1, width = 25, text = "Change Background", font = ("Roboto", 16), fg = "#e0efff", bg = "#303E8C", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command=background_panel_gui).place(relx= 0.025, rely= 0.26)
+    tk.Button(menu_frame, height = 1, width = 25, text = "Settings", font = ("Roboto", 16), fg = "#e0efff", bg = "#303E8C", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0,command = open_settings).place(relx= 0.025, rely= 0.32)
+    tk.Button(menu_frame, height = 3, width = 25, text = "START", font = ("Roboto", 16), fg = "#e0efff", bg = "#4369D9", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command = start_thread).place(relx= 0.025, rely= 0.87)
     checkI_home_handler()
 
     #make main window display in loop
