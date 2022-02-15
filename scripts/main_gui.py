@@ -13,9 +13,9 @@ import numpy as np
 from error_panel import error_handler
 
 sys.path.append('scripts')
-import ipbr
+# import ipbr
 import config
-import cam_modnet
+# import cam_modnet
 
 if __name__ == "__main__":
     def background_panel_gui():
@@ -74,8 +74,8 @@ if __name__ == "__main__":
 
         # create a delete button
         mainwindow.update()
-        bx = (image_view.winfo_width() - 20)/image_view.winfo_width()
-        delete = tk.Button(image_panel, height="1", width="2", bg="white", cursor="hand2",
+        bx = (image_view.winfo_width() - 25)/image_view.winfo_width()
+        delete = tk.Button(image_panel, image = trash_image, height="20", width="20", bg="#161010", cursor="hand2",
                   command=lambda: (deletebackground(image_url, image_view, panel)))
         delete.place(relx=bx, rely=0.00)
 
@@ -652,7 +652,7 @@ if __name__ == "__main__":
 
         try:
             pretrained_ckpt = "pretrained/modnet_webcam_portrait_matting.ckpt"
-            cmodnet = cam_modnet.cam_modnet(pretrained_ckpt)
+            # cmodnet = cam_modnet.cam_modnet(pretrained_ckpt)
         except:
             text = "Pretrained model is not present!"
             error_handler(text)
@@ -846,7 +846,7 @@ if __name__ == "__main__":
     # initialize ipbr
     def initialize_ipbr():
         global main
-        main = ipbr.main()
+        # main = ipbr.main()
 
     init_ipbr = Thread(target=initialize_ipbr)
     init_ipbr.start()
@@ -922,6 +922,10 @@ if __name__ == "__main__":
     camera_image = Image.open("resources/images/Camera.png")
     camera_image.thumbnail((50,50))
     camera_image = ImageTk.PhotoImage(camera_image)
+
+    trash_image = Image.open("resources/images/trash.png")
+    trash_image.thumbnail((20,20))
+    trash_image = ImageTk.PhotoImage(trash_image)
 
     small_image = Image.open("resources/images/2.png")
     small_image.thumbnail((50, 50))
