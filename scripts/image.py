@@ -63,7 +63,7 @@ class _image_():
         if type is True:
             basewidth = basewidth - padding
             new_height = int(height * basewidth / width)
-            img = img.resize((basewidth, new_height), Image.ANTIALIAS)
+            img = img.resize((basewidth, new_height), Image.LANCZOS)
 
         # img is background
         if type is False:
@@ -72,13 +72,13 @@ class _image_():
                 extenstion = baseheight*.1
                 baseheight = int(baseheight + extenstion)
                 new_width = int(baseheight * width / height)
-                img = img.resize((new_width, baseheight), Image.ANTIALIAS)
+                img = img.resize((new_width, baseheight), Image.LANCZOS)
             # scale background to width
             if width < height:
                 extenstion = basewidth * .1
                 basewidth = int(basewidth + extenstion)
                 new_height = int(height * basewidth / width)
-                img = img.resize((basewidth, new_height), Image.ANTIALIAS)
+                img = img.resize((basewidth, new_height), Image.LANCZOS)
 
         return img
 
