@@ -12,7 +12,7 @@ import time
 import numpy as np
 
 sys.path.append('scripts')
-import ipbr
+# import ipbr
 import config
 import cam_modnet
 from error_panel import error_handler, done_handler
@@ -66,7 +66,7 @@ if __name__ == "__main__":
         img.thumbnail((250, 250))
         img = ImageTk.PhotoImage(img)
         # create the image in image gallery, I used button for command attribute
-        image_panel = tk.Frame(panel, height=img.height(), width=img.width(),)
+        image_panel = tk.Frame(panel, height = 180, width = img.width(), bg = "#161010")
         mainwindow.update()
         x = ((panel.winfo_width() - img.width()) / 2) / panel.winfo_width()
         image_panel.place(relx=x, rely=(yindex))
@@ -82,8 +82,8 @@ if __name__ == "__main__":
         delete.place(relx=bx, rely=0.00)
 
         im_index += 1
-        # increase yindex for proper margin of succeeding image
-        yindex += 0.3
+        # increase yindex for proper margin of succeeding images
+        yindex += 0.285
 
         return panel
 
@@ -1000,7 +1000,7 @@ if __name__ == "__main__":
     # initialize ipbr
     def initialize_ipbr():
         global main
-        main = ipbr.main()
+        # main = ipbr.main()
 
     init_ipbr = Thread(target=initialize_ipbr)
     init_ipbr.start()
