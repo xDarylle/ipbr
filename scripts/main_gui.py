@@ -10,12 +10,12 @@ import cv2
 from pygrabber.dshow_graph import FilterGraph
 import time
 import numpy as np
-from error_panel import error_handler, done_handler
 
 sys.path.append('scripts')
 import ipbr
 import config
 import cam_modnet
+from error_panel import error_handler, done_handler
 
 if __name__ == "__main__":
     def background_panel_gui():
@@ -59,6 +59,8 @@ if __name__ == "__main__":
         # acces y index
         global yindex
         global im_index
+        global isPortraitBackground
+        global height_prev_bg
 
         img = Image.open(image_url)
         img.thumbnail((250, 250))
@@ -305,6 +307,13 @@ if __name__ == "__main__":
         t1.daemon = True
         t1.start()
 
+    def stop_process():
+        global stopped
+        global stop_btn
+
+        stopped = True
+        stop_btn.destroy()
+
     def start_process():
         #access permanent variables
         global background_path
@@ -316,17 +325,30 @@ if __name__ == "__main__":
         global imm
         global column_size
         global inputsize_checkbox
+        global stop_btn
+        global stopped
 
         #check if all needed variables are populated
         try:
             background = Image.open(background_path)
             i = 0
+            stopped = False
+            stop_btn = tk.Button(menu_frame, height=3, width=25, text="STOP", font=("Roboto", 16), fg="#e0efff",
+                                 bg="#DC4343", activebackground="#4a9eff", cursor="hand2", borderwidth=0,
+                                 highlightthickness=0, command=stop_process)
+            stop_btn.place(relx=0.025, rely=0.87)
+
             for im in input_array:
+
                 im_label_array[i].configure(text= "Processing")
                 im_label_array[i].place(relx=0.05, rely=0.1)
 
                 if i > 0:
                     im_label_array[i-1].configure(text= "Done")
+
+                if stopped:
+                    im_label_array[i].configure(text="Stopped")
+                    break
 
                 try:
                     img = Image.open(im)
@@ -347,6 +369,7 @@ if __name__ == "__main__":
                     update_preview(img)
                 except Exception as e:
                     error_handler(e, True)
+                    break
 
                 if i == len(input_array) - 1:
                     im_label_array[i].configure(text="Done")
@@ -398,10 +421,11 @@ if __name__ == "__main__":
                 text = "Images must be greater than 512x512!"
                 error_handler(text, False)
 
-            input_gallery_gui()
+            if index > 0:
+                input_gallery_gui()
 
-            isHomeBool = False
-            checkI_home_handler()
+                isHomeBool = False
+                checkI_home_handler()
 
     def clear():
         global foreground_input_list_box
@@ -502,6 +526,8 @@ if __name__ == "__main__":
         del_btn.configure(state="disabled", cursor="arrow")
 
     def click_image(id):
+        global clicked
+
         if not clicked:
             select_img()
 
@@ -709,13 +735,14 @@ if __name__ == "__main__":
             text = "Images must be greater than 512x512!"
             error_handler(text, False)
 
-        #input_array += added_images
-        if len(input_array) > temp_len:
+        if index > 0 and len(input_array) > temp_len:
+            #input_array += added_images
             select_btn.configure(state="normal")
             clean_btn.configure(state="normal")
             input_gallery_gui()
             isHomeBool = False
             checkI_home_handler()
+
 
     def update_column_handler():
         global column_size
@@ -994,6 +1021,7 @@ if __name__ == "__main__":
     column_size = 4
     clicked = False
     isClick_camera = False
+    stopped = False
     mainwindow_width = 1200
     mainwindow_height = 720
 
@@ -1146,7 +1174,8 @@ if __name__ == "__main__":
     preview.place(relx = 0, rely =0)
     tk.Button(menu_frame, height = 1, width = 25, text = "Change Background", font = ("Roboto", 16), fg = "#e0efff", bg = "#303E8C", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command=background_panel_gui).place(relx= 0.025, rely= 0.26)
     tk.Button(menu_frame, height = 1, width = 25, text = "Settings", font = ("Roboto", 16), fg = "#e0efff", bg = "#303E8C", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0,command = open_settings).place(relx= 0.025, rely= 0.32)
-    tk.Button(menu_frame, height = 3, width = 25, text = "START", font = ("Roboto", 16), fg = "#e0efff", bg = "#4369D9", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command = start_thread).place(relx= 0.025, rely= 0.87)
+    start_btn = tk.Button(menu_frame, height = 3, width = 25, text = "START", font = ("Roboto", 16), fg = "#e0efff", bg = "#4369D9", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command = start_thread)
+    start_btn.place(relx=0.025, rely=0.87)
     checkI_home_handler()
 
     #make main window display in loop
