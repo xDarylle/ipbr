@@ -392,14 +392,25 @@ if __name__ == "__main__":
         input_folder_path = event.data
 
         if input_folder_path:
+            isNotBigger = False
+            index = 0
             for file in os.listdir(input_folder_path):
                 if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
-                    input_array.append(os.path.join(input_folder_path, file))
+                    temp = Image.open(os.path.join(input_folder_path, file))
+                    if temp.width > 512 and temp.height > 512:
+                        index += 1
+                        input_array.append(os.path.join(input_folder_path, file))
+                    else:
+                        isNotBigger = True
 
-            input_gallery_gui()
+            if isNotBigger:
+                text = "Images must be bigger than 512x512!"
+                error_handler(text, False)
 
-        isHomeBool = False
-        checkI_home_handler()
+            if index > 0:
+                input_gallery_gui()
+                isHomeBool = False
+                checkI_home_handler()
 
     def get_input_handler():
         global isHomeBool
@@ -409,6 +420,7 @@ if __name__ == "__main__":
         input_folder_path = filedialog.askdirectory(initialdir = "/Desktop" if input_folder_path is None else input_folder_path,title = "Select Input Path")
 
         if input_folder_path:
+            isNotBigger = False
             index = 0
             for file in os.listdir(input_folder_path):
                 if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
@@ -416,14 +428,15 @@ if __name__ == "__main__":
                     if temp.width > 512 and temp.height > 512:
                         index += 1
                         input_array.append(os.path.join(input_folder_path, file))
+                    else:
+                        isNotBigger = True
 
-            if not len(input_folder_path) == index:
-                text = "Images must be greater than 512x512!"
+            if isNotBigger:
+                text = "Images must be bigger than 512x512!"
                 error_handler(text, False)
 
             if index > 0:
                 input_gallery_gui()
-
                 isHomeBool = False
                 checkI_home_handler()
 
@@ -732,7 +745,7 @@ if __name__ == "__main__":
                 input_array.append(image)
 
         if not num == index:
-            text = "Images must be greater than 512x512!"
+            text = "Images must be bigger than 512x512!"
             error_handler(text, False)
 
         if index > 0 and len(input_array) > temp_len:
