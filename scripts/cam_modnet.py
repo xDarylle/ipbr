@@ -38,7 +38,7 @@ class cam_modnet():
         self.im = image._image_()
 
     # replace background of current frame
-    def update(self, frame, bg, is_not_custom, size):
+    def update(self, frame, bg, is_not_custom, size, isSaveTransparent):
         container = Image.new("RGBA", (910, 512), "WHITE")
         frame = Image.fromarray(frame).convert("RGBA")
 
@@ -88,5 +88,11 @@ class cam_modnet():
 
         fg_np = matte_np * frame_np + (1 - matte_np) * bg
 
-        return np.array(np.uint8(fg_np))
+        # get transparent foreground
+        if isSaveTransparent:
+            transparent = self.im.get_foreground(Image.fromarray(frame_np), Image.fromarray(np.uint8(matte_np*255)))
+        else:
+            transparent = None
+
+        return np.array(np.uint8(fg_np)), transparent
 

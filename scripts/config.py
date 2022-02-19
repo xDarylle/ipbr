@@ -11,13 +11,14 @@ class conf():
             self.load_conf()
         else:
             self.config.add_section("Settings")
-            self.set_conf("","", "0","600", "900", [])
+            self.set_conf("","", "0", "0","600", "900", [])
             self.load_conf()
 
     def load_conf(self):
         self.config.read(self.config_path)
         self.c = self.config["Settings"]
         self.output_path = self.c["output_path"]
+        self.save_transparent = self.c["save_transparent"]
         self.checkbock_state = self.c["State"]
         self.background = self.c["background"]
         self.width = self.c["width"]
@@ -29,12 +30,13 @@ class conf():
             self.background_array.append(self.c[str(i)])
 
     def get_conf(self):
-        return self.output_path, self.background, self.checkbock_state, self.width, self.height, self.background_array
+        return self.output_path, self.background, self.save_transparent, self.checkbock_state, self.width, self.height, self.background_array
 
-    def set_conf(self, output_path, background, state, width, height, background_array):
+    def set_conf(self, output_path, background, save_transparent, state, width, height, background_array):
         bg_no = len(background_array)
         self.config.set("Settings", "output_path", output_path)
         self.config.set("Settings", "background", background)
+        self.config.set("Settings", "save_transparent", save_transparent)
         self.config.set("Settings", "State", state)
         self.config.set("Settings", "width", width)
         self.config.set("Settings", "height", height)
@@ -55,6 +57,9 @@ class conf():
         self.c["Number of BG"] = str(len(background_array))
         for i in range(len(background_array)):
              self.c[str(i)] = background_array[i]
+
+    def set_save_transparent(self, save_transparent):
+        self.c["save_transparent"] = str(save_transparent)
 
     def set_checkbox_state(self, state):
         self.c["state"] = str(state)

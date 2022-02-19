@@ -10,7 +10,7 @@ import cv2
 from pygrabber.dshow_graph import FilterGraph
 import time
 import numpy as np
-from error_panel import error_handler
+from error_panel import error_handler, done_handler
 
 sys.path.append('scripts')
 import ipbr
@@ -53,7 +53,7 @@ if __name__ == "__main__":
                 conf.write()
         else:
             text = "Exceeded Number of Backgrounds"
-            error_handler(text)
+            error_handler(text, True)
 
     def create_background_gallery(image_url, panel):
         # acces y index
@@ -120,6 +120,7 @@ if __name__ == "__main__":
         global ch
         global temp
         global inputsize_checkbox
+        global isSaveTransparent
 
         temp.set(ifcheck_var)
 
@@ -144,13 +145,15 @@ if __name__ == "__main__":
                   relief="groove", command=lambda: [get_output_loc(output_loc_entry)]).place(relx=0.7, rely=0.15)
 
         tk.Label(setting_panel, text = "Use Input Sizes", font = ("Roboto", 13), fg="#D6D2D2", bg="#161010").place(relx = 0.05, rely = 0.3)
+        tk.Label(setting_panel, text = "Save transparent background",font = ("Roboto", 13), fg="#D6D2D2", bg="#161010").place(relx = 0.05, rely = 0.25)
+        tk.Checkbutton(setting_panel,  bg="#161010", variable=isSaveTransparent).place(relx = 0.7, rely = 0.25)
 
-        tk.Checkbutton(setting_panel, variable = inputsize_checkbox, bg="#161010", command = lambda: use_input_reso_handler(inputsize_checkbox.get(),customreso_cbeckbox, height_entry, width_entry)).place(relx = 0.6, rely = 0.298)
+        tk.Checkbutton(setting_panel, variable = inputsize_checkbox, bg="#161010", command = lambda: use_input_reso_handler(inputsize_checkbox.get(),customreso_cbeckbox, height_entry, width_entry)).place(relx = 0.7, rely = 0.298)
 
         tk.Label(setting_panel, text="Use Custom Resolution", font=("Roboto", 13), fg="#D6D2D2", bg="#161010").place(relx=0.05, rely=0.35)
 
         customreso_cbeckbox = tk.Checkbutton(setting_panel, variable= temp, bg="#161010",command=lambda: [checkbox(height_entry, width_entry)])
-        customreso_cbeckbox.place(relx=0.60, rely=0.348)
+        customreso_cbeckbox.place(relx=0.7, rely=0.348)
 
         tk.Label(setting_panel, text="Height (Pixels): ", font=("Roboto", 12), fg="#D6D2D2", bg="#161010").place(relx=0.05,rely=0.4)
         height_entry = tk.Entry(setting_panel, state='readonly',  textvariable=height_entry_var, width=5,
@@ -170,11 +173,11 @@ if __name__ == "__main__":
         width_error_label.place(relx=0.575, rely=0.455)
 
         tk.Button(setting_panel, height=2, width=30, text="Cancel", font=("Roboto", 13), fg="white", bg="#DC4343", borderwidth=0, highlightthickness=0,
-                  cursor="hand2", command=setting_panel.destroy).place(relx = 0.1, rely=0.85)
+                  cursor="hand2", command=setting_panel.destroy).place(relx = 0.07, rely=0.85)
         tk.Button(setting_panel, height=2, width=30, text="Apply Changes", font=("Roboto", 13), fg="white", bg="#303E8C", borderwidth=0, highlightthickness=0,
                   cursor="hand2", command=lambda: [
                 save_settings(height_error_label, width_error_label, output_error_label, setting_panel,  ifcheck_var)]).place(
-            relx=0.1, rely=0.75)
+            relx=0.07, rely=0.75)
 
         tk.Label(setting_panel)
 
@@ -281,6 +284,7 @@ if __name__ == "__main__":
             conf.set_output_path(output_loc)
             conf.set_width(width_var)
             conf.set_height(height_var)
+            conf.set_save_transparent(1 if isSaveTransparent.get() is True else 0)
             conf.set_checkbox_state(1 if ifcheck_var is True else 0)
             conf.write()
             setting_panel.destroy()
@@ -328,24 +332,31 @@ if __name__ == "__main__":
                     img = Image.open(im)
                     name = os.path.basename(im)
                     name = name.split('.')[0] + '.png'
+                    transparent_name = name.split('.')[0] + "_transparent" + '.png'
 
                     if inputsize_checkbox.get():
-                         img = main.process_v2(img, background)
+                         img, transparent = main.process_v2(img, background, isSaveTransparent.get())
                     else:
-                         img = main.process(img, background, (width_var, height_var))
+                         img, transparent = main.process(img, background, (width_var, height_var), isSaveTransparent.get())
 
                     img.save(os.path.join(output_loc, name))
+
+                    if transparent is not None:
+                        transparent.save(os.path.join(output_loc, transparent_name))
+
                     update_preview(img)
                 except Exception as e:
-                    error_handler(e)
+                    error_handler(e, True)
 
                 if i == len(input_array) - 1:
                     im_label_array[i].configure(text="Done")
 
                 i += 1
+            text = "Processing done!"
+            done_handler(text)
         except:
             text = "Some Parameters are not defined!"
-            error_handler(text)
+            error_handler(text, True)
 
         column_size = 4
 
@@ -375,13 +386,22 @@ if __name__ == "__main__":
         input_folder_path = filedialog.askdirectory(initialdir = "/Desktop" if input_folder_path is None else input_folder_path,title = "Select Input Path")
 
         if input_folder_path:
+            index = 0
             for file in os.listdir(input_folder_path):
                 if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
-                    input_array.append(os.path.join(input_folder_path, file))
+                    temp = Image.open(os.path.join(input_folder_path, file))
+                    if temp.width > 512 and temp.height > 512:
+                        index += 1
+                        input_array.append(os.path.join(input_folder_path, file))
+
+            if not len(input_folder_path) == index:
+                text = "Images must be greater than 512x512!"
+                error_handler(text, False)
 
             input_gallery_gui()
-        isHomeBool = False
-        checkI_home_handler()
+
+            isHomeBool = False
+            checkI_home_handler()
 
     def clear():
         global foreground_input_list_box
@@ -604,7 +624,7 @@ if __name__ == "__main__":
                 clean_btn.configure(state = "disabled",cursor="arrow")
                 use_cam_btn.configure(state="normal", cursor="hand2")
                 column_handler_btn.configure(state = "disabled", cursor = "arrow")
-                print(column_label["text"])
+
                 if column_label["text"] == "Large":
                     column_handler_btn_disabled = tk.Label(frame1, image= small_image_disabled, bg = "#323232")
                 if column_label["text"] == "Medium":
@@ -656,7 +676,7 @@ if __name__ == "__main__":
 
             clean_btn_disabled = tk.Label(frame1, image=clear_image_disable, bg="#323232")
             clean_btn_disabled.place(relx=0.18, rely=0.015)
-            print(column_label["text"])
+
             if column_label["text"] == "Large":
                 column_handler_btn_disabled = tk.Label(frame1, image=small_image_disabled, bg="#323232")
             if column_label["text"] == "Medium":
@@ -675,9 +695,19 @@ if __name__ == "__main__":
         global input_array
         global isHomeBool
         temp_len = len(input_array)
+        index = 0
+        num = 0
         #added_images = []
         for image in filedialog.askopenfilenames(initialdir = "/Desktop" if input_folder_path is None else input_folder_path, title = "Add Image/s", filetypes = (("image files",".jpg"),("image files",".png"), ("image files",".jpeg"))):
-            input_array.append(image)
+            num += 1
+            temp = Image.open(image)
+            if temp.width > 512 and temp.height > 512:
+                index += 1
+                input_array.append(image)
+
+        if not num == index:
+            text = "Images must be greater than 512x512!"
+            error_handler(text, False)
 
         #input_array += added_images
         if len(input_array) > temp_len:
@@ -732,18 +762,24 @@ if __name__ == "__main__":
             cmodnet = cam_modnet.cam_modnet(pretrained_ckpt)
         except:
             text = "Pretrained model is not present!"
-            error_handler(text)
+            error_handler(text, True)
 
     def press(event):
         global frame_update
         global preview_frame
         global imm
+        global isSaveTransparent
+        global transparent
 
         if frame_update is not None:
             img = Image.fromarray(np.uint8(frame_update))
 
             name = time.strftime("%Y%m%d-%H%M%S") + '.png'
+            transparent_name = name.split('.')[0] + "_transparent" + ".png"
             img.save(os.path.join(output_loc, name))
+
+            if isSaveTransparent.get():
+                transparent.save(os.path.join(output_loc, transparent_name))
 
             img.thumbnail((400,400))
             imgtk = ImageTk.PhotoImage(image=img)
@@ -761,11 +797,12 @@ if __name__ == "__main__":
         global height_var
         global t1
         global bg
+        global transparent
 
         while True:
             try:
                 if frame_np is not None and streaming:
-                    frame_update = cmodnet.update(frame_np, bg, inputsize_checkbox.get(), (width_var, height_var))
+                    frame_update, transparent = cmodnet.update(frame_np, bg, inputsize_checkbox.get(), (width_var, height_var), isSaveTransparent.get())
 
                     load_lbl.destroy()
                     img = Image.fromarray(frame_update)
@@ -795,7 +832,7 @@ if __name__ == "__main__":
         t2.daemon = True
         load_lbl.configure(text = "Connecting to camera")
 
-        cap = cv2.VideoCapture(camera, cv2.CAP_DSHOW)
+        cap = cv2.VideoCapture(camera)
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
@@ -868,7 +905,7 @@ if __name__ == "__main__":
 
         except AttributeError:
             text = "Cannot open background!"
-            error_handler(text)
+            error_handler(text, True)
 
     def use_camera_handler():
         global isClick_camera
@@ -930,13 +967,14 @@ if __name__ == "__main__":
 
     # load config
     conf = config.conf()
-    output_loc, background_path, ifcheck_var, width_var, height_var, backgrounds_array = conf.get_conf()
+    output_loc, background_path, save_transparent, ifcheck_var, width_var, height_var, backgrounds_array = conf.get_conf()
 
     # global variables
     height_entry_var = tk.StringVar()
     width_entry_var = tk.StringVar()
     temp = tk.BooleanVar()
     inputsize_checkbox = tk.BooleanVar()
+    isSaveTransparent = tk.BooleanVar()
     temp_output_loc = output_loc
     yindex = 0.1
     im_index = 0
@@ -963,10 +1001,16 @@ if __name__ == "__main__":
     width_var = int(width_var)
     height_var = int(height_var)
 
+    # set checkboxes for settings
     if ifcheck_var == '1':
         inputsize_checkbox.set(False)
     else:
         inputsize_checkbox.set(True)
+
+    if save_transparent == '1':
+        isSaveTransparent.set(True)
+    else:
+        isSaveTransparent.set(False)
 
     # set default background preview
     if  len(backgrounds_array) > 0:

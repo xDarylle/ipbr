@@ -1,7 +1,7 @@
 from PIL import Image
 import numpy as np
 import sys
-sys.path.append('intelligent_portrait_background_replacement/scripts')
+sys.path.append('scripts')
 import modnet
 import image
 
@@ -16,7 +16,7 @@ class main():
         Crops the input image so that only the portrait will remain and then will be auto-centered when pasting into
         an image container.
     '''
-    def process(self, img, background, def_size):
+    def process(self, img, background, def_size, isSaveTransparent):
 
         # get matte
         matte = self.model.get_matte(img)
@@ -38,13 +38,19 @@ class main():
         # change bg
         new_image = self.im.change_background(foreground, matte, background)
 
-        return new_image
+        # get transparent foreground
+        if isSaveTransparent:
+            transparent = self.im.get_foreground(foreground, matte)
+        else:
+            transparent = None
+
+        return new_image, transparent
 
     ''' Process if follow_input_size is True. 
         This will use the width and height of the input image for the output.
         Does not involve cropping and rescaling of input image. 
     '''
-    def process_v2(self, img, background):
+    def process_v2(self, img, background, isSaveTransparent):
 
         # get matte
         matte = self.model.get_matte(img)
@@ -64,7 +70,13 @@ class main():
         # change background
         new_image = self.im.change_background(img, matte, bg)
 
-        return new_image
+        # get transparent foreground
+        if isSaveTransparent:
+            transparent = self.im.get_foreground(img, matte)
+        else:
+            transparent = None
+
+        return new_image, transparent
 
 
 

@@ -27,6 +27,15 @@ class _image_():
 
         return Image.fromarray(np.uint8(new_image))
 
+    # get foreground with transparent background
+    def get_foreground(self, image, matte):
+        image.convert("RGBA")
+        alpha = matte.split()[-1]
+
+        image.putalpha(alpha)
+
+        return image
+
     # crop foreground
     def crop(self, img, matte):
         img = np.array(img)
