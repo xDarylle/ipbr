@@ -74,15 +74,15 @@ class cam_modnet():
             matte_np = Image.fromarray(np.uint8(matte_np * 255)).convert("RGBA")
             frame_np = self.im.rescale(frame_np, def_size, False)
             matte_np = self.im.rescale(matte_np, def_size, False)
-            frame_np = self.im.paste(frame_np, matte_np, def_size)
-            matte_np = self.im.paste(matte_np, matte_np, def_size)
+            frame_np = self.im.create_containter(frame_np, matte_np, def_size)
+            matte_np = self.im.create_containter(matte_np, matte_np, def_size)
             frame_np = self.im.unify_channel(frame_np)
             matte_np = self.im.unify_channel(matte_np)
             frame_np = np.array(frame_np)
             matte_np = np.array(matte_np)/255
 
         bg = self.im.rescale(bg, def_size, False)
-        bg = self.im.paste(bg, bg, def_size)
+        bg = self.im.create_containter(bg, bg, def_size)
         bg = self.im.unify_channel(bg)
         bg = np.array(bg)
 

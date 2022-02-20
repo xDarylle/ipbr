@@ -90,7 +90,7 @@ class _image_():
         return img
 
     # create a container for image
-    def paste(self, img, matte, size):
+    def create_containter(self, img, matte, size):
         img = img.convert("RGBA")
         matte = matte.convert("RGBA")
 
