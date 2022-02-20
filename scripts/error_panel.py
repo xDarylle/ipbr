@@ -17,7 +17,7 @@ def error_handler(error, isError):
         error_window.iconbitmap(warning_icon)
     error_window.configure(bg = "#383737")
 
-    label = tk.Label(error_window, text= error, font = ("Roboto", 15), fg = "#f0eee9", bg = "#383737")
+    label = tk.Label(error_window, text= error, font = ("Roboto", 15), fg = "#f0eee9", bg = "#383737", wraplength=300, justify="center")
     label.place(relx=0.5, rely=0.5, anchor='center')
 
 def done_handler(text):

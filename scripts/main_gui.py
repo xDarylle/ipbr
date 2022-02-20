@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, UnidentifiedImageError
 from TkinterDnD2 import DND_FILES, TkinterDnD
 import os, os.path
 import sys
@@ -12,7 +12,7 @@ import time
 import numpy as np
 
 sys.path.append('scripts')
-# import ipbr
+import ipbr
 import config
 import cam_modnet
 from error_panel import error_handler, done_handler
@@ -327,56 +327,62 @@ if __name__ == "__main__":
         global inputsize_checkbox
         global stop_btn
         global stopped
+        global isModelPresent
 
         #check if all needed variables are populated
         try:
-            background = Image.open(background_path)
-            i = 0
-            stopped = False
-            stop_btn = tk.Button(menu_frame, height=3, width=25, text="STOP", font=("Roboto", 16), fg="#e0efff",
-                                 bg="#DC4343", activebackground="#4a9eff", cursor="hand2", borderwidth=0,
-                                 highlightthickness=0, command=stop_process)
-            stop_btn.place(relx=0.025, rely=0.87)
+            if isModelPresent:
+                background = Image.open(background_path)
+                i = 0
+                stopped = False
+                stop_btn = tk.Button(menu_frame, height=3, width=25, text="STOP", font=("Roboto", 16), fg="#e0efff",
+                                     bg="#DC4343", activebackground="#4a9eff", cursor="hand2", borderwidth=0,
+                                     highlightthickness=0, command=stop_process)
+                stop_btn.place(relx=0.025, rely=0.87)
 
-            for im in input_array:
+                for im in input_array:
 
-                im_label_array[i].configure(text= "Processing")
-                im_label_array[i].place(relx=0.05, rely=0.1)
+                    im_label_array[i].configure(text= "Processing")
+                    im_label_array[i].place(relx=0.05, rely=0.1)
 
-                if i > 0:
-                    im_label_array[i-1].configure(text= "Done")
+                    if i > 0:
+                        im_label_array[i-1].configure(text= "Done")
 
-                if stopped:
-                    im_label_array[i].configure(text="Stopped")
-                    break
+                    if stopped:
+                        im_label_array[i].configure(text="Stopped")
+                        break
 
-                try:
-                    img = Image.open(im)
-                    name = os.path.basename(im)
-                    name = name.split('.')[0] + '.png'
-                    transparent_name = name.split('.')[0] + "_transparent" + '.png'
+                    try:
+                        img = Image.open(im)
+                        name = os.path.basename(im)
+                        name = name.split('.')[0] + '.png'
+                        transparent_name = name.split('.')[0] + "_transparent" + '.png'
 
-                    if inputsize_checkbox.get():
-                         img, transparent = main.process_v2(img, background, isSaveTransparent.get())
-                    else:
-                         img, transparent = main.process(img, background, (width_var, height_var), isSaveTransparent.get())
+                        if inputsize_checkbox.get():
+                             img, transparent = main.process_v2(img, background, isSaveTransparent.get())
+                        else:
+                             img, transparent = main.process(img, background, (width_var, height_var), isSaveTransparent.get())
 
-                    img.save(os.path.join(output_loc, name))
+                        img.save(os.path.join(output_loc, name))
 
-                    if transparent is not None:
-                        transparent.save(os.path.join(output_loc, transparent_name))
+                        if transparent is not None:
+                            transparent.save(os.path.join(output_loc, transparent_name))
 
-                    update_preview(img)
-                except Exception as e:
-                    error_handler(e, True)
-                    break
+                        update_preview(img)
+                    except Exception as e:
+                        error_handler(e, True)
+                        break
 
-                if i == len(input_array) - 1:
-                    im_label_array[i].configure(text="Done")
+                    if i == len(input_array) - 1:
+                        im_label_array[i].configure(text="Done")
 
-                i += 1
-            text = "Processing done!"
-            done_handler(text)
+                    i += 1
+                text = "Processing done!"
+                done_handler(text)
+                stop_btn.destroy()
+            else:
+                text = "Pretrained Model not found!"
+                error_handler(text, True)
         except:
             text = "Some Parameters are not defined!"
             error_handler(text, True)
@@ -393,19 +399,42 @@ if __name__ == "__main__":
 
         if input_folder_path:
             isNotBigger = False
+            isCorrupted = False
             index = 0
-            for file in os.listdir(input_folder_path):
-                if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
-                    temp = Image.open(os.path.join(input_folder_path, file))
-                    if temp.width > 512 and temp.height > 512:
-                        index += 1
-                        input_array.append(os.path.join(input_folder_path, file))
-                    else:
-                        isNotBigger = True
 
-            if isNotBigger:
+            temp_var = os.listdir(input_folder_path)
+
+            if os.path.isdir(input_folder_path):
+                temp_var = os.listdir(input_folder_path)
+
+            if input_folder_path.endswith(".png") or input_folder_path.endswith(".jpeg") or input_folder_path.endswith(".jpg"):
+                temp_var = input_folder_path.split()
+
+            for file in temp_var:
+                if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
+                    try:
+                        temp = Image.open(os.path.join(input_folder_path, file))
+
+                        if temp.width > 512 and temp.height > 512:
+                            index += 1
+                            input_array.append(os.path.join(input_folder_path, file))
+                        else:
+                            isNotBigger = True
+
+                    except UnidentifiedImageError:
+                        isCorrupted = True
+
+            if isNotBigger and isCorrupted:
+                text = "Some images are corrupted and smaller than 512x512!"
+                error_handler(text, True)
+
+            elif isNotBigger:
                 text = "Images must be bigger than 512x512!"
                 error_handler(text, False)
+
+            elif isCorrupted:
+                text = "Some images are corrupted!"
+                error_handler(text, True)
 
             if index > 0:
                 input_gallery_gui()
@@ -421,19 +450,33 @@ if __name__ == "__main__":
 
         if input_folder_path:
             isNotBigger = False
+            isCorrupted = False
             index = 0
             for file in os.listdir(input_folder_path):
                 if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
-                    temp = Image.open(os.path.join(input_folder_path, file))
-                    if temp.width > 512 and temp.height > 512:
-                        index += 1
-                        input_array.append(os.path.join(input_folder_path, file))
-                    else:
-                        isNotBigger = True
+                    try:
+                        temp = Image.open(os.path.join(input_folder_path, file))
 
-            if isNotBigger:
+                        if temp.width > 512 and temp.height > 512:
+                            index += 1
+                            input_array.append(os.path.join(input_folder_path, file))
+                        else:
+                            isNotBigger = True
+
+                    except UnidentifiedImageError:
+                        isCorrupted = True
+
+            if isNotBigger and isCorrupted:
+                text = "Some images are corrupted and smaller than 512x512!"
+                error_handler(text, True)
+
+            elif isNotBigger:
                 text = "Images must be bigger than 512x512!"
                 error_handler(text, False)
+
+            elif isCorrupted:
+                text = "Some images are corrupted!"
+                error_handler(text, True)
 
             if index > 0:
                 input_gallery_gui()
@@ -567,50 +610,38 @@ if __name__ == "__main__":
         i = 0
         for file in input_array:
             # if file is an image then create an image widget
-            try:
-                image = Image.open(file)
-                if column_size == 4:
-                    image.thumbnail((205, 205), resample=1)
-                if column_size == 3:
-                    image.thumbnail((280, 280), resample=1)
-                if column_size == 2:
-                    image.thumbnail((420, 420), resample=1)
+            image = Image.open(file)
+            if column_size == 4:
+                image.thumbnail((215, 215), resample=1)
+            if column_size == 3:
+                image.thumbnail((280, 280), resample=1)
+            if column_size == 2:
+                image.thumbnail((420, 420), resample=1)
 
-                image = ImageTk.PhotoImage(image)
-                images.append(image)
+            image = ImageTk.PhotoImage(image)
+            images.append(image)
 
-                view_frame.update()
-                if view_frame is not None and view_frame.winfo_height() > 630:
-                    scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
-                    scrollbar.place(relx=1, rely=0, relheight=0.89, anchor='ne')
-                    display_canvas.configure(yscrollcommand=scrollbar.set)
+            view_frame.update()
+            if view_frame is not None and view_frame.winfo_height() > 630:
+                scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
+                scrollbar.place(relx=1, rely=0, relheight=0.89, anchor='ne')
+                display_canvas.configure(yscrollcommand=scrollbar.set)
 
-                if column_cimension < column_size:
-                    image_frame = tk.Frame(view_frame, height=image.height(), width=image.width(), bg="#2C2B2B", bd=0, relief="groove")
-                    image_frame.grid(row=row_dimension, column=column_cimension)
-                    # change the h and w of tk.Button when trying display the image
-                    container = tk.Button(image_frame, image=image, borderwidth= 0, highlightthickness=0, command=lambda id=i :click_image(id))
-                    container_array.append(container)
-                    container.place(relx=0.05, rely=0.1)
-                    im_label = tk.Label(image_frame)
-                    im_label_array.append(im_label)
-                    column_cimension += 1
+            if column_cimension < column_size:
+                image_frame = tk.Frame(view_frame, height=image.height(), width=image.width(), bg="#2C2B2B", bd=0, relief="groove")
+                image_frame.grid(row=row_dimension, column=column_cimension)
+                # change the h and w of tk.Button when trying display the image
+                container = tk.Button(image_frame, image=image, borderwidth= 0, highlightthickness=0, command=lambda id=i :click_image(id))
+                container_array.append(container)
+                container.place(relx=0.05, rely=0.1)
+                im_label = tk.Label(image_frame)
+                im_label_array.append(im_label)
+                column_cimension += 1
 
-                if column_cimension == column_size:
-                    row_dimension += 1
-                    column_cimension = 0
-                i+=1
-
-            except Exception as e:
-                if column_cimension < column_size:
-                    image_frame = tk.Frame(view_frame, height=200, width=220, bg="#2C2B2B", bd=0, relief="groove")
-                    image_frame.grid(row=row_dimension, column=column_cimension)
-                    # change the h and w of tk.Button when trying display the image
-                    tk.Label(image_frame, text= "CORRUPTED IMAGE", bg="BLACK", fg= "#FFFFFF", width=20, height=10 ).place(relx=0.15, rely=0.1)
-                    column_cimension += 1
-                if column_cimension == column_size:
-                    row_dimension += 1
-                    column_cimension = 0
+            if column_cimension == column_size:
+                row_dimension += 1
+                column_cimension = 0
+            i+=1
 
     def input_gallery_gui():
         global images
@@ -736,17 +767,34 @@ if __name__ == "__main__":
         temp_len = len(input_array)
         index = 0
         num = 0
-        #added_images = []
+        isNotBigger = False
+        isCorrupted = False
+
         for image in filedialog.askopenfilenames(initialdir = "/Desktop" if input_folder_path is None else input_folder_path, title = "Add Image/s", filetypes = (("image files",".jpg"),("image files",".png"), ("image files",".jpeg"))):
             num += 1
-            temp = Image.open(image)
-            if temp.width > 512 and temp.height > 512:
-                index += 1
-                input_array.append(image)
+            try:
+                temp = Image.open(image)
 
-        if not num == index:
+                if temp.width > 512 and temp.height > 512:
+                    index += 1
+                    input_array.append(image)
+                else:
+                    isNotBigger = True
+
+            except UnidentifiedImageError:
+                isCorrupted = True
+
+        if isNotBigger and isCorrupted:
+            text = "Some images are corrupted and smaller than 512x512!"
+            error_handler(text, True)
+
+        elif isNotBigger:
             text = "Images must be bigger than 512x512!"
             error_handler(text, False)
+
+        elif isCorrupted:
+            text = "Some images are corrupted!"
+            error_handler(text, True)
 
         if index > 0 and len(input_array) > temp_len:
             #input_array += added_images
@@ -755,7 +803,6 @@ if __name__ == "__main__":
             input_gallery_gui()
             isHomeBool = False
             checkI_home_handler()
-
 
     def update_column_handler():
         global column_size
@@ -801,10 +848,10 @@ if __name__ == "__main__":
             pretrained_ckpt = "pretrained/modnet_webcam_portrait_matting.ckpt"
             cmodnet = cam_modnet.cam_modnet(pretrained_ckpt)
         except:
-            text = "Pretrained model is not present!"
+            text = "Pretrained Model not found!"
             error_handler(text, True)
 
-    def press(event):
+    def capture():
         global frame_update
         global preview_frame
         global imm
@@ -826,6 +873,9 @@ if __name__ == "__main__":
             imm.append(imgtk)
             preview.configure(height=330, width=315, image = imgtk)
 
+    def press(event):
+        capture()
+
     def thread_process_stream():
         global frame_update
         global streaming
@@ -838,6 +888,12 @@ if __name__ == "__main__":
         global t1
         global bg
         global transparent
+        global stop_camera_btn
+
+        stop_camera_btn = tk.Button(use_camera_frame, height=2, width=9, text="Stop", font=("Roboto", 12), fg="#e0efff",
+                                    bg="#ba6032",
+                                    activebackground="#ba6032", borderwidth=0, highlightthickness=0, cursor="hand2",
+                                    command=stop_camera_handler)
 
         while True:
             try:
@@ -855,6 +911,7 @@ if __name__ == "__main__":
                     y = ((600 - img.height) / 2) / 600
 
                     preview_stream.place(relx=x, rely=y)
+                    stop_camera_btn.place(relx=0.78, rely=0.05)
 
             except Exception as e:
                 streaming = False
@@ -886,7 +943,10 @@ if __name__ == "__main__":
                 frame_np = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
                 if not t2.is_alive():
-                    t2.start()
+                    try:
+                        t2.start()
+                    except RuntimeError:
+                        print("RuntimeError")
 
     def stop_camera_handler():
         global isClick_camera
@@ -894,10 +954,12 @@ if __name__ == "__main__":
         global cap
         global preview_stream
         global start_cam_btn
+        global stop_camera_btn
 
         streaming = False
 
         preview_stream.destroy()
+        stop_camera_btn.destroy()
 
         start_cam_btn = tk.Button(frame_preview, height=3, width=25, text="Start Camera Capture", font=("Roboto", 14),
                                   fg="#ffffff", bg="#4369D9", activebackground="#314d9e", borderwidth=0,
@@ -921,6 +983,7 @@ if __name__ == "__main__":
         global t1
         global bg
         global preview_stream
+        global use_camera_frame
 
         preview_stream = tk.Label(frame_preview, bg="#2C2B2B")
 
@@ -954,6 +1017,7 @@ if __name__ == "__main__":
         global init_thread
         global start_cam_btn
         global frame_preview
+        global use_camera_frame
 
         if not isClick_camera:
             init_thread = Thread(target=initialize_stream)
@@ -982,17 +1046,23 @@ if __name__ == "__main__":
 
             capturebtn = tk.Button(menu_frame, height=3, width=25, text="CAPTURE", font=("Roboto", 16), fg="#e0efff", bg="#4369D9",
                       activebackground="#4a9eff", cursor="hand2", borderwidth=0, highlightthickness=0,
-                      command=press)
+                      command=capture)
             capturebtn.place(relx=0.025, rely=0.87)
 
-            tk.Button(use_camera_frame,height = 2, width = 9, text = "Stop", font = ("Roboto", 12), fg = "#e0efff", bg = "#ba6032", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,cursor = "hand2",command = stop_camera_handler).place(relx=0.78,rely=0.05)
-            tk.Button(use_camera_frame,height = 2, width = 9, text = "Exit", font = ("Roboto", 12), fg = "#e0efff", bg = "#8f2615", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,cursor = "hand2",command = lambda: [use_camera_frame.destroy(),exit_handler()]).place(relx=0.9,rely=0.05)
+            tk.Button(use_camera_frame,height = 2, width = 9, text = "Exit", font = ("Roboto", 12), fg = "#e0efff", bg = "#8f2615", activebackground="#ba6032", borderwidth= 0, highlightthickness= 0,cursor = "hand2",command = lambda: exit_handler()).place(relx=0.9,rely=0.05)
             isClick_camera = True
 
             def exit_handler():
                 global isClick_camera
-                isClick_camera = False
-                capturebtn.destroy()
+                global streaming
+
+                if streaming:
+                    text = "Stop the camera first to exit!"
+                    error_handler(text, True)
+                else:
+                    use_camera_frame.destroy()
+                    isClick_camera = False
+                    capturebtn.destroy()
 
     # start of main gui creationg with TkinterDnD wrapper
     mainwindow = TkinterDnD.Tk()
@@ -1000,7 +1070,14 @@ if __name__ == "__main__":
     # initialize ipbr
     def initialize_ipbr():
         global main
-        # main = ipbr.main()
+        global isModelPresent
+        try:
+            main = ipbr.main()
+            isModelPresent = True
+        except FileNotFoundError:
+            text = "Pretrained Model not found!"
+            error_handler(text, True)
+            isModelPresent = False
 
     init_ipbr = Thread(target=initialize_ipbr)
     init_ipbr.start()
