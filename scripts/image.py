@@ -68,7 +68,7 @@ class _image_():
         width, height = img.size
 
         # scale to height
-        if width > height:
+        if width >= height:
             extenstion = baseheight*.1
 
             baseheight = int(baseheight + extenstion)
@@ -81,7 +81,7 @@ class _image_():
 
             basewidth = int(basewidth + extenstion)
             # add 100px padding
-            if type is True:
+            if type:
                 basewidth = basewidth - 100
 
             new_height = int(height * basewidth / width)
