@@ -46,7 +46,7 @@ class cam_modnet():
         frame = frame.resize((910, new_height), Image.ANTIALIAS)
 
         container.paste(frame, (0, 0), frame)
-        frame_np = cv2.cvtColor(np.array(container), cv2.COLOR_BGR2RGB)
+        frame_np = cv2.cvtColor(container, cv2.COLOR_BGR2RGB)
         frame_np = frame_np[:, 120:792, :]
 
         frame_PIL = Image.fromarray(frame_np)
