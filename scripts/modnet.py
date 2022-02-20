@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
 import sys
-sys.path.append('intelligent_portrait_background_replacement/scripts')
+sys.path.append('scripts')
 import MODNet.src.models.modnet
 
 class _modnet():

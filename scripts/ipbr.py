@@ -13,7 +13,7 @@ class main():
 
     ''' Process if follow_input_size is False. 
         This uses a define size for the output.
-        Crops the input image so that only the portrait will remain and then will be auto-centered when pasting into
+        Crops the input image so that only the portrait will remain and then will be aligned in bottom-center when pasting into
         an image container.
     '''
     def process(self, img, background, def_size, isSaveTransparent):

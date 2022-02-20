@@ -66,28 +66,26 @@ class _image_():
     def rescale(self, img, basesize, type):
         basewidth, baseheight = basesize
         width, height = img.size
-        padding = 100
 
-        # img is foreground
-        if type is True:
-            basewidth = basewidth - padding
+        # scale to height
+        if width > height:
+            extenstion = baseheight*.1
+
+            baseheight = int(baseheight + extenstion)
+            new_width = int(baseheight * width / height)
+            img = img.resize((new_width, baseheight), Image.LANCZOS)
+
+        # scale to width
+        if width < height:
+            extenstion = basewidth * .1
+
+            basewidth = int(basewidth + extenstion)
+            # add 100px padding
+            if type is True:
+                basewidth = basewidth - 100
+
             new_height = int(height * basewidth / width)
             img = img.resize((basewidth, new_height), Image.LANCZOS)
-
-        # img is background
-        if type is False:
-            # scale background to height
-            if width > height:
-                extenstion = baseheight*.1
-                baseheight = int(baseheight + extenstion)
-                new_width = int(baseheight * width / height)
-                img = img.resize((new_width, baseheight), Image.LANCZOS)
-            # scale background to width
-            if width < height:
-                extenstion = basewidth * .1
-                basewidth = int(basewidth + extenstion)
-                new_height = int(height * basewidth / width)
-                img = img.resize((basewidth, new_height), Image.LANCZOS)
 
         return img
 
