@@ -192,12 +192,12 @@ if __name__ == "__main__":
 
         if inputsize_checkbox == True:
             ifcheck_var = 0
-            temp.set(0)
+            temp.set(False)
             height_entry.configure(state = "disabled")
             width_entry.configure(state = "disabled")
         else:
             ifcheck_var = 1
-            temp.set(1)
+            temp.set(True)
             customreso_cbeckbox.configure(state="normal")
             height_entry.configure(state="normal")
             width_entry.configure(state="normal")
@@ -209,7 +209,7 @@ if __name__ == "__main__":
         global inputsize_checkbox
 
         if temp.get() is True:
-            inputsize_checkbox.set(0)
+            inputsize_checkbox.set(False)
             height_entry.configure(state="normal")
             width_entry.configure(state="normal")
 
