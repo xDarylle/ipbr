@@ -39,14 +39,12 @@ class cam_modnet():
 
     # replace background of current frame
     def update(self, frame, bg, is_not_custom, size, isSaveTransparent):
-        container = Image.new("RGBA", (910, 512), "WHITE")
         frame = Image.fromarray(frame).convert("RGBA")
+        frame = self.im.rescale(frame, (910, 512), False)
+        frame = self.im.create_containter(frame,frame, (910, 512))
+        frame = np.array(frame)
 
-        new_height = int(frame.height * 920 / frame.width)
-        frame = frame.resize((910, new_height), Image.ANTIALIAS)
-
-        container.paste(frame, (0, 0), frame)
-        frame_np = cv2.cvtColor(container, cv2.COLOR_BGR2RGB)
+        frame_np = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame_np = frame_np[:, 120:792, :]
 
         frame_PIL = Image.fromarray(frame_np)

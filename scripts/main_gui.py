@@ -1055,6 +1055,7 @@ if __name__ == "__main__":
             def exit_handler():
                 global isClick_camera
                 global streaming
+                global cap
 
                 if streaming:
                     text = "Stop the camera first to exit!"
@@ -1063,6 +1064,11 @@ if __name__ == "__main__":
                     use_camera_frame.destroy()
                     isClick_camera = False
                     capturebtn.destroy()
+                    try:
+                        cap.release()
+                        cv2.destroyAllWindows()
+                    except:
+                        streaming = False
 
     # start of main gui creationg with TkinterDnD wrapper
     mainwindow = TkinterDnD.Tk()

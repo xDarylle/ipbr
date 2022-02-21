@@ -8,6 +8,7 @@ import torchvision.transforms as transforms
 import sys
 sys.path.append('scripts')
 import MODNet.src.models.modnet
+import image
 
 class _modnet():
 
@@ -17,6 +18,7 @@ class _modnet():
         self.modnet = nn.DataParallel(self.modnet).cuda()
         self.modnet.load_state_dict(torch.load(model_path))
         self.modnet.eval()
+        self.im = image._image_()
 
         # define hyper-parameters
         self.ref_size = 512
@@ -33,16 +35,9 @@ class _modnet():
     def get_matte(self, im):
 
         # unify image channels to 3
-        im = np.asarray(im)
-        if len(im.shape) == 2:
-            im = im[:, :, None]
-        if im.shape[2] == 1:
-            im = np.repeat(im, 3, axis=2)
-        elif im.shape[2] == 4:
-            im = im[:, :, 0:3]
+        im = self.im.unify_channel(im)
 
         # convert image to PyTorch tensor
-        im = Image.fromarray(im)
         im = self.im_transform(im)
 
         # add mini-batch dim
