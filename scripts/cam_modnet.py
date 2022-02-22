@@ -72,7 +72,7 @@ class cam_modnet():
             matte_np = np.array(matte_np)
 
         bg = self.im.rescale(bg, def_size, False)
-        bg = self.im.create_containter(bg, bg, def_size)
+        bg = self.im.create_containter(bg, bg, def_size, True)
         bg = self.im.unify_channel(bg)
         bg = np.array(bg)
 
