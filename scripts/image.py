@@ -62,6 +62,33 @@ class _image_():
         matte = Image.fromarray(matte)
         return img, matte
 
+    # resize image from camera
+    def resize(self, img, basesize):
+        basewidth, baseheight = basesize
+        height, width = img.shape[:2]
+
+        if width/height >= basewidth/baseheight:
+            extenstion = baseheight * .1
+            new_baseheight = int(baseheight + extenstion)
+            new_width = int(new_baseheight * width / height)
+
+            img = cv2.resize(img, (new_width, new_baseheight), interpolation= cv2.INTER_LANCZOS4)
+
+            x = int((new_width - basewidth) / 2)
+        else:
+            extenstion = basewidth* .1
+            new_basewidth = int(basewidth + extenstion)
+            new_height = int(new_basewidth * height / width)
+
+            img = cv2.resize(img, (new_basewidth, new_height),  interpolation= cv2.INTER_LANCZOS4)
+
+            x = int((new_basewidth - basewidth) / 2)
+
+        y = 0
+
+        img = img[y:y+baseheight, x:x+basewidth]
+        return img
+
     # scale image to match the basesize
     def rescale(self, img, basesize, type):
         basewidth, baseheight = basesize
@@ -104,3 +131,5 @@ class _image_():
 
         temp.paste(img, (x,y), matte)
         return temp
+
+

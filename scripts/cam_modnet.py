@@ -39,12 +39,8 @@ class cam_modnet():
 
     # replace background of current frame
     def update(self, frame, bg, is_not_custom, size, isSaveTransparent):
-        frame = Image.fromarray(frame).convert("RGBA")
-        frame = self.im.rescale(frame, (910, 512), False)
-        frame = self.im.create_containter(frame,frame, (910, 512))
-        frame = np.array(frame)
-
         frame_np = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame_np = self.im.resize(frame_np, (910, 512))
         frame_np = frame_np[:, 120:792, :]
 
         frame_PIL = Image.fromarray(frame_np)
@@ -68,16 +64,12 @@ class cam_modnet():
             def_size = (w,h)
         else:
             def_size = size
-            frame_np = Image.fromarray(frame_np).convert("RGBA")
-            matte_np = Image.fromarray(np.uint8(matte_np * 255)).convert("RGBA")
-            frame_np = self.im.rescale(frame_np, def_size, False)
-            matte_np = self.im.rescale(matte_np, def_size, False)
-            frame_np = self.im.create_containter(frame_np, matte_np, def_size)
-            matte_np = self.im.create_containter(matte_np, matte_np, def_size)
+            frame_np = self.im.resize(frame_np,def_size)
+            matte_np = self.im.resize(matte_np,def_size)
             frame_np = self.im.unify_channel(frame_np)
-            matte_np = self.im.unify_channel(matte_np)
+            #matte_np = self.im.unify_channel(np.uint8(matte_np))
             frame_np = np.array(frame_np)
-            matte_np = np.array(matte_np)/255
+            matte_np = np.array(matte_np)
 
         bg = self.im.rescale(bg, def_size, False)
         bg = self.im.create_containter(bg, bg, def_size)
