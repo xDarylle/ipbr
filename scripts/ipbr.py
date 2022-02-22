@@ -31,9 +31,9 @@ class main():
         bg = self.im.rescale(background, def_size, False)
 
         # create container
-        foreground = self.im.create_containter(im, matte, def_size)
-        matte = self.im.create_containter(matte, matte, def_size)
-        background = self.im.create_containter(bg, bg, def_size)
+        foreground = self.im.create_containter(im, matte, def_size, False)
+        matte = self.im.create_containter(matte, matte, def_size, False)
+        background = self.im.create_containter(bg, bg, def_size, True)
 
         # change bg
         new_image = self.im.change_background(foreground, matte, background)
@@ -60,7 +60,7 @@ class main():
         bg = self.im.rescale(background, img.size, False)
 
         # create container for background
-        bg = self.im.create_containter(bg, bg, img.size)
+        bg = self.im.create_containter(bg, bg, img.size, True)
 
         # unify channels to 3
         img = self.im.unify_channel(img)

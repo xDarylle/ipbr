@@ -402,8 +402,6 @@ if __name__ == "__main__":
             isCorrupted = False
             index = 0
 
-            temp_var = os.listdir(input_folder_path)
-
             if os.path.isdir(input_folder_path):
                 temp_var = os.listdir(input_folder_path)
 
@@ -1018,6 +1016,7 @@ if __name__ == "__main__":
         global start_cam_btn
         global frame_preview
         global use_camera_frame
+        global streaming
 
         if not isClick_camera:
             init_thread = Thread(target=initialize_stream)
@@ -1025,6 +1024,8 @@ if __name__ == "__main__":
             init_thread.start()
 
             camera_chosen = tk.StringVar()
+
+            streaming = False
 
             # get camera lists
             graph = FilterGraph()

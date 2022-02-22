@@ -96,36 +96,43 @@ class _image_():
 
         # scale to height
         if width >= height:
-            extenstion = baseheight*.1
-
-            baseheight = int(baseheight + extenstion)
             new_width = int(baseheight * width / height)
+
+            if new_width < basewidth and not type:
+                baseheight += basewidth - new_width
+                new_width = int(baseheight * width / height)
+
             img = img.resize((new_width, baseheight), Image.LANCZOS)
 
         # scale to width
         if width < height:
-            extenstion = basewidth * .1
-
-            basewidth = int(basewidth + extenstion)
             # add 100px padding
             if type:
-                basewidth = basewidth - 100
+                basewidth = int((width * basewidth/baseheight) * .90)
 
             new_height = int(height * basewidth / width)
+
+            if new_height < baseheight and not type:
+                basewidth += baseheight - new_height
+                new_height = int(height * basewidth / width)
+
             img = img.resize((basewidth, new_height), Image.LANCZOS)
 
         return img
 
     # create a container for image
-    def create_containter(self, img, matte, size):
+    def create_containter(self, img, matte, size, isBackground):
         img = img.convert("RGBA")
         matte = matte.convert("RGBA")
 
         size_width, size_height = size
         img_width, img_height = img.size
 
-        x = int((size_width - img_width) / 2)
-        y = int(size_height - img_height)
+        if not isBackground:
+            x = int((size_width - img_width) / 2)
+            y = int(size_height - img_height)
+        else:
+            x,y = 0,0
 
         temp = Image.new("RGBA", size, "BLACK")
 
