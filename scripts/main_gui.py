@@ -491,12 +491,14 @@ if __name__ == "__main__":
         global im_label_array
         global del_btn_disabled
         global clicked
+        global use_cam_btn_disabled
 
         input_array.clear()
         imm.clear()
         is_selected.clear()
         checkbox_array.clear()
         im_label_array.clear()
+        use_cam_btn_disabled.destroy()
         preview.configure(image = None)
 
         for widgets in foreground_input_list_box.winfo_children():
