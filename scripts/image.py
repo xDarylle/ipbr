@@ -90,7 +90,7 @@ class _image_():
         return img
 
     # scale image to match the basesize
-    def rescale(self, img, basesize, type):
+    def rescale(self, img, basesize, isNotBackground):
         basewidth, baseheight = basesize
         width, height = img.size
 
@@ -98,7 +98,7 @@ class _image_():
         if width >= height:
             new_width = int(baseheight * width / height)
 
-            if new_width < basewidth and not type:
+            if new_width < basewidth and not isNotBackground:
                 baseheight += basewidth - new_width
                 new_width = int(baseheight * width / height)
 
@@ -106,13 +106,13 @@ class _image_():
 
         # scale to width
         if width < height:
-            # add 100px padding
-            if type:
+            # downscale to 90 percent
+            if isNotBackground:
                 basewidth = int((width * basewidth/baseheight) * .90)
 
             new_height = int(height * basewidth / width)
 
-            if new_height < baseheight and not type:
+            if new_height < baseheight and not isNotBackground:
                 basewidth += baseheight - new_height
                 new_height = int(height * basewidth / width)
 
