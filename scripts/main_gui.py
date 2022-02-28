@@ -1117,6 +1117,7 @@ if __name__ == "__main__":
                         cv2.destroyAllWindows()
                     except:
                         streaming = False
+                isClick_camera = False
 
     # start of main gui creationg with TkinterDnD wrapper
     mainwindow = TkinterDnD.Tk()
