@@ -134,8 +134,8 @@ class _image_():
         if not isBackground:
             x = int((size_width - img_width) / 2)
             y = int(size_height - img_height)
-            if y < (size_height * (1/4)):
-                y += int(size_height * (1/4))
+            if y < (size_height * 0.15):
+                y = int(size_height * 0.15)
         else:
             x,y = 0,0
 
