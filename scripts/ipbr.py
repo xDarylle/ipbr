@@ -22,6 +22,9 @@ class main():
         matte = self.model.get_matte(img)
         matte = Image.fromarray(np.uint8(matte))
 
+        img_orig = img
+        matte_orig = matte
+
         # crop
         im, matte = self.im.crop(img, matte)
 
@@ -40,7 +43,7 @@ class main():
 
         # get transparent foreground
         if isSaveTransparent:
-            transparent = self.im.get_foreground(foreground, matte)
+            transparent = self.im.get_foreground(img_orig, matte_orig)
         else:
             transparent = None
 

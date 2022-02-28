@@ -30,9 +30,12 @@ class _image_():
     # get foreground with transparent background
     def get_foreground(self, image, matte):
         image.convert("RGBA")
-        alpha = matte.split()[-1]
 
-        image.putalpha(alpha)
+        try:
+            image.putalpha(matte)
+        except:
+            alpha = matte.split()[-1]
+            image.putalpha(alpha)
 
         return image
 
@@ -131,6 +134,8 @@ class _image_():
         if not isBackground:
             x = int((size_width - img_width) / 2)
             y = int(size_height - img_height)
+            if y < (size_height * (1/4)):
+                y += int(size_height * (1/4))
         else:
             x,y = 0,0
 
