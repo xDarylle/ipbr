@@ -874,7 +874,10 @@ if __name__ == "__main__":
             preview.configure(height=330, width=315, image = imgtk)
 
     def press(event):
-        capture()
+        try:
+            int(event.char)
+        except:
+            capture()
 
     def thread_process_stream():
         global frame_update
@@ -886,18 +889,23 @@ if __name__ == "__main__":
         global width_var
         global height_var
         global t1
-        global bg
         global transparent
         global stop_camera_btn
+
+        current_background = background_path
+        bg = Image.open(background_path)
 
         stop_camera_btn = tk.Button(use_camera_frame, height=2, width=9, text="Stop", font=("Roboto", 12), fg="#e0efff",
                                     bg="#ba6032",
                                     activebackground="#ba6032", borderwidth=0, highlightthickness=0, cursor="hand2",
                                     command=stop_camera_handler)
-
         while True:
             try:
                 if frame_np is not None and streaming:
+                    if current_background != background_path:
+                        bg = Image.open(background_path)
+                        current_background = background_path
+
                     frame_update, transparent = cmodnet.update(frame_np, bg, inputsize_checkbox.get(), (width_var, height_var), isSaveTransparent.get())
 
                     load_lbl.destroy()
@@ -981,14 +989,12 @@ if __name__ == "__main__":
         global load_lbl
         global streaming
         global t1
-        global bg
         global preview_stream
         global use_camera_frame
 
         preview_stream = tk.Label(frame_preview, bg="#2C2B2B")
 
         try:
-            bg = Image.open(background_path)
             streaming = True
 
             start_cam_btn.destroy()
