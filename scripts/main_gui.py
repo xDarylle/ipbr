@@ -716,7 +716,7 @@ if __name__ == "__main__":
                 try:
                     use_cam_btn_disabled.destroy()
                 except:
-                    print("none")
+                    pass
 
             else:
                 select_btn.configure(state = "normal", cursor = "hand2")
@@ -759,7 +759,7 @@ if __name__ == "__main__":
             try:
                 use_cam_btn_disabled.destroy()
             except:
-                print("none")
+                pass
 
     def add_image_handler():
         global input_array
@@ -834,7 +834,7 @@ if __name__ == "__main__":
                     scrollbar.place(relx=1, rely=0, relheight=0.89, anchor='ne')
                     display_canvas.configure(yscrollcommand=scrollbar.set)
             except:
-                print("catch")
+                pass
 
         for widget in foreground_input_list_box.winfo_children():
             widget.destroy()
@@ -954,7 +954,7 @@ if __name__ == "__main__":
                     try:
                         t2.start()
                     except RuntimeError:
-                        print("RuntimeError")
+                        pass
 
     def stop_camera_handler():
         global isClick_camera

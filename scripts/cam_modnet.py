@@ -6,8 +6,9 @@ import torch.nn as nn
 import torchvision.transforms as transforms
 import image
 import cv2
-
-from scripts.MODNet.src.models.modnet import MODNet
+import sys
+sys.path.append('scripts')
+from MODNet.src.models.modnet import MODNet
 
 class cam_modnet():
 
