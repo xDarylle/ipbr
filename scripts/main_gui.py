@@ -879,6 +879,28 @@ if __name__ == "__main__":
         except:
             capture()
 
+    def create_grid(frame):
+        width, height = frame.size
+        x1 = int(width/3)
+        y1 = int(height/3)
+
+        frame = np.array(frame)
+
+        frame = cv2.line(frame, (x1,0), (x1, height), (0,0,0), thickness=1)
+        frame = cv2.line(frame, (x1*2, 0), (x1*2, height), (0, 0, 0), thickness=1)
+        frame = cv2.line(frame, (0, y1), (width, y1), (0, 0, 0), thickness=1)
+        frame = cv2.line(frame, (0, y1*2), (width, y1*2), (0, 0, 0), thickness=1)
+
+        return Image.fromarray(frame)
+
+    def set_grid():
+        global isGrid
+
+        if isGrid:
+            isGrid = False
+        else:
+            isGrid = True
+
     def thread_process_stream():
         global frame_update
         global streaming
@@ -891,6 +913,8 @@ if __name__ == "__main__":
         global t1
         global transparent
         global stop_camera_btn
+        global grid_btn
+        global isGrid
 
         current_background = background_path
         bg = Image.open(background_path)
@@ -899,6 +923,12 @@ if __name__ == "__main__":
                                     bg="#ba6032",
                                     activebackground="#ba6032", borderwidth=0, highlightthickness=0, cursor="hand2",
                                     command=stop_camera_handler)
+
+        grid_btn = tk.Button(use_camera_frame, height=2, width=9, text="Grid", font=("Roboto", 12), fg="#e0efff",
+                                    bg="#4369D9",
+                                    borderwidth=0, highlightthickness=0, cursor="hand2",
+                                    command=set_grid)
+
         while True:
             try:
                 if frame_np is not None and streaming:
@@ -911,15 +941,22 @@ if __name__ == "__main__":
                     load_lbl.destroy()
                     img = Image.fromarray(frame_update)
                     img.thumbnail((900,600))
+
+                    if isGrid:
+                        img = create_grid(img)
+
                     imgtk = ImageTk.PhotoImage(image=img)
                     preview_stream.config(image=imgtk)
                     preview_stream.image = imgtk
 
+                    # center preview
                     x = ((930 - img.width) / 2) / 930
                     y = ((600 - img.height) / 2) / 600
 
                     preview_stream.place(relx=x, rely=y)
                     stop_camera_btn.place(relx=0.78, rely=0.05)
+                    grid_btn.place(relx=0.66, rely = 0.05)
+
 
             except Exception as e:
                 streaming = False
@@ -963,11 +1000,13 @@ if __name__ == "__main__":
         global preview_stream
         global start_cam_btn
         global stop_camera_btn
+        global grid_btn
 
         streaming = False
 
         preview_stream.destroy()
         stop_camera_btn.destroy()
+        grid_btn.destroy()
 
         start_cam_btn = tk.Button(frame_preview, height=3, width=25, text="Start Camera Capture", font=("Roboto", 14),
                                   fg="#ffffff", bg="#4369D9", activebackground="#314d9e", borderwidth=0,
@@ -1127,6 +1166,7 @@ if __name__ == "__main__":
     clicked = False
     isClick_camera = False
     stopped = False
+    isGrid = False
     mainwindow_width = 1200
     mainwindow_height = 720
 
