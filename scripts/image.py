@@ -109,9 +109,16 @@ class _image_():
 
         # scale to width
         if width < height:
-            # downscale to 90 percent
+            # if foreground scale to baseheight
             if isNotBackground:
-                basewidth = int((width * basewidth/baseheight) * .90)
+                baseheight = int(baseheight * 0.85)
+                new_width = int(baseheight * width / height)
+                if new_width > basewidth:
+                    baseheight = int(baseheight * basewidth / new_width)
+                    new_width = basewidth
+
+                img = img.resize((new_width, baseheight), Image.LANCZOS)
+                return img
 
             new_height = int(height * basewidth / width)
 
@@ -131,13 +138,15 @@ class _image_():
         size_width, size_height = size
         img_width, img_height = img.size
 
+        # align img to center
+        x = int((size_width - img_width) / 2)
         if not isBackground:
-            x = int((size_width - img_width) / 2)
             y = int(size_height - img_height)
+            # top padding
             if y < (size_height * 0.15):
                 y = int(size_height * 0.15)
         else:
-            x,y = 0,0
+            y = 0
 
         temp = Image.new("RGBA", size, "BLACK")
 
