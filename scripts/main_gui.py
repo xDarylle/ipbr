@@ -375,7 +375,6 @@ if __name__ == "__main__":
                     img = Image.open(im)
                     name = os.path.basename(im)
                     name = name.split('.')[0] + '.png'
-                    transparent_name = name.split('.')[0] + "_transparent" + '.png'
 
                     if inputsize_checkbox.get():
                         img, transparent = main.process_v2(img, background, isSaveTransparent.get())
@@ -386,7 +385,14 @@ if __name__ == "__main__":
                     img.save(os.path.join(output_loc, name))
 
                     if transparent is not None:
-                        transparent.save(os.path.join(output_loc, transparent_name))
+                        transparent_name = name.split('.')[0] + "_transparent" + ".png"
+                        try:
+                            path = os.path.join(output_loc, "Transparent Images")
+                            os.mkdir(path)
+                        except:
+                            pass
+
+                        transparent.save(os.path.join(path, transparent_name))
 
                     update_preview(img)
 
@@ -752,6 +758,11 @@ if __name__ == "__main__":
                 clean_btn_disabled.destroy()
                 column_handler_btn_disabled.destroy()
 
+                try:
+                    use_cam_btn_disabled.destroy()
+                except:
+                    pass
+
                 use_cam_btn_disabled = tk.Label(frame1, image=camera_image_disable, bg="#323232")
                 use_cam_btn_disabled.place(relx=0.655, rely=0.015)
         else:
@@ -886,11 +897,17 @@ if __name__ == "__main__":
             img = Image.fromarray(np.uint8(frame_update))
 
             name = time.strftime("%Y%m%d-%H%M%S") + '.png'
-            transparent_name = name.split('.')[0] + "_transparent" + ".png"
             img.save(os.path.join(output_loc, name))
 
             if isSaveTransparent.get():
-                transparent.save(os.path.join(output_loc, transparent_name))
+                transparent_name = name.split('.')[0] + "_transparent" + ".png"
+                try:
+                    path = os.path.join(output_loc, "Transparent Images")
+                    os.mkdir(path)
+                except:
+                    pass
+
+                transparent.save(os.path.join(path, transparent_name))
 
             img.thumbnail((400,400))
             imgtk = ImageTk.PhotoImage(image=img)
