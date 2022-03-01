@@ -297,7 +297,7 @@ if __name__ == "__main__":
         global imm
         global preview
 
-        img.thumbnail((400, 400), resample=1)
+        img.thumbnail((350, 350), resample=1)
         p = ImageTk.PhotoImage(img)
         imm.append(p)
         preview.configure(height=330, width=315, image=p)
