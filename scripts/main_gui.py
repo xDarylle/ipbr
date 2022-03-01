@@ -62,40 +62,53 @@ if __name__ == "__main__":
         global isPortraitBackground
         global height_prev_bg
 
-        img = Image.open(image_url)
-        img.thumbnail((250, 250))
-        img = ImageTk.PhotoImage(img)
-        # create the image in image gallery, I used button for command attribute
-        image_panel = tk.Frame(panel, height = 180, width = img.width(), bg = "#161010")
-        mainwindow.update()
-        x = ((panel.winfo_width() - img.width()) / 2) / panel.winfo_width()
-        image_panel.place(relx=x, rely=(yindex))
-        image_view = tk.Button(image_panel, text="view", height=img.height(), width=img.width(), image=img, bg="#383d3a", cursor="hand2", borderwidth=0, highlightthickness=0,
-                               command=lambda: choosebackground(img,image_url, panel))
-        image_view.place(relx=0,rely=0)
+        if os.path.exists(image_url):
+            img = Image.open(image_url)
+            img.thumbnail((250, 250))
+            img = ImageTk.PhotoImage(img)
 
-        # create a delete button
-        mainwindow.update()
-        bx = (image_view.winfo_width() - 25)/image_view.winfo_width()
-        delete = tk.Button(image_panel, image = trash_image, height="20", width="20", bg="#161010", cursor="hand2",
-                  command=lambda: (deletebackground(image_url, image_view, panel)))
-        delete.place(relx=bx, rely=0.00)
+            # create the image in image gallery, I used button for command attribute
+            image_panel = tk.Frame(panel, height = 180, width = img.width(), bg = "#161010")
+            mainwindow.update()
+            x = ((panel.winfo_width() - img.width()) / 2) / panel.winfo_width()
+            image_panel.place(relx=x, rely=(yindex))
+            image_view = tk.Button(image_panel, text="view", height=img.height(), width=img.width(), image=img, bg="#383d3a", cursor="hand2", borderwidth=0, highlightthickness=0,
+                                   command=lambda: choosebackground(img,image_url, panel))
+            image_view.place(relx=0,rely=0)
 
-        im_index += 1
-        # increase yindex for proper margin of succeeding images
-        yindex += 0.285
+            # create a delete button
+            mainwindow.update()
+            bx = (image_view.winfo_width() - 25)/image_view.winfo_width()
+            delete = tk.Button(image_panel, image = trash_image, height="20", width="20", bg="#161010", cursor="hand2",
+                      command=lambda: (deletebackground(image_url, image_view, panel)))
+            delete.place(relx=bx, rely=0.00)
+
+            im_index += 1
+            # increase yindex for proper margin of succeeding images
+            yindex += 0.285
+        else:
+            text = "Background Image Not Found\n" + image_url
+            error_handler(text, True)
+            backgrounds_array.remove(image_url)
+            conf.set_array_backgrounds(backgrounds_array)
+            conf.write()
 
         return panel
 
     def deletebackground(image_url, image_view, panel):
         global backgrounds_array
+        global background_path
+
         image_view.destroy()
         panel.destroy()
 
         backgrounds_array.remove(image_url)
         if len(backgrounds_array) == 0:
             background_preview.configure(height=160, width=310, image = "")
+            background_path = ""
             conf.set_background("")
+            conf.set_array_backgrounds(backgrounds_array)
+            conf.write()
 
         conf.set_array_backgrounds(backgrounds_array)
         conf.write()
@@ -303,9 +316,10 @@ if __name__ == "__main__":
         preview.configure(height=330, width=315, image=p)
 
     def start_thread():
-        t1 = Thread(target=start_process)
-        t1.daemon = True
-        t1.start()
+        if input_array:
+            t1 = Thread(target=start_process)
+            t1.daemon = True
+            t1.start()
 
     def stop_process():
         global stopped
@@ -331,7 +345,13 @@ if __name__ == "__main__":
 
         #check if all needed variables are populated
         try:
-            if isModelPresent:
+            if not isModelPresent:
+                text = "Pretrained Model not found!"
+                error_handler(text, True)
+            elif not os.path.exists(output_loc):
+                text = "Output path does not exists or is not set!"
+                error_handler(text, True)
+            else:
                 background = Image.open(background_path)
                 i = 0
                 stopped = False
@@ -342,50 +362,51 @@ if __name__ == "__main__":
 
                 for im in input_array:
 
-                    im_label_array[i].configure(text= "Processing")
+                    im_label_array[i].configure(text="Processing")
                     im_label_array[i].place(relx=0.05, rely=0.1)
 
                     if i > 0:
-                        im_label_array[i-1].configure(text= "Done")
+                        im_label_array[i - 1].configure(text="Done")
 
                     if stopped:
                         im_label_array[i].configure(text="Stopped")
                         break
 
-                    try:
-                        img = Image.open(im)
-                        name = os.path.basename(im)
-                        name = name.split('.')[0] + '.png'
-                        transparent_name = name.split('.')[0] + "_transparent" + '.png'
+                    img = Image.open(im)
+                    name = os.path.basename(im)
+                    name = name.split('.')[0] + '.png'
+                    transparent_name = name.split('.')[0] + "_transparent" + '.png'
 
-                        if inputsize_checkbox.get():
-                             img, transparent = main.process_v2(img, background, isSaveTransparent.get())
-                        else:
-                             img, transparent = main.process(img, background, (width_var, height_var), isSaveTransparent.get())
+                    if inputsize_checkbox.get():
+                        img, transparent = main.process_v2(img, background, isSaveTransparent.get())
+                    else:
+                        img, transparent = main.process(img, background, (width_var, height_var),
+                                                        isSaveTransparent.get())
 
-                        img.save(os.path.join(output_loc, name))
+                    img.save(os.path.join(output_loc, name))
 
-                        if transparent is not None:
-                            transparent.save(os.path.join(output_loc, transparent_name))
+                    if transparent is not None:
+                        transparent.save(os.path.join(output_loc, transparent_name))
 
-                        update_preview(img)
-                    except Exception as e:
-                        error_handler(e, True)
-                        break
+                    update_preview(img)
 
                     if i == len(input_array) - 1:
                         im_label_array[i].configure(text="Done")
 
                     i += 1
+
                 text = "Processing done!"
                 done_handler(text)
                 stop_btn.destroy()
-            else:
-                text = "Pretrained Model not found!"
-                error_handler(text, True)
-        except:
-            text = "Some Parameters are not defined!"
+
+        except AttributeError:
+            text = "No selected Background!"
             error_handler(text, True)
+        except IOError:
+            text = "Cannot Open Images! \nImages does not exist or deleted!"
+            error_handler(text, True)
+        except Exception as e:
+            error_handler(e, True)
 
         column_size = 4
 
@@ -480,6 +501,9 @@ if __name__ == "__main__":
                 input_gallery_gui()
                 isHomeBool = False
                 checkI_home_handler()
+            else:
+                text = "No images found!"
+                error_handler(text, False)
 
     def clear():
         global foreground_input_list_box
