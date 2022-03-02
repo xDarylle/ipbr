@@ -81,5 +81,41 @@ class main():
 
         return new_image, transparent
 
+    def process_capture(self, img, background, def_size, isSaveTransparent):
+        print(def_size)
+        # get matte
+        matte = self.model.get_matte(img)
+
+        img_orig = img
+        matte_orig = matte
+
+        # resize img and matte
+        img = self.im.resize(img, def_size)
+        matte = self.im.resize(matte, def_size)
+
+        # rescale background
+        background = self.im.rescale(background, def_size, False)
+        background = self.im.create_containter(background, background, def_size, True)
+
+        # unify channels to 3
+        img = self.im.unify_channel(img)
+        matte = self.im.unify_channel(np.uint8(matte))
+        background = self.im.unify_channel(background)
+
+        # change background
+        new_image = self.im.change_background(img, matte, background)
+
+        # get transparent foreground
+        if isSaveTransparent:
+            transparent = self.im.get_foreground(Image.fromarray(img_orig), Image.fromarray(np.uint8(matte_orig)))
+        else:
+            transparent = None
+
+        return new_image, transparent
+
+
+
+
+
 
 

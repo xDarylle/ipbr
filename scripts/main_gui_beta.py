@@ -892,14 +892,23 @@ if __name__ == "__main__":
         global imm
         global isSaveTransparent
         global transparent
+        global frame_np
+
+        background = Image.open(background_path)
 
         if frame_update is not None:
-            img = Image.fromarray(np.uint8(frame_update))
+            if inputsize_checkbox.get():
+                height_var, width_var = frame_np.shape[0:2]
+
+            img, transparent = main.process_capture(frame_np, background, (width_var, height_var),
+                                            isSaveTransparent.get())
 
             name = time.strftime("%Y%m%d-%H%M%S") + '.png'
             img.save(os.path.join(output_loc, name))
 
-            if isSaveTransparent.get():
+            img.save(os.path.join(output_loc, name))
+
+            if transparent is not None:
                 transparent_name = name.split('.')[0] + "_transparent" + ".png"
                 try:
                     path = os.path.join(output_loc, "Transparent Images")
@@ -1016,6 +1025,8 @@ if __name__ == "__main__":
         load_lbl.configure(text = "Connecting to camera")
 
         cap = cv2.VideoCapture(camera)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
         while True:
             if not streaming:
