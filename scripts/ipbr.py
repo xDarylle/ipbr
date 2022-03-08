@@ -9,7 +9,6 @@ class main():
     def __init__(self):
         url = "pretrained/modnet_photographic_portrait_matting.ckpt"
         self.model = modnet._modnet(url)
-        self.im = image._image_()
 
     ''' Process if follow_input_size is False. 
         This uses a define size for the output.
@@ -26,24 +25,24 @@ class main():
         matte_orig = matte
 
         # crop
-        im, matte = self.im.crop(img, matte)
+        im, matte = image.crop(img, matte)
 
         # rescale
-        im = self.im.rescale(im, def_size, True)
-        matte = self.im.rescale(matte, def_size, True)
-        bg = self.im.rescale(background, def_size, False)
+        im = image.rescale(im, def_size, True)
+        matte = image.rescale(matte, def_size, True)
+        bg = image.rescale(background, def_size, False)
 
         # create container
-        foreground = self.im.create_containter(im, matte, def_size, False)
-        matte = self.im.create_containter(matte, matte, def_size, False)
-        background = self.im.create_containter(bg, bg, def_size, True)
+        foreground = image.create_containter(im, matte, def_size, False)
+        matte = image.create_containter(matte, matte, def_size, False)
+        background = image.create_containter(bg, bg, def_size, True)
 
         # change bg
-        new_image = self.im.change_background(foreground, matte, background)
+        new_image = image.change_background(foreground, matte, background)
 
         # get transparent foreground
         if isSaveTransparent:
-            transparent = self.im.get_foreground(img_orig, matte_orig)
+            transparent = image.get_foreground(img_orig, matte_orig)
         else:
             transparent = None
 
@@ -60,29 +59,32 @@ class main():
         matte = Image.fromarray(np.uint8(matte))
 
         # rescale background to match foreground
-        bg = self.im.rescale(background, img.size, False)
+        bg = image.rescale(background, img.size, False)
 
         # create container for background
-        bg = self.im.create_containter(bg, bg, img.size, True)
+        bg = image.create_containter(bg, bg, img.size, True)
 
         # unify channels to 3
-        img = self.im.unify_channel(img)
-        matte = self.im.unify_channel(matte)
-        bg =  self.im.unify_channel(bg)
+        img = image.unify_channel(img)
+        matte = image.unify_channel(matte)
+        bg = image.unify_channel(bg)
 
         # change background
-        new_image = self.im.change_background(img, matte, bg)
+        new_image = image.change_background(img, matte, bg)
 
         # get transparent foreground
         if isSaveTransparent:
-            transparent = self.im.get_foreground(img, matte)
+            transparent = image.get_foreground(img, matte)
         else:
             transparent = None
 
         return new_image, transparent
 
+    ''' Process for capturing image using camera. 
+        This uses a define size for the output.
+        This involves a resize function instead of cropping, rescaling and creating container for images.
+    '''
     def process_capture(self, img, background, def_size, isSaveTransparent):
-        print(def_size)
         # get matte
         matte = self.model.get_matte(img)
 
@@ -90,24 +92,24 @@ class main():
         matte_orig = matte
 
         # resize img and matte
-        img = self.im.resize(img, def_size)
-        matte = self.im.resize(matte, def_size)
+        img = image.resize(img, def_size)
+        matte = image.resize(matte, def_size)
 
         # rescale background
-        background = self.im.rescale(background, def_size, False)
-        background = self.im.create_containter(background, background, def_size, True)
+        background = image.rescale(background, def_size, False)
+        background = image.create_containter(background, background, def_size, True)
 
         # unify channels to 3
-        img = self.im.unify_channel(img)
-        matte = self.im.unify_channel(np.uint8(matte))
-        background = self.im.unify_channel(background)
+        img = image.unify_channel(img)
+        matte = image.unify_channel(np.uint8(matte))
+        background = image.unify_channel(background)
 
         # change background
-        new_image = self.im.change_background(img, matte, background)
+        new_image = image.change_background(img, matte, background)
 
         # get transparent foreground
         if isSaveTransparent:
-            transparent = self.im.get_foreground(Image.fromarray(img_orig), Image.fromarray(np.uint8(matte_orig)))
+            transparent = image.get_foreground(Image.fromarray(img_orig), Image.fromarray(np.uint8(matte_orig)))
         else:
             transparent = None
 

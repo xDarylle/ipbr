@@ -13,7 +13,6 @@ from MODNet.src.models.modnet import MODNet
 class cam_modnet():
 
     def __init__(self, model_path):
-
         # create MODNet and load the pre-trained ckpt
         self.modnet = MODNet(backbone_pretrained=False)
         self.modnet = nn.DataParallel(self.modnet).cuda()
@@ -36,12 +35,12 @@ class cam_modnet():
             ]
         )
 
-        self.im = image._image_()
-
-    # replace background of current frame
+    ''' Process for updating the background for live preview. 
+    '''
     def update(self, frame, bg, is_not_custom, size, isSaveTransparent):
+        # prepare the frame
         frame_np = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame_np = self.im.resize(frame_np, (910, 512))
+        frame_np = image.resize(frame_np, (910, 512))
         frame_np = frame_np[:, 120:792, :]
 
         frame_PIL = Image.fromarray(frame_np)
@@ -52,6 +51,7 @@ class cam_modnet():
         if GPU:
             frame_tensor = frame_tensor.cuda()
 
+        # inference
         with torch.no_grad():
             _, _, matte_tensor = self.modnet(frame_tensor, True)
 
@@ -60,30 +60,31 @@ class cam_modnet():
 
         frame_np = cv2.cvtColor(frame_np, cv2.COLOR_RGB2BGR)
 
+        # check if custom size is set
         if is_not_custom:
             h,w = frame_np.shape[0:2]
             def_size = (w,h)
         else:
             def_size = size
-            frame_np = self.im.resize(frame_np,def_size)
-            matte_np = self.im.resize(matte_np,def_size)
-            frame_np = self.im.unify_channel(frame_np)
-            #matte_np = self.im.unify_channel(np.uint8(matte_np))
+            frame_np = image.resize(frame_np,def_size)
+            matte_np = image.resize(matte_np,def_size)
+            frame_np = image.unify_channel(frame_np)
             frame_np = np.array(frame_np)
             matte_np = np.array(matte_np)
 
-        bg = self.im.rescale(bg, def_size, False)
-        bg = self.im.create_containter(bg, bg, def_size, True)
-        bg = self.im.unify_channel(bg)
+        # resize background
+        bg = image.rescale(bg, def_size, False)
+        bg = image.create_containter(bg, bg, def_size, True)
+        bg = image.unify_channel(bg)
         bg = np.array(bg)
 
+        # combine background and foreground
         fg_np = matte_np * frame_np + (1 - matte_np) * bg
 
         # get transparent foreground
         if isSaveTransparent:
-            transparent = self.im.get_foreground(Image.fromarray(frame_np), Image.fromarray(np.uint8(matte_np*255)))
+            transparent = image.get_foreground(Image.fromarray(frame_np), Image.fromarray(np.uint8(matte_np*255)))
         else:
             transparent = None
 
         return np.array(np.uint8(fg_np)), transparent
-

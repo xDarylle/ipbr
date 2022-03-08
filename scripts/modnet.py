@@ -1,6 +1,3 @@
-import numpy as np
-from PIL import Image
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -18,7 +15,6 @@ class _modnet():
         self.modnet = nn.DataParallel(self.modnet).cuda()
         self.modnet.load_state_dict(torch.load(model_path))
         self.modnet.eval()
-        self.im = image._image_()
 
         # define hyper-parameters
         self.ref_size = 512
@@ -35,7 +31,7 @@ class _modnet():
     def get_matte(self, im):
 
         # unify image channels to 3
-        im = self.im.unify_channel(im)
+        im = image.unify_channel(im)
 
         # convert image to PyTorch tensor
         im = self.im_transform(im)
