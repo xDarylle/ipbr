@@ -182,3 +182,5 @@ def optimize_matte_cv(matte):
     matte = cv2.resize(matte, (width, height), interpolation=cv2.INTER_LANCZOS4)
 
     return matte
+
+    # sakhdaskjhdqwuieywqihasd
