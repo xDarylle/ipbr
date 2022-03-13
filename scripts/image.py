@@ -158,4 +158,27 @@ def create_containter(img, matte, size, isBackground):
     temp.paste(img, (x,y), matte)
     return temp
 
+# optimize matte by adjusting size
+def optimize_matte(matte):
+    width, height = matte.size()
 
+    resize_percent = .98
+
+    width *= resize_percent
+    height *= resize_percent
+
+    matte = matte.resize((width, height), Image.LANCZOS)
+
+    return matte
+
+def optimize_matte_cv(matte):
+    height, width = matte.shape[:2]
+
+    resize_percent = .98
+
+    width *= resize_percent
+    height *= resize_percent
+
+    matte = cv2.resize(matte, (width, height), interpolation=cv2.INTER_LANCZOS4)
+
+    return matte
