@@ -11,6 +11,8 @@ from pygrabber.dshow_graph import FilterGraph
 import time
 import numpy as np
 
+from scripts import image
+
 sys.path.append('scripts')
 import ipbr
 import config
@@ -98,21 +100,26 @@ if __name__ == "__main__":
     def deletebackground(image_url, image_view, panel):
         global backgrounds_array
         global background_path
+        global current_background
 
-        image_view.destroy()
-        panel.destroy()
+        if image_url != current_background:
+            image_view.destroy()
+            panel.destroy()
 
-        backgrounds_array.remove(image_url)
-        if len(backgrounds_array) == 0:
-            background_preview.configure(height=160, width=310, image = "")
-            background_path = ""
-            conf.set_background("")
+            backgrounds_array.remove(image_url)
+            if len(backgrounds_array) == 0:
+                background_preview.configure(height=160, width=310, image = "")
+                background_path = ""
+                conf.set_background("")
+                conf.set_array_backgrounds(backgrounds_array)
+                conf.write()
+
             conf.set_array_backgrounds(backgrounds_array)
             conf.write()
-
-        conf.set_array_backgrounds(backgrounds_array)
-        conf.write()
-        background_panel_gui()
+            background_panel_gui()
+        else:
+            del_error = "Current Background Should Net Be Deleted!"
+            error_handler(del_error, True)
 
     def choosebackground(bgimg,image_url, panel):
         #access essential variable background image
@@ -342,6 +349,7 @@ if __name__ == "__main__":
         global stop_btn
         global stopped
         global isModelPresent
+        global current_background
 
         #check if all needed variables are populated
         try:
@@ -352,6 +360,7 @@ if __name__ == "__main__":
                 text = "Output path does not exists or is not set!"
                 error_handler(text, True)
             else:
+                current_background = background_path
                 background = Image.open(background_path)
                 i = 0
                 stopped = False
@@ -401,6 +410,7 @@ if __name__ == "__main__":
 
                     i += 1
 
+                current_background = ""
                 text = "Processing done!"
                 done_handler(text)
                 stop_btn.destroy()
@@ -944,6 +954,7 @@ if __name__ == "__main__":
 
     def thread_process_stream():
         global frame_update
+        global current_background
         global streaming
         global frame_np
         global preview_stream
@@ -1207,6 +1218,7 @@ if __name__ == "__main__":
     isClick_camera = False
     stopped = False
     isGrid = False
+    current_background = ""
     mainwindow_width = 1200
     mainwindow_height = 720
 
