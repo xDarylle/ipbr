@@ -11,7 +11,7 @@ from pygrabber.dshow_graph import FilterGraph
 import time
 import numpy as np
 
-from scripts import image
+from scripts import image, error_panel
 
 sys.path.append('scripts')
 import ipbr
@@ -101,6 +101,9 @@ if __name__ == "__main__":
         global backgrounds_array
         global background_path
         global current_background
+
+        print(image_url)
+        print(current_background)
 
         if image_url != current_background:
             image_view.destroy()
@@ -968,51 +971,56 @@ if __name__ == "__main__":
         global grid_btn
         global isGrid
 
-        current_background = background_path
-        bg = Image.open(background_path)
+        if os.path.isfile(background_path):
 
-        stop_camera_btn = tk.Button(use_camera_frame, height=2, width=9, text="Stop", font=("Roboto", 12), fg="#e0efff",
-                                    bg="#ba6032",
-                                    activebackground="#ba6032", borderwidth=0, highlightthickness=0, cursor="hand2",
-                                    command=stop_camera_handler)
+            current_background = background_path
+            bg = Image.open(background_path)
 
-        grid_btn = tk.Button(use_camera_frame, height=2, width=9, text="Grid", font=("Roboto", 12), fg="#e0efff",
-                                    bg="#4369D9",
-                                    borderwidth=0, highlightthickness=0, cursor="hand2",
-                                    command=set_grid)
+            stop_camera_btn = tk.Button(use_camera_frame, height=2, width=9, text="Stop", font=("Roboto", 12), fg="#e0efff",
+                                        bg="#ba6032",
+                                        activebackground="#ba6032", borderwidth=0, highlightthickness=0, cursor="hand2",
+                                        command=stop_camera_handler)
 
-        while True:
-            try:
-                if frame_np is not None and streaming:
-                    if current_background != background_path:
-                        bg = Image.open(background_path)
-                        current_background = background_path
+            grid_btn = tk.Button(use_camera_frame, height=2, width=9, text="Grid", font=("Roboto", 12), fg="#e0efff",
+                                        bg="#4369D9",
+                                        borderwidth=0, highlightthickness=0, cursor="hand2",
+                                        command=set_grid)
 
-                    frame_update, transparent = cmodnet.update(frame_np, bg, inputsize_checkbox.get(), (width_var, height_var), isSaveTransparent.get())
+            while True:
+                try:
+                    if frame_np is not None and streaming:
+                        if current_background != background_path:
+                            bg = Image.open(background_path)
+                            current_background = background_path
 
-                    load_lbl.destroy()
-                    img = Image.fromarray(frame_update)
-                    img.thumbnail((900,600))
+                        frame_update, transparent = cmodnet.update(frame_np, bg, inputsize_checkbox.get(), (width_var, height_var), isSaveTransparent.get())
 
-                    if isGrid:
-                        img = create_grid(img)
+                        load_lbl.destroy()
+                        img = Image.fromarray(frame_update)
+                        img.thumbnail((900,600))
 
-                    imgtk = ImageTk.PhotoImage(image=img)
-                    preview_stream.config(image=imgtk)
-                    preview_stream.image = imgtk
+                        if isGrid:
+                            img = create_grid(img)
 
-                    # center preview
-                    x = ((930 - img.width) / 2) / 930
-                    y = ((600 - img.height) / 2) / 600
+                        imgtk = ImageTk.PhotoImage(image=img)
+                        preview_stream.config(image=imgtk)
+                        preview_stream.image = imgtk
 
-                    preview_stream.place(relx=x, rely=y)
-                    stop_camera_btn.place(relx=0.78, rely=0.05)
-                    grid_btn.place(relx=0.66, rely = 0.05)
+                        # center preview
+                        x = ((930 - img.width) / 2) / 930
+                        y = ((600 - img.height) / 2) / 600
+
+                        preview_stream.place(relx=x, rely=y)
+                        stop_camera_btn.place(relx=0.78, rely=0.05)
+                        grid_btn.place(relx=0.66, rely = 0.05)
 
 
-            except Exception as e:
-                streaming = False
-                break
+                except Exception as e:
+                    streaming = False
+                    break
+        else:
+            text = "No selected Background!"
+            error_handler(text, False)
 
     def stream():
         global streaming
@@ -1114,6 +1122,7 @@ if __name__ == "__main__":
         global frame_preview
         global use_camera_frame
         global streaming
+        global background_path
 
         if not isClick_camera:
             init_thread = Thread(target=initialize_stream)
