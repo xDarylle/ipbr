@@ -991,54 +991,57 @@ if __name__ == "__main__":
         global grid_btn
         global isGrid
 
-        if current_background:
+        try:
+            current_background = background_path
+            bg = Image.open(background_path)
 
-        current_background = background_path
-        bg = Image.open(background_path)
+            stop_camera_btn = tk.Button(use_camera_frame, height=2, width=9, text="Stop", font=("Roboto", 12),
+                                        fg="#e0efff",
+                                        bg="#ba6032",
+                                        activebackground="#ba6032", borderwidth=0, highlightthickness=0, cursor="hand2",
+                                        command=stop_camera_handler)
 
-        stop_camera_btn = tk.Button(use_camera_frame, height=2, width=9, text="Stop", font=("Roboto", 12), fg="#e0efff",
-                                    bg="#ba6032",
-                                    activebackground="#ba6032", borderwidth=0, highlightthickness=0, cursor="hand2",
-                                    command=stop_camera_handler)
+            grid_btn = tk.Button(use_camera_frame, height=2, width=9, text="Grid", font=("Roboto", 12), fg="#e0efff",
+                                 bg="#4369D9",
+                                 borderwidth=0, highlightthickness=0, cursor="hand2",
+                                 command=set_grid)
 
-        grid_btn = tk.Button(use_camera_frame, height=2, width=9, text="Grid", font=("Roboto", 12), fg="#e0efff",
-                                    bg="#4369D9",
-                                    borderwidth=0, highlightthickness=0, cursor="hand2",
-                                    command=set_grid)
+            while True:
+                try:
+                    if frame_np is not None and streaming:
+                        if current_background != background_path:
+                            bg = Image.open(background_path)
+                            current_background = background_path
 
-        while True:
-            try:
-                if frame_np is not None and streaming:
-                    if current_background != background_path:
-                        bg = Image.open(background_path)
-                        current_background = background_path
+                        frame_update, transparent = cmodnet.update(frame_np, bg, inputsize_checkbox.get(),
+                                                                   (width_var, height_var), isSaveTransparent.get())
 
-                    frame_update, transparent = cmodnet.update(frame_np, bg, inputsize_checkbox.get(), (width_var, height_var), isSaveTransparent.get())
+                        load_lbl.destroy()
+                        img = Image.fromarray(frame_update)
+                        img.thumbnail((900, 600))
 
-                    load_lbl.destroy()
-                    img = Image.fromarray(frame_update)
-                    img.thumbnail((900,600))
+                        if isGrid:
+                            img = create_grid(img)
 
-                    if isGrid:
-                        img = create_grid(img)
+                        imgtk = ImageTk.PhotoImage(image=img)
+                        preview_stream.config(image=imgtk)
+                        preview_stream.image = imgtk
 
-                    imgtk = ImageTk.PhotoImage(image=img)
-                    preview_stream.config(image=imgtk)
-                    preview_stream.image = imgtk
+                        # center preview
+                        x = ((930 - img.width) / 2) / 930
+                        y = ((600 - img.height) / 2) / 600
 
-                    # center preview
-                    x = ((930 - img.width) / 2) / 930
-                    y = ((600 - img.height) / 2) / 600
-
-                    preview_stream.place(relx=x, rely=y)
-                    stop_camera_btn.place(relx=0.78, rely=0.05)
-                    grid_btn.place(relx=0.66, rely = 0.05)
+                        preview_stream.place(relx=x, rely=y)
+                        stop_camera_btn.place(relx=0.78, rely=0.05)
+                        grid_btn.place(relx=0.66, rely=0.05)
 
 
-            except Exception as e:
-                streaming = False
-                break
+                except Exception as e:
+                    streaming = False
+                    break
 
+        except Exception as e:
+            error_handler(f"Some Error Happened! {e}", True)
     def stream():
         global streaming
         global streamer
