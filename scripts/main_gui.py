@@ -11,7 +11,7 @@ from pygrabber.dshow_graph import FilterGraph
 import time
 import numpy as np
 
-from scripts import image, error_panel
+from scripts import image
 
 sys.path.append('scripts')
 import ipbr
@@ -64,38 +64,48 @@ if __name__ == "__main__":
         global isPortraitBackground
         global height_prev_bg
 
-        if os.path.exists(image_url):
-            img = Image.open(image_url)
-            img.thumbnail((250, 250))
-            img = ImageTk.PhotoImage(img)
+        try:
+            if os.path.exists(image_url):
+                img = Image.open(image_url)
+                img.thumbnail((250, 250))
+                img = ImageTk.PhotoImage(img)
 
-            # create the image in image gallery, I used button for command attribute
-            image_panel = tk.Frame(panel, height = 180, width = img.width(), bg = "#161010")
-            mainwindow.update()
-            x = ((panel.winfo_width() - img.width()) / 2) / panel.winfo_width()
-            image_panel.place(relx=x, rely=(yindex))
-            image_view = tk.Button(image_panel, text="view", height=img.height(), width=img.width(), image=img, bg="#383d3a", cursor="hand2", borderwidth=0, highlightthickness=0,
-                                   command=lambda: choosebackground(img,image_url, panel))
-            image_view.place(relx=0,rely=0)
+                # create the image in image gallery, I used button for command attribute
+                image_panel = tk.Frame(panel, height=180, width=img.width(), bg="#161010")
+                mainwindow.update()
+                x = ((panel.winfo_width() - img.width()) / 2) / panel.winfo_width()
+                image_panel.place(relx=x, rely=(yindex))
+                image_view = tk.Button(image_panel, text="view", height=img.height(), width=img.width(), image=img,
+                                       bg="#383d3a", cursor="hand2", borderwidth=0, highlightthickness=0,
+                                       command=lambda: choosebackground(img, image_url, panel))
+                image_view.place(relx=0, rely=0)
 
-            # create a delete button
-            mainwindow.update()
-            bx = (image_view.winfo_width() - 25)/image_view.winfo_width()
-            delete = tk.Button(image_panel, image = trash_image, height="20", width="20", bg="#161010", cursor="hand2",
-                      command=lambda: (deletebackground(image_url, image_view, panel)))
-            delete.place(relx=bx, rely=0.00)
+                # create a delete button
+                mainwindow.update()
+                bx = (image_view.winfo_width() - 25) / image_view.winfo_width()
+                delete = tk.Button(image_panel, image=trash_image, height="20", width="20", bg="#161010",
+                                   cursor="hand2",
+                                   command=lambda: (deletebackground(image_url, image_view, panel)))
+                delete.place(relx=bx, rely=0.00)
 
-            im_index += 1
-            # increase yindex for proper margin of succeeding images
-            yindex += 0.285
-        else:
-            text = "Background Image Not Found\n" + image_url
+                im_index += 1
+                # increase yindex for proper margin of succeeding images
+                yindex += 0.285
+            else:
+                text = "Background Image Not Found\n" + image_url
+                error_handler(text, True)
+                backgrounds_array.remove(image_url)
+                conf.set_array_backgrounds(backgrounds_array)
+                conf.write()
+
+            return panel
+
+        except UnidentifiedImageError:
+            text = "Some images are corrupted!"
             error_handler(text, True)
-            backgrounds_array.remove(image_url)
-            conf.set_array_backgrounds(backgrounds_array)
-            conf.write()
 
-        return panel
+        except Exception as e:
+            error_handler(f"Some Error Happened: \n {e}", True)
 
     def deletebackground(image_url, image_view, panel):
         global backgrounds_array
@@ -363,60 +373,64 @@ if __name__ == "__main__":
                 text = "Output path does not exists or is not set!"
                 error_handler(text, True)
             else:
-                current_background = background_path
-                background = Image.open(background_path)
-                i = 0
-                stopped = False
-                stop_btn = tk.Button(menu_frame, height=3, width=25, text="STOP", font=("Roboto", 16), fg="#e0efff",
-                                     bg="#DC4343", activebackground="#4a9eff", cursor="hand2", borderwidth=0,
-                                     highlightthickness=0, command=stop_process)
-                stop_btn.place(relx=0.025, rely=0.87)
+                if os.path.isfile(background_path):
+                    current_background = background_path
+                    background = Image.open(background_path)
+                    i = 0
+                    stopped = False
+                    stop_btn = tk.Button(menu_frame, height=3, width=25, text="STOP", font=("Roboto", 16), fg="#e0efff",
+                                         bg="#DC4343", activebackground="#4a9eff", cursor="hand2", borderwidth=0,
+                                         highlightthickness=0, command=stop_process)
+                    stop_btn.place(relx=0.025, rely=0.87)
 
-                for im in input_array:
+                    for im in input_array:
 
-                    im_label_array[i].configure(text="Processing")
-                    im_label_array[i].place(relx=0.05, rely=0.1)
+                        im_label_array[i].configure(text="Processing")
+                        im_label_array[i].place(relx=0.05, rely=0.1)
 
-                    if i > 0:
-                        im_label_array[i - 1].configure(text="Done")
+                        if i > 0:
+                            im_label_array[i - 1].configure(text="Done")
 
-                    if stopped:
-                        im_label_array[i].configure(text="Stopped")
-                        break
+                        if stopped:
+                            im_label_array[i].configure(text="Stopped")
+                            break
 
-                    img = Image.open(im)
-                    name = os.path.basename(im)
-                    name = name.split('.')[0] + '.png'
+                        img = Image.open(im)
+                        name = os.path.basename(im)
+                        name = name.split('.')[0] + '.png'
 
-                    if inputsize_checkbox.get():
-                        img, transparent = main.process_v2(img, background, isSaveTransparent.get())
-                    else:
-                        img, transparent = main.process(img, background, (width_var, height_var),
-                                                        isSaveTransparent.get())
+                        if inputsize_checkbox.get():
+                            img, transparent = main.process_v2(img, background, isSaveTransparent.get())
+                        else:
+                            img, transparent = main.process(img, background, (width_var, height_var),
+                                                            isSaveTransparent.get())
 
-                    img.save(os.path.join(output_loc, name))
+                        img.save(os.path.join(output_loc, name))
 
-                    if transparent is not None:
-                        transparent_name = name.split('.')[0] + "_transparent" + ".png"
-                        try:
-                            path = os.path.join(output_loc, "Transparent Images")
-                            os.mkdir(path)
-                        except:
-                            pass
+                        if transparent is not None:
+                            transparent_name = name.split('.')[0] + "_transparent" + ".png"
+                            try:
+                                path = os.path.join(output_loc, "Transparent Images")
+                                os.mkdir(path)
+                            except:
+                                pass
 
-                        transparent.save(os.path.join(path, transparent_name))
+                            transparent.save(os.path.join(path, transparent_name))
 
-                    update_preview(img)
+                        update_preview(img)
 
-                    if i == len(input_array) - 1:
-                        im_label_array[i].configure(text="Done")
+                        if i == len(input_array) - 1:
+                            im_label_array[i].configure(text="Done")
 
-                    i += 1
+                        i += 1
 
-                current_background = ""
-                text = "Processing done!"
-                done_handler(text)
-                stop_btn.destroy()
+                    current_background = ""
+                    text = "Processing done!"
+                    done_handler(text)
+                    stop_btn.destroy()
+                else:
+                    text = "Background Image Not Found "
+                    error_handler(text, True)
 
         except AttributeError:
             text = "No selected Background!"
@@ -425,7 +439,7 @@ if __name__ == "__main__":
             text = "Cannot Open Images! \nImages does not exist or deleted!"
             error_handler(text, True)
         except Exception as e:
-            error_handler(e, True)
+            error_handler(f"Some Error happened! \n {e}", True)
 
         column_size = 4
 
@@ -653,38 +667,44 @@ if __name__ == "__main__":
         i = 0
         for file in input_array:
             # if file is an image then create an image widget
-            image = Image.open(file)
-            if column_size == 4:
-                image.thumbnail((215, 215), resample=1)
-            if column_size == 3:
-                image.thumbnail((280, 280), resample=1)
-            if column_size == 2:
-                image.thumbnail((420, 420), resample=1)
+            if os.path.isfile(file):
+                image = Image.open(file)
+                if column_size == 4:
+                    image.thumbnail((215, 215), resample=1)
+                if column_size == 3:
+                    image.thumbnail((280, 280), resample=1)
+                if column_size == 2:
+                    image.thumbnail((420, 420), resample=1)
 
-            image = ImageTk.PhotoImage(image)
-            images.append(image)
+                image = ImageTk.PhotoImage(image)
+                images.append(image)
 
-            view_frame.update()
-            if view_frame is not None and view_frame.winfo_height() > 630:
-                scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
-                scrollbar.place(relx=1, rely=0, relheight=0.89, anchor='ne')
-                display_canvas.configure(yscrollcommand=scrollbar.set)
+                view_frame.update()
+                if view_frame is not None and view_frame.winfo_height() > 630:
+                    scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
+                    scrollbar.place(relx=1, rely=0, relheight=0.89, anchor='ne')
+                    display_canvas.configure(yscrollcommand=scrollbar.set)
 
-            if column_cimension < column_size:
-                image_frame = tk.Frame(view_frame, height=image.height(), width=image.width(), bg="#2C2B2B", bd=0, relief="groove")
-                image_frame.grid(row=row_dimension, column=column_cimension)
-                # change the h and w of tk.Button when trying display the image
-                container = tk.Button(image_frame, image=image, borderwidth= 0, highlightthickness=0, command=lambda id=i :click_image(id))
-                container_array.append(container)
-                container.place(relx=0.05, rely=0.1)
-                im_label = tk.Label(image_frame)
-                im_label_array.append(im_label)
-                column_cimension += 1
+                if column_cimension < column_size:
+                    image_frame = tk.Frame(view_frame, height=image.height(), width=image.width(), bg="#2C2B2B", bd=0,
+                                           relief="groove")
+                    image_frame.grid(row=row_dimension, column=column_cimension)
+                    # change the h and w of tk.Button when trying display the image
+                    container = tk.Button(image_frame, image=image, borderwidth=0, highlightthickness=0,
+                                          command=lambda id=i: click_image(id))
+                    container_array.append(container)
+                    container.place(relx=0.05, rely=0.1)
+                    im_label = tk.Label(image_frame)
+                    im_label_array.append(im_label)
+                    column_cimension += 1
 
-            if column_cimension == column_size:
-                row_dimension += 1
-                column_cimension = 0
-            i+=1
+                if column_cimension == column_size:
+                    row_dimension += 1
+                    column_cimension = 0
+                i += 1
+            else:
+                text = "Cannot Open Images! \nImages does not exist or deleted!"
+                error_handler(text, True)
 
     def input_gallery_gui():
         global images
@@ -971,56 +991,53 @@ if __name__ == "__main__":
         global grid_btn
         global isGrid
 
-        if os.path.isfile(background_path):
+        if current_background:
 
-            current_background = background_path
-            bg = Image.open(background_path)
+        current_background = background_path
+        bg = Image.open(background_path)
 
-            stop_camera_btn = tk.Button(use_camera_frame, height=2, width=9, text="Stop", font=("Roboto", 12), fg="#e0efff",
-                                        bg="#ba6032",
-                                        activebackground="#ba6032", borderwidth=0, highlightthickness=0, cursor="hand2",
-                                        command=stop_camera_handler)
+        stop_camera_btn = tk.Button(use_camera_frame, height=2, width=9, text="Stop", font=("Roboto", 12), fg="#e0efff",
+                                    bg="#ba6032",
+                                    activebackground="#ba6032", borderwidth=0, highlightthickness=0, cursor="hand2",
+                                    command=stop_camera_handler)
 
-            grid_btn = tk.Button(use_camera_frame, height=2, width=9, text="Grid", font=("Roboto", 12), fg="#e0efff",
-                                        bg="#4369D9",
-                                        borderwidth=0, highlightthickness=0, cursor="hand2",
-                                        command=set_grid)
+        grid_btn = tk.Button(use_camera_frame, height=2, width=9, text="Grid", font=("Roboto", 12), fg="#e0efff",
+                                    bg="#4369D9",
+                                    borderwidth=0, highlightthickness=0, cursor="hand2",
+                                    command=set_grid)
 
-            while True:
-                try:
-                    if frame_np is not None and streaming:
-                        if current_background != background_path:
-                            bg = Image.open(background_path)
-                            current_background = background_path
+        while True:
+            try:
+                if frame_np is not None and streaming:
+                    if current_background != background_path:
+                        bg = Image.open(background_path)
+                        current_background = background_path
 
-                        frame_update, transparent = cmodnet.update(frame_np, bg, inputsize_checkbox.get(), (width_var, height_var), isSaveTransparent.get())
+                    frame_update, transparent = cmodnet.update(frame_np, bg, inputsize_checkbox.get(), (width_var, height_var), isSaveTransparent.get())
 
-                        load_lbl.destroy()
-                        img = Image.fromarray(frame_update)
-                        img.thumbnail((900,600))
+                    load_lbl.destroy()
+                    img = Image.fromarray(frame_update)
+                    img.thumbnail((900,600))
 
-                        if isGrid:
-                            img = create_grid(img)
+                    if isGrid:
+                        img = create_grid(img)
 
-                        imgtk = ImageTk.PhotoImage(image=img)
-                        preview_stream.config(image=imgtk)
-                        preview_stream.image = imgtk
+                    imgtk = ImageTk.PhotoImage(image=img)
+                    preview_stream.config(image=imgtk)
+                    preview_stream.image = imgtk
 
-                        # center preview
-                        x = ((930 - img.width) / 2) / 930
-                        y = ((600 - img.height) / 2) / 600
+                    # center preview
+                    x = ((930 - img.width) / 2) / 930
+                    y = ((600 - img.height) / 2) / 600
 
-                        preview_stream.place(relx=x, rely=y)
-                        stop_camera_btn.place(relx=0.78, rely=0.05)
-                        grid_btn.place(relx=0.66, rely = 0.05)
+                    preview_stream.place(relx=x, rely=y)
+                    stop_camera_btn.place(relx=0.78, rely=0.05)
+                    grid_btn.place(relx=0.66, rely = 0.05)
 
 
-                except Exception as e:
-                    streaming = False
-                    break
-        else:
-            text = "No selected Background!"
-            error_handler(text, False)
+            except Exception as e:
+                streaming = False
+                break
 
     def stream():
         global streaming
@@ -1091,7 +1108,8 @@ if __name__ == "__main__":
 
         preview_stream = tk.Label(frame_preview, bg="#2C2B2B")
 
-        try:
+        if os.path.isfile(background_path):
+
             streaming = True
 
             start_cam_btn.destroy()
@@ -1109,8 +1127,8 @@ if __name__ == "__main__":
 
             mainwindow.bind('<KeyPress>', press)
 
-        except AttributeError:
-            text = "Cannot open background!"
+        else:
+            text = "No Background Found!"
             error_handler(text, True)
 
     def use_camera_handler():
@@ -1247,11 +1265,15 @@ if __name__ == "__main__":
         isSaveTransparent.set(False)
 
     # set default background preview
-    if  len(backgrounds_array) > 0:
-        if background_path:
-            background_image = Image.open(background_path)
-            background_image.thumbnail((250, 250))
-            background_image = ImageTk.PhotoImage(background_image)
+    if len(backgrounds_array) > 0:
+        if os.path.isfile(background_path):
+            try:
+                background_image = Image.open(background_path)
+                background_image.thumbnail((250, 250))
+                background_image = ImageTk.PhotoImage(background_image)
+            except:
+                text = "Cannot Open Background Image to Preview!"
+                error_handler(text, True)
         else:
             background_image = None
     else:
