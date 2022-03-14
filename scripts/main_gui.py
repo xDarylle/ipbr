@@ -10,14 +10,14 @@ import cv2
 from pygrabber.dshow_graph import FilterGraph
 import time
 import numpy as np
-
-from scripts import image
+import traceback
 
 sys.path.append('scripts')
 import ipbr
 import config
 import cam_modnet
 from error_panel import error_handler, done_handler
+
 
 if __name__ == "__main__":
     def background_panel_gui():
@@ -435,11 +435,13 @@ if __name__ == "__main__":
         except AttributeError:
             text = "No selected Background!"
             error_handler(text, True)
+            print(traceback.format_exc())
         except IOError:
             text = "Cannot Open Images! \nImages does not exist or deleted!"
             error_handler(text, True)
         except Exception as e:
             error_handler(f"Some Error happened! \n {e}", True)
+            print(traceback.format_exc())
 
         column_size = 4
 
@@ -925,14 +927,25 @@ if __name__ == "__main__":
         global imm
         global isSaveTransparent
         global transparent
+        global width_var
+        global height_var
+
+        background = Image.open(background_path)
 
         if frame_update is not None:
-            img = Image.fromarray(np.uint8(frame_update))
+            if inputsize_checkbox.get():
+                height_var, width_var = 512, 910
+                print("hererererererrerere")
+
+            img, transparent = main.process_capture(frame_np, background, (width_var, height_var),
+                                                    isSaveTransparent.get())
 
             name = time.strftime("%Y%m%d-%H%M%S") + '.png'
             img.save(os.path.join(output_loc, name))
 
-            if isSaveTransparent.get():
+            img.save(os.path.join(output_loc, name))
+
+            if transparent is not None:
                 transparent_name = name.split('.')[0] + "_transparent" + ".png"
                 try:
                     path = os.path.join(output_loc, "Transparent Images")
@@ -942,10 +955,10 @@ if __name__ == "__main__":
 
                 transparent.save(os.path.join(path, transparent_name))
 
-            img.thumbnail((400,400))
+            img.thumbnail((400, 400))
             imgtk = ImageTk.PhotoImage(image=img)
             imm.append(imgtk)
-            preview.configure(height=330, width=315, image = imgtk)
+            preview.configure(height=330, width=315, image=imgtk)
 
     def press(event):
         try:
@@ -991,57 +1004,53 @@ if __name__ == "__main__":
         global grid_btn
         global isGrid
 
-        try:
-            current_background = background_path
-            bg = Image.open(background_path)
+        current_background = background_path
+        bg = Image.open(background_path)
 
-            stop_camera_btn = tk.Button(use_camera_frame, height=2, width=9, text="Stop", font=("Roboto", 12),
-                                        fg="#e0efff",
-                                        bg="#ba6032",
-                                        activebackground="#ba6032", borderwidth=0, highlightthickness=0, cursor="hand2",
-                                        command=stop_camera_handler)
+        stop_camera_btn = tk.Button(use_camera_frame, height=2, width=9, text="Stop", font=("Roboto", 12), fg="#e0efff",
+                                    bg="#ba6032",
+                                    activebackground="#ba6032", borderwidth=0, highlightthickness=0, cursor="hand2",
+                                    command=stop_camera_handler)
 
-            grid_btn = tk.Button(use_camera_frame, height=2, width=9, text="Grid", font=("Roboto", 12), fg="#e0efff",
-                                 bg="#4369D9",
-                                 borderwidth=0, highlightthickness=0, cursor="hand2",
-                                 command=set_grid)
+        grid_btn = tk.Button(use_camera_frame, height=2, width=9, text="Grid", font=("Roboto", 12), fg="#e0efff",
+                                    bg="#4369D9",
+                                    borderwidth=0, highlightthickness=0, cursor="hand2",
+                                    command=set_grid)
 
-            while True:
-                try:
-                    if frame_np is not None and streaming:
-                        if current_background != background_path:
-                            bg = Image.open(background_path)
-                            current_background = background_path
+        while True:
+            try:
+                if frame_np is not None and streaming:
+                    if current_background != background_path:
+                        bg = Image.open(background_path)
+                        current_background = background_path
 
-                        frame_update, transparent = cmodnet.update(frame_np, bg, inputsize_checkbox.get(),
-                                                                   (width_var, height_var), isSaveTransparent.get())
+                    frame_update, transparent = cmodnet.update(frame_np, bg, inputsize_checkbox.get(), (width_var, height_var), isSaveTransparent.get())
 
-                        load_lbl.destroy()
-                        img = Image.fromarray(frame_update)
-                        img.thumbnail((900, 600))
+                    load_lbl.destroy()
+                    img = Image.fromarray(frame_update)
+                    img.thumbnail((900,600))
 
-                        if isGrid:
-                            img = create_grid(img)
+                    if isGrid:
+                        img = create_grid(img)
 
-                        imgtk = ImageTk.PhotoImage(image=img)
-                        preview_stream.config(image=imgtk)
-                        preview_stream.image = imgtk
+                    imgtk = ImageTk.PhotoImage(image=img)
+                    preview_stream.config(image=imgtk)
+                    preview_stream.image = imgtk
 
-                        # center preview
-                        x = ((930 - img.width) / 2) / 930
-                        y = ((600 - img.height) / 2) / 600
+                    # center preview
+                    x = ((930 - img.width) / 2) / 930
+                    y = ((600 - img.height) / 2) / 600
 
-                        preview_stream.place(relx=x, rely=y)
-                        stop_camera_btn.place(relx=0.78, rely=0.05)
-                        grid_btn.place(relx=0.66, rely=0.05)
+                    preview_stream.place(relx=x, rely=y)
+                    stop_camera_btn.place(relx=0.78, rely=0.05)
+                    grid_btn.place(relx=0.66, rely = 0.05)
 
 
-                except Exception as e:
-                    streaming = False
-                    break
+            except Exception as e:
+                print(traceback.format_exc())
+                streaming = False
+                break
 
-        except Exception as e:
-            error_handler(f"Some Error Happened! {e}", True)
     def stream():
         global streaming
         global streamer

@@ -1,6 +1,7 @@
 from PIL import Image
 import numpy as np
 import cv2
+import math
 
 # unify channel to 3
 def unify_channel(im):
@@ -146,10 +147,10 @@ def create_containter(img, matte, size, isBackground):
     # align img to center
     x = int((size_width - img_width) / 2)
     if not isBackground:
-        y = int(size_height - img_height)
+        y = int(size_height - img_height) - int(img_height * 0.01)
         # top padding
         if y < (size_height * 0.15):
-            y = int(size_height * 0.15)
+            y = int(size_height * 0.15) - int(img_height * 0.01)
     else:
         y = 0
 
@@ -158,29 +159,38 @@ def create_containter(img, matte, size, isBackground):
     temp.paste(img, (x,y), matte)
     return temp
 
-# optimize matte by adjusting size
 def optimize_matte(matte):
-    width, height = matte.size()
-
-    resize_percent = .98
-
-    width *= resize_percent
-    height *= resize_percent
-
-    matte = matte.resize((width, height), Image.LANCZOS)
-
-    return matte
-
-def optimize_matte_cv(matte):
     height, width = matte.shape[:2]
 
-    resize_percent = .98
+    resize_percent = .97
+
+    print(width, height)
 
     width *= resize_percent
     height *= resize_percent
 
-    matte = cv2.resize(matte, (width, height), interpolation=cv2.INTER_LANCZOS4)
+    print(width, height)
+
+    matte = cv2.resize(matte, (math.ceil(width), math.ceil(height)), interpolation=cv2.INTER_LANCZOS4)
 
     return matte
 
-    # sakhdaskjhdqwuieywqihasd
+def align_image(image, shape, isMatte):
+    height, width = image.shape[:2]
+    baseheight, basewidth = shape[:2]
+
+    temp = np.full(shape, 0)
+
+    x = math.ceil((basewidth - width) / 2)
+    if isMatte:
+        percent = (1 - (height/baseheight))/2
+    else:
+        percent = 1 - (height*0.97/baseheight)
+
+    print(baseheight, height)
+    print(percent, isMatte)
+    y = (baseheight - height) + math.ceil(height * percent)
+    print(image.shape)
+    temp[y:y + height, x:x + width] = image[0:height - math.ceil(height * percent), ]
+
+    return np.uint8(temp)

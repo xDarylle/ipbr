@@ -16,7 +16,7 @@ class main():
         an image container.
     '''
     def process(self, img, background, def_size, isSaveTransparent):
-
+        print("here")
         # get matte
         matte = self.model.get_matte(img)
         matte = Image.fromarray(np.uint8(matte))
@@ -30,13 +30,16 @@ class main():
         # rescale
         im = image.rescale(im, def_size, True)
         matte = image.rescale(matte, def_size, True)
-        matte = image.optimize_matte(matte)
         bg = image.rescale(background, def_size, False)
 
         # create container
         foreground = image.create_containter(im, matte, def_size, False)
         matte = image.create_containter(matte, matte, def_size, False)
         background = image.create_containter(bg, bg, def_size, True)
+
+        matte = image.optimize_matte(np.array(matte))
+        matte = image.align_image(matte, np.array(img).shape[:2], True)
+        foreground = image.align_image(np.array(foreground), np.array(foreground).shape, False)
 
         # change bg
         new_image = image.change_background(foreground, matte, background)
@@ -54,7 +57,7 @@ class main():
         Does not involve cropping and rescaling of input image. 
     '''
     def process_v2(self, img, background, isSaveTransparent):
-
+        print("here 12")
         # get matte
         matte = self.model.get_matte(img)
         matte = Image.fromarray(np.uint8(matte))
@@ -62,11 +65,13 @@ class main():
         # rescale background to match foreground
         bg = image.rescale(background, img.size, False)
 
-        matte = image.optimize_matte(matte)
+        matte = image.optimize_matte(np.array(matte))
 
         # create container for background
         bg = image.create_containter(bg, bg, img.size, True)
-        matte = image.create_containter(matte, matte, img.size, False)
+
+        matte = image.align_image(matte, np.array(img).shape[:2], True)
+        img = image.align_image(np.array(img), np.array(img).shape, False)
 
         # unify channels to 3
         img = image.unify_channel(img)
@@ -98,16 +103,14 @@ class main():
         # resize img and matte
         img = image.resize(img, def_size)
         matte = image.resize(matte, def_size)
-        matte = image.optimize_matte_cv(matte)
+
+        matte = image.optimize_matte(matte)
+        matte = image.align_image(matte, np.array(img).shape[:2], True)
+        img = image.align_image(np.array(img), np.array(img).shape, False)
 
         # rescale background
         background = image.rescale(background, def_size, False)
         background = image.create_containter(background, background, def_size, True)
-
-        # create container for matte
-        matte = Image.fromarray(np.uint8(matte))
-        matte = image.create_containter(matte, matte, def_size, False)
-        matte = np.array(matte)
 
         # unify channels to 3
         img = image.unify_channel(img)
