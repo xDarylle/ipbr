@@ -218,7 +218,37 @@ if __name__ == "__main__":
 
         checkbox(height_entry, width_entry)
 
+        # output size templete
+        tk.Frame(setting_panel, height = 72, width = 94, bg = "#e6e6e6").place(relx=0.145,rely=0.5025)
+        tk.Button(setting_panel, font = ("Tahoma", 11), fg="#a8a8a8", bg="#161010", activebackground = "#363636", text = "1 X 1 inches", height = 3, width = 10, cursor = "hand2", bd = 2, command = lambda: template_size_handler(96 , 96 , height_entry, width_entry)).place(relx=0.15,rely=0.505)
+        tk.Frame(setting_panel, height=72, width=94, bg="#e6e6e6").place(relx=0.460, rely=0.5025)
+        tk.Button(setting_panel, font = ("Tahoma", 11), fg="#a8a8a8", bg="#161010", activebackground = "#363636", text = "2 X 2 inches", height = 3, width = 10, cursor = "hand2", bd = 2, command = lambda: template_size_handler(192, 192, height_entry, width_entry)).place(relx=0.465,rely=0.505)
+        tk.Frame(setting_panel, height=72, width=94, bg="#e6e6e6").place(relx=0.145, rely=0.6225)
+        tk.Button(setting_panel, font = ("Tahoma", 11), fg="#a8a8a8", bg="#161010", activebackground = "#363636", text = "3.5 x 4.5 cm", height = 3, width = 10, cursor = "hand2", bd = 2, command = lambda: template_size_handler( 132, 170,height_entry, width_entry)).place(relx=0.15,rely=0.625)
+
+
         return height_error_label, width_error_label, output_error_label, output_loc_entry, setting_panel, customreso_cbeckbox, height_entry, width_entry
+
+
+    def template_size_handler(passedHeight, passwedWidth, height_entry, width_entry):
+        global width_var
+        global height_var
+        global width_var
+        global height_var
+
+        # set passed size to global variables
+        height_var = passedHeight
+        width_var = passwedWidth
+        # set state of entry to normal
+        height_entry.configure(state = "normal")
+        height_entry.delete(0,"end")
+        height_entry.insert(0, passedHeight)
+        width_entry.configure(state="normal")
+        width_entry.delete(0,"end")
+        width_entry.insert(0, passwedWidth)
+
+        print(height_var)
+        print(width_var)
 
     def use_input_reso_handler(inputsize_checkbox,customreso_cbeckbox,  height_entry, width_entry):
         global ifcheck_var
