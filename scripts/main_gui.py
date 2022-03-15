@@ -557,7 +557,7 @@ if __name__ == "__main__":
         is_selected.clear()
         checkbox_array.clear()
         im_label_array.clear()
-        use_cam_btn_disabled.destroy()
+        #use_cam_btn_disabled.destroy()
         preview.configure(image = None)
 
         for widgets in foreground_input_list_box.winfo_children():
@@ -747,7 +747,7 @@ if __name__ == "__main__":
         global select_btn_disabled
         global del_btn_disabled
         global clean_btn_disabled
-        global use_cam_btn_disabled
+        # global use_cam_btn_disabled
         global column_size
         global column_handler_btn_disabled
         global column_label
@@ -757,7 +757,7 @@ if __name__ == "__main__":
                 select_btn.configure(state = "disabled",cursor="arrow")
                 del_btn.configure(state="disabled",cursor="arrow")
                 clean_btn.configure(state = "disabled",cursor="arrow")
-                use_cam_btn.configure(state="normal", cursor="hand2")
+                #use_cam_btn.configure(state="normal", cursor="hand2")
                 column_handler_btn.configure(state = "disabled", cursor = "arrow")
 
                 if column_label["text"] == "Large":
@@ -778,34 +778,33 @@ if __name__ == "__main__":
                 clean_btn_disabled = tk.Label(frame1, image=clear_image_disable, bg = "#323232")
                 clean_btn_disabled.place(relx=0.18, rely=0.015)
 
-                try:
-                    use_cam_btn_disabled.destroy()
-                except:
-                    pass
+                # try:
+                #     use_cam_btn_disabled.destroy()
+                # except:
+                #     pass
 
             else:
                 select_btn.configure(state = "normal", cursor = "hand2")
                 clean_btn.configure(state = "normal", cursor = "hand2")
-                use_cam_btn.configure(state="disabled",cursor="arrow")
-                column_handler_btn.configure(state="normal", cursor="hand2")
+#                column_handler_btn.configure(state="normal", cursor="hand2")
 
                 select_btn_disabled.destroy()
                 clean_btn_disabled.destroy()
                 column_handler_btn_disabled.destroy()
 
-                try:
-                    use_cam_btn_disabled.destroy()
-                except:
-                    pass
+                # try:
+                #     use_cam_btn_disabled.destroy()
+                # except:
+                #     pass
 
-                use_cam_btn_disabled = tk.Label(frame1, image=camera_image_disable, bg="#323232")
-                use_cam_btn_disabled.place(relx=0.655, rely=0.015)
+                # use_cam_btn_disabled = tk.Label(frame1, image=camera_image_disable, bg="#323232")
+                # use_cam_btn_disabled.place(relx=0.655, rely=0.015)
         else:
             isHomeBool = True
             select_btn.configure(state="disabled",cursor="arrow")
             del_btn.configure(state="disabled",cursor="arrow")
             clean_btn.configure(state="disabled",cursor="arrow")
-            use_cam_btn.configure(state="normal", cursor="hand2")
+            # use_cam_btn.configure(state="normal", cursor="hand2")
             column_handler_btn.configure(state="disabled", cursor="arrow")
 
             select_btn_disabled = tk.Label(frame1, image=select_image_disable, bg = "#323232")
@@ -826,10 +825,10 @@ if __name__ == "__main__":
 
             column_handler_btn_disabled.place(relx=0.235, rely=0.015)
 
-            try:
-                use_cam_btn_disabled.destroy()
-            except:
-                pass
+            # try:
+            #     use_cam_btn_disabled.destroy()
+            # except:
+            #     pass
 
     def add_image_handler():
         global input_array
@@ -1322,13 +1321,13 @@ if __name__ == "__main__":
     clear_image_disable.thumbnail((50,50))
     clear_image_disable = ImageTk.PhotoImage(clear_image_disable)
 
-    camera_image = Image.open("resources/images/Camera.png")
-    camera_image.thumbnail((50,50))
-    camera_image = ImageTk.PhotoImage(camera_image)
+    # camera_image = Image.open("resources/images/Camera.png")
+    # camera_image.thumbnail((50,50))
+    # camera_image = ImageTk.PhotoImage(camera_image)
 
-    camera_image_disable = Image.open("resources/images/Camera-disabled.png")
-    camera_image_disable.thumbnail((50,50))
-    camera_image_disable = ImageTk.PhotoImage(camera_image_disable)
+    # camera_image_disable = Image.open("resources/images/Camera-disabled.png")
+    # camera_image_disable.thumbnail((50,50))
+    # camera_image_disable = ImageTk.PhotoImage(camera_image_disable)
 
     trash_image = Image.open("resources/images/trash.png")
     trash_image.thumbnail((20,20))
@@ -1391,9 +1390,9 @@ if __name__ == "__main__":
     column_handler_btn.place(relx=0.235,rely=0.015)
     column_label = tk.Label(frame1, text = "Small", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232")
     column_label.place(relx = 0.24, rely = 0.1)
-    use_cam_btn = tk.Button(frame1, image = camera_image, command =use_camera_handler,bg = "#323232", height = 50, width = 50,borderwidth= 0 , highlightthickness= 0)
-    use_cam_btn.place(relx=0.655,rely=0.015)
-    tk.Label(frame1, text="Use Camera", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232").place(relx = 0.6425, rely = 0.1)
+    # use_cam_btn = tk.Button(frame1, image = camera_image, command =use_camera_handler,bg = "#323232", height = 50, width = 50,borderwidth= 0 , highlightthickness= 0)
+    # use_cam_btn.place(relx=0.655,rely=0.015)
+    #tk.Label(frame1, text="Use Camera", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232").place(relx = 0.6425, rely = 0.1)
 
     foreground_input_list_box = tk.Listbox(mainwindow, selectmode= tk.SINGLE, width = 200, height = 38, bg = "#2C2B2B", bd = 1, relief = "groove", borderwidth= 0, highlightthickness=0 )
     foreground_input_list_box.drop_target_register(DND_FILES)
