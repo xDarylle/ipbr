@@ -927,18 +927,9 @@ if __name__ == "__main__":
         global imm
         global isSaveTransparent
         global transparent
-        global width_var
-        global height_var
-
-        background = Image.open(background_path)
 
         if frame_update is not None:
-            if inputsize_checkbox.get():
-                height_var, width_var = 512, 910
-                print("hererererererrerere")
-
-            img, transparent = main.process_capture(frame_np, background, (width_var, height_var),
-                                                    isSaveTransparent.get())
+            img = Image.fromarray(np.uint8(frame_update))
 
             name = time.strftime("%Y%m%d-%H%M%S") + '.png'
             img.save(os.path.join(output_loc, name))
@@ -1059,6 +1050,8 @@ if __name__ == "__main__":
         global load_lbl
         global cap
 
+        disconnect_img = cv2.imread("resources/images/disconnect.png")
+
         t2 = Thread(target = thread_process_stream)
         t2.daemon = True
         load_lbl.configure(text = "Connecting to camera")
@@ -1066,10 +1059,13 @@ if __name__ == "__main__":
         cap = cv2.VideoCapture(camera)
 
         while True:
-            if not streaming:
-                break
-
             _, frame = cap.read()
+
+            if frame.all() == disconnect_img.all():
+                text = "Camera is disconnected!"
+                error_handler(text, True)
+                stop_camera_handler()
+                break
 
             if frame is not None and streaming:
                 frame_np = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -1079,6 +1075,9 @@ if __name__ == "__main__":
                         t2.start()
                     except RuntimeError:
                         pass
+            else:
+                streaming = False
+                break
 
     def stop_camera_handler():
         global isClick_camera
@@ -1091,9 +1090,12 @@ if __name__ == "__main__":
 
         streaming = False
 
-        preview_stream.destroy()
-        stop_camera_btn.destroy()
-        grid_btn.destroy()
+        try:
+            preview_stream.destroy()
+            grid_btn.destroy()
+            stop_camera_btn.destroy()
+        except:
+            pass
 
         start_cam_btn = tk.Button(frame_preview, height=3, width=25, text="Start Camera Capture", font=("Roboto", 14),
                                   fg="#ffffff", bg="#4369D9", activebackground="#314d9e", borderwidth=0,

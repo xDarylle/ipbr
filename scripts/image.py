@@ -160,37 +160,7 @@ def create_containter(img, matte, size, isBackground):
     return temp
 
 def optimize_matte(matte):
-    height, width = matte.shape[:2]
+    kernel = np.ones((5, 5), np.uint8)
+    erosion = cv2.erode(matte, kernel, cv2.BORDER_REFLECT, iterations=1)
 
-    resize_percent = .97
-
-    print(width, height)
-
-    width *= resize_percent
-    height *= resize_percent
-
-    print(width, height)
-
-    matte = cv2.resize(matte, (math.ceil(width), math.ceil(height)), interpolation=cv2.INTER_LANCZOS4)
-
-    return matte
-
-def align_image(image, shape, isMatte):
-    height, width = image.shape[:2]
-    baseheight, basewidth = shape[:2]
-
-    temp = np.full(shape, 0)
-
-    x = math.ceil((basewidth - width) / 2)
-    if isMatte:
-        percent = (1 - (height/baseheight))/2
-    else:
-        percent = 1 - (height*0.97/baseheight)
-
-    print(baseheight, height)
-    print(percent, isMatte)
-    y = (baseheight - height) + math.ceil(height * percent)
-    print(image.shape)
-    temp[y:y + height, x:x + width] = image[0:height - math.ceil(height * percent), ]
-
-    return np.uint8(temp)
+    return erosion

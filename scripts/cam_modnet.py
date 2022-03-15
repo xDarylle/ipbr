@@ -58,7 +58,10 @@ class cam_modnet():
         matte_tensor = matte_tensor.repeat(1, 3, 1, 1)
         matte_np = matte_tensor[0].data.cpu().numpy().transpose(1, 2, 0)
 
+        matte_np = image.optimize_matte(matte_np*255)
+
         frame_np = cv2.cvtColor(frame_np, cv2.COLOR_RGB2BGR)
+        shape = frame_np.shape
 
         # check if custom size is set
         if is_not_custom:
@@ -79,7 +82,7 @@ class cam_modnet():
         bg = np.array(bg)
 
         # combine background and foreground
-        fg_np = matte_np * frame_np + (1 - matte_np) * bg
+        fg_np = image.change_background(frame_np, matte_np, bg)
 
         # get transparent foreground
         if isSaveTransparent:
