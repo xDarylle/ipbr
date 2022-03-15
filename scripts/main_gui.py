@@ -1061,7 +1061,7 @@ if __name__ == "__main__":
         while True:
             _, frame = cap.read()
 
-            if frame.all() == disconnect_img.all():
+            if np.sum(frame) == np.sum(disconnect_img):
                 text = "Camera is disconnected!"
                 error_handler(text, True)
                 stop_camera_handler()
