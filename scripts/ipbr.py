@@ -5,6 +5,9 @@ sys.path.append('scripts')
 import modnet
 import image
 
+import cv2
+import time
+
 class main():
     def __init__(self):
         url = "pretrained/modnet_photographic_portrait_matting.ckpt"
@@ -16,31 +19,36 @@ class main():
         an image container.
     '''
     def process(self, img, background, def_size, isSaveTransparent):
-        print("here")
+        img = np.array(img)
+        background = np.array(background)
+
+        # rescale
+        img = image.rescale(img, def_size, True)
+        bg = image.rescale(background, def_size, False)
+
         # get matte
         matte = self.model.get_matte(img)
-        matte = Image.fromarray(np.uint8(matte))
+        matte = np.uint8(matte)
 
         img_orig = img
         matte_orig = matte
 
+        matte = image.optimize_matte(np.array(matte))
+
         # crop
         im, matte = image.crop(img, matte)
 
-        # rescale
-        im = image.rescale(im, def_size, True)
-        matte = image.rescale(matte, def_size, True)
-        bg = image.rescale(background, def_size, False)
-
         # create container
-        foreground = image.create_containter(im, matte, def_size, False)
+        img = image.create_containter(im, matte, def_size, False)
         matte = image.create_containter(matte, matte, def_size, False)
-        background = image.create_containter(bg, bg, def_size, True)
+        bg = image.create_containter(bg, bg, def_size, True)
 
-        matte = image.optimize_matte(np.array(matte))
+        img = image.unify_channel(np.array(img))
+        matte = image.unify_channel(np.array(matte))
+        bg = image.unify_channel(np.array(bg))
 
         # change bg
-        new_image = image.change_background(foreground, matte, background)
+        new_image = image.change_background(img, matte, bg)
 
         # get transparent foreground
         if isSaveTransparent:
@@ -55,22 +63,27 @@ class main():
         Does not involve cropping and rescaling of input image. 
     '''
     def process_v2(self, img, background, isSaveTransparent):
+        size = img.size
+
+        img = np.array(img)
+        background = np.array(background)
+
         # get matte
         matte = self.model.get_matte(img)
-        matte = Image.fromarray(np.uint8(matte))
+        matte = np.uint8(matte)
 
         # rescale background to match foreground
-        bg = image.rescale(background, img.size, False)
+        bg = image.rescale(background, size, False)
 
-        matte = image.optimize_matte(np.array(matte))
+        matte = image.optimize_matte(matte)
 
         # create container for background
-        bg = image.create_containter(bg, bg, img.size, True)
+        bg = image.create_containter(bg, bg, size, True)
 
         # unify channels to 3
         img = image.unify_channel(img)
         matte = image.unify_channel(matte)
-        bg = image.unify_channel(bg)
+        bg = image.unify_channel(np.array(bg))
 
         # change background
         new_image = image.change_background(img, matte, bg)

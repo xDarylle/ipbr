@@ -12,6 +12,8 @@ import time
 import numpy as np
 import traceback
 
+import image
+
 sys.path.append('scripts')
 import ipbr
 import config
@@ -330,7 +332,10 @@ if __name__ == "__main__":
         global imm
         global preview
 
-        img.thumbnail((350, 350), resample=1)
+        img = image.downscale(img, 300)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = Image.fromarray(img)
+
         p = ImageTk.PhotoImage(img)
         imm.append(p)
         preview.configure(height=330, width=315, image=p)
@@ -394,7 +399,7 @@ if __name__ == "__main__":
                         if stopped:
                             im_label_array[i].configure(text="Stopped")
                             break
-
+                        start_time = time.time()
                         img = Image.open(im)
                         name = os.path.basename(im)
                         name = name.split('.')[0] + '.png'
@@ -405,7 +410,7 @@ if __name__ == "__main__":
                             img, transparent = main.process(img, background, (width_var, height_var),
                                                             isSaveTransparent.get())
 
-                        img.save(os.path.join(output_loc, name))
+                        cv2.imwrite(os.path.join(output_loc, name), img)
 
                         if transparent is not None:
                             transparent_name = name.split('.')[0] + "_transparent" + ".png"
@@ -415,9 +420,12 @@ if __name__ == "__main__":
                             except:
                                 pass
 
-                            transparent.save(os.path.join(path, transparent_name))
+                            transparent = np.array(transparent)
+                            cv2.imwrite(os.path.join(path, transparent_name), transparent)
 
                         update_preview(img)
+
+                        print("Execution Time (seconds): ", (time.time() - start_time))
 
                         if i == len(input_array) - 1:
                             im_label_array[i].configure(text="Done")
@@ -670,16 +678,23 @@ if __name__ == "__main__":
         for file in input_array:
             # if file is an image then create an image widget
             if os.path.isfile(file):
-                image = Image.open(file)
-                if column_size == 4:
-                    image.thumbnail((215, 215), resample=1)
-                if column_size == 3:
-                    image.thumbnail((280, 280), resample=1)
-                if column_size == 2:
-                    image.thumbnail((420, 420), resample=1)
+                try:
+                    img = cv2.imread(file)
+                except:
+                    text = "Cannot open image!"
+                    error_handler(text, True)
 
-                image = ImageTk.PhotoImage(image)
-                images.append(image)
+                if column_size == 4:
+                    img = image.downscale(img, 200)
+                if column_size == 3:
+                    img = image.downscale(img, 200)
+                if column_size == 2:
+                    img = image.downscale(img, 200)
+
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                img = Image.fromarray(img)
+                img = ImageTk.PhotoImage(img)
+                images.append(img)
 
                 view_frame.update()
                 if view_frame is not None and view_frame.winfo_height() > 630:
@@ -688,11 +703,11 @@ if __name__ == "__main__":
                     display_canvas.configure(yscrollcommand=scrollbar.set)
 
                 if column_cimension < column_size:
-                    image_frame = tk.Frame(view_frame, height=image.height(), width=image.width(), bg="#2C2B2B", bd=0,
+                    image_frame = tk.Frame(view_frame, height=img.height(), width=img.width(), bg="#2C2B2B", bd=0,
                                            relief="groove")
                     image_frame.grid(row=row_dimension, column=column_cimension)
                     # change the h and w of tk.Button when trying display the image
-                    container = tk.Button(image_frame, image=image, borderwidth=0, highlightthickness=0,
+                    container = tk.Button(image_frame, image=img, borderwidth=0, highlightthickness=0,
                                           command=lambda id=i: click_image(id))
                     container_array.append(container)
                     container.place(relx=0.05, rely=0.1)

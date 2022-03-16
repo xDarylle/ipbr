@@ -5,7 +5,6 @@ import math
 
 # unify channel to 3
 def unify_channel(im):
-    im = np.array(im)
 
     if len(im.shape) == 2:
         im = im[:, :, None]
@@ -14,20 +13,26 @@ def unify_channel(im):
     elif im.shape[2] == 4:
         im = im[:, :, 0:3]
 
-    return Image.fromarray(im)
+    return im
 
 # combine background ang foreground
-def change_background(image, matte, background):
-    image = np.array(image)
+def change_background(img, matte, background):
+    img= np.array(img)
     matte = np.array(matte)/255
     background = np.array(background)
 
-    new_image = image * matte + background * (1 - matte)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    background = cv2.cvtColor(np.uint8(background), cv2.COLOR_BGR2RGB)
 
-    return Image.fromarray(np.uint8(new_image))
+    new_image = img * matte + background * (1 - matte)
+
+    return np.uint8(new_image)
 
 # get foreground with transparent background
 def get_foreground(image, matte):
+    image = Image.fromarray(image)
+    matte = Image.fromarray(matte)
+
     image.convert("RGBA")
 
     try:
@@ -40,7 +45,6 @@ def get_foreground(image, matte):
 
 # crop foreground
 def crop(img, matte):
-    img = np.array(img)
     matte = cv2.cvtColor(np.array(matte), cv2.COLOR_RGB2BGR)
     gray = cv2.cvtColor(matte, cv2.COLOR_BGR2GRAY)
 
@@ -59,9 +63,6 @@ def crop(img, matte):
     img = img[ymin:ymax + 3, xmin:xmax]
     matte = matte[ymin:ymax + 3, xmin:xmax]
 
-    # convert to image format
-    img = Image.fromarray(img)
-    matte = Image.fromarray(matte)
     return img, matte
 
 # resize captured image using camera
@@ -101,7 +102,7 @@ def resize(img, basesize):
 # scale image to match the basesize
 def rescale(img, basesize, isNotBackground):
     basewidth, baseheight = basesize
-    width, height = img.size
+    height, width = img.shape[:2]
 
     # scale to height
     if width >= height:
@@ -111,7 +112,7 @@ def rescale(img, basesize, isNotBackground):
             baseheight += basewidth - new_width
             new_width = int(baseheight * width / height)
 
-        img = img.resize((new_width, baseheight), Image.LANCZOS)
+        img = cv2.resize(img, (new_width, baseheight), interpolation= cv2.INTER_LANCZOS4)
 
     # scale to width
     if width < height:
@@ -123,7 +124,7 @@ def rescale(img, basesize, isNotBackground):
                 baseheight = int(baseheight * basewidth / new_width)
                 new_width = basewidth
 
-            img = img.resize((new_width, baseheight), Image.LANCZOS)
+            img = cv2.resize(img, (new_width, baseheight),  interpolation= cv2.INTER_LANCZOS4)
             return img
 
         new_height = int(height * basewidth / width)
@@ -132,12 +133,15 @@ def rescale(img, basesize, isNotBackground):
             basewidth += baseheight - new_height
             new_height = int(height * basewidth / width)
 
-        img = img.resize((basewidth, new_height), Image.LANCZOS)
+        img = cv2.resize(img, (basewidth, new_height), interpolation= cv2.INTER_LANCZOS4)
 
     return img
 
 # create a container for image
 def create_containter(img, matte, size, isBackground):
+    img = Image.fromarray(img)
+    matte = Image.fromarray(matte)
+
     img = img.convert("RGBA")
     matte = matte.convert("RGBA")
 
@@ -157,10 +161,21 @@ def create_containter(img, matte, size, isBackground):
     temp = Image.new("RGBA", size, "BLACK")
 
     temp.paste(img, (x,y), matte)
+
     return temp
 
 def optimize_matte(matte):
-    kernel = np.ones((5, 5), np.uint8)
+    kernel = np.ones((6, 6), np.uint8)
     erosion = cv2.erode(matte, kernel, cv2.BORDER_REFLECT, iterations=1)
 
     return erosion
+
+def downscale(img, baseheight):
+    height, width = img.shape[:2]
+
+    new_width = int(baseheight * width / height)
+
+    img = cv2.resize(img, (new_width, baseheight), interpolation=cv2.INTER_AREA)
+
+    return img
+
