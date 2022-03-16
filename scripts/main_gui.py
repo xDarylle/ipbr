@@ -220,7 +220,37 @@ if __name__ == "__main__":
 
         checkbox(height_entry, width_entry)
 
+        # output size templete
+        tk.Frame(setting_panel, height = 72, width = 94, bg = "#e6e6e6").place(relx=0.145,rely=0.5025)
+        tk.Button(setting_panel, font = ("Tahoma", 11), fg="#a8a8a8", bg="#161010", activebackground = "#363636", text = "1 X 1 inches", height = 3, width = 10, cursor = "hand2", bd = 2, command = lambda: template_size_handler(96 , 96 , height_entry, width_entry)).place(relx=0.15,rely=0.505)
+        tk.Frame(setting_panel, height=72, width=94, bg="#e6e6e6").place(relx=0.460, rely=0.5025)
+        tk.Button(setting_panel, font = ("Tahoma", 11), fg="#a8a8a8", bg="#161010", activebackground = "#363636", text = "2 X 2 inches", height = 3, width = 10, cursor = "hand2", bd = 2, command = lambda: template_size_handler(192, 192, height_entry, width_entry)).place(relx=0.465,rely=0.505)
+        tk.Frame(setting_panel, height=72, width=94, bg="#e6e6e6").place(relx=0.145, rely=0.6225)
+        tk.Button(setting_panel, font = ("Tahoma", 11), fg="#a8a8a8", bg="#161010", activebackground = "#363636", text = "3.5 x 4.5 cm", height = 3, width = 10, cursor = "hand2", bd = 2, command = lambda: template_size_handler( 132, 170,height_entry, width_entry)).place(relx=0.15,rely=0.625)
+
+
         return height_error_label, width_error_label, output_error_label, output_loc_entry, setting_panel, customreso_cbeckbox, height_entry, width_entry
+
+
+    def template_size_handler(passedHeight, passwedWidth, height_entry, width_entry):
+        global width_var
+        global height_var
+        global width_var
+        global height_var
+
+        # set passed size to global variables
+        height_var = passedHeight
+        width_var = passwedWidth
+        # set state of entry to normal
+        height_entry.configure(state = "normal")
+        height_entry.delete(0,"end")
+        height_entry.insert(0, passedHeight)
+        width_entry.configure(state="normal")
+        width_entry.delete(0,"end")
+        width_entry.insert(0, passwedWidth)
+
+        print(height_var)
+        print(width_var)
 
     def use_input_reso_handler(inputsize_checkbox,customreso_cbeckbox,  height_entry, width_entry):
         global ifcheck_var
@@ -558,7 +588,7 @@ if __name__ == "__main__":
         global im_label_array
         global del_btn_disabled
         global clicked
-        global use_cam_btn_disabled
+        # global use_cam_btn_disabled
 
         input_array.clear()
         imm.clear()
@@ -772,7 +802,7 @@ if __name__ == "__main__":
                 select_btn.configure(state = "disabled",cursor="arrow")
                 del_btn.configure(state="disabled",cursor="arrow")
                 clean_btn.configure(state = "disabled",cursor="arrow")
-                #use_cam_btn.configure(state="normal", cursor="hand2")
+                # use_cam_btn.configure(state="normal", cursor="hand2")
                 column_handler_btn.configure(state = "disabled", cursor = "arrow")
 
                 if column_label["text"] == "Large":
@@ -801,7 +831,7 @@ if __name__ == "__main__":
             else:
                 select_btn.configure(state = "normal", cursor = "hand2")
                 clean_btn.configure(state = "normal", cursor = "hand2")
-#                column_handler_btn.configure(state="normal", cursor="hand2")
+                column_handler_btn.configure(state="normal", cursor="hand2")
 
                 select_btn_disabled.destroy()
                 clean_btn_disabled.destroy()
@@ -811,7 +841,7 @@ if __name__ == "__main__":
                 #     use_cam_btn_disabled.destroy()
                 # except:
                 #     pass
-
+                #
                 # use_cam_btn_disabled = tk.Label(frame1, image=camera_image_disable, bg="#323232")
                 # use_cam_btn_disabled.place(relx=0.655, rely=0.015)
         else:
@@ -1339,7 +1369,7 @@ if __name__ == "__main__":
     # camera_image = Image.open("resources/images/Camera.png")
     # camera_image.thumbnail((50,50))
     # camera_image = ImageTk.PhotoImage(camera_image)
-
+    #
     # camera_image_disable = Image.open("resources/images/Camera-disabled.png")
     # camera_image_disable.thumbnail((50,50))
     # camera_image_disable = ImageTk.PhotoImage(camera_image_disable)
@@ -1407,7 +1437,7 @@ if __name__ == "__main__":
     column_label.place(relx = 0.24, rely = 0.1)
     # use_cam_btn = tk.Button(frame1, image = camera_image, command =use_camera_handler,bg = "#323232", height = 50, width = 50,borderwidth= 0 , highlightthickness= 0)
     # use_cam_btn.place(relx=0.655,rely=0.015)
-    #tk.Label(frame1, text="Use Camera", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232").place(relx = 0.6425, rely = 0.1)
+    # tk.Label(frame1, text="Use Camera", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232").place(relx = 0.6425, rely = 0.1)
 
     foreground_input_list_box = tk.Listbox(mainwindow, selectmode= tk.SINGLE, width = 200, height = 38, bg = "#2C2B2B", bd = 1, relief = "groove", borderwidth= 0, highlightthickness=0 )
     foreground_input_list_box.drop_target_register(DND_FILES)
@@ -1420,7 +1450,7 @@ if __name__ == "__main__":
     #create menu frame widget
     menu_frame = tk.Frame(mainwindow, height= 720, width=350, relief="groove", bg = "#323232")
     menu_frame.place(relx= 0.73, rely= 0)
-    #tk.Label(menu_frame, text = "Chosen Background Image Preview: ", font = ("Roboto", 12), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.05, rely = 0.02)
+    # tk.Label(menu_frame, text = "Chosen Background Image Preview: ", font = ("Roboto", 12), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.05, rely = 0.02)
     background_preview = tk.Label(menu_frame, bg = "#2C2B2B", bd =2, relief = "groove", borderwidth= 0, highlightthickness=0)
     background_preview.place(relx = 0.02, rely = 0.02)
     background_preview.configure(height=160, width=310, image=background_image)
