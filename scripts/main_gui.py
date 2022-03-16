@@ -371,7 +371,9 @@ if __name__ == "__main__":
         preview.configure(height=330, width=315, image=p)
 
     def start_thread():
-        if input_array:
+        global isLoaded
+
+        if isLoaded:
             t1 = Thread(target=start_process)
             t1.daemon = True
             t1.start()
@@ -691,67 +693,77 @@ if __name__ == "__main__":
                 is_selected[id].set(0)
 
     def show_input_thread():
-        t3 = Thread(target = create_container)
-        t3.daemon = True
-        t3.start()
+        global isLoaded
+
+        if isLoaded:
+            t3 = Thread(target = create_container)
+            t3.daemon = True
+            t3.start()
 
     def create_container():
         global view_frame
         global im_label_array
         global checkbox_array
         global container_array
+        global isLoaded
 
-        row_dimension = 0
-        column_cimension = 0
+        try:
+            row_dimension = 0
+            column_cimension = 0
 
-        i = 0
-        for file in input_array:
-            # if file is an image then create an image widget
-            if os.path.isfile(file):
-                try:
-                    img = cv2.imread(file)
-                except:
-                    text = "Cannot open image!"
+            i = 0
+            for file in input_array:
+                isLoaded = False
+                # if file is an image then create an image widget
+                if os.path.isfile(file):
+                    try:
+                        img = cv2.imread(file)
+                    except:
+                        text = "Cannot open image!"
+                        error_handler(text, True)
+
+                    if column_size == 4:
+                        img = image.downscale(img, 200)
+                    if column_size == 3:
+                        img = image.downscale(img, 250)
+                    if column_size == 2:
+                        img = image.downscale(img, 350)
+
+                    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                    img = Image.fromarray(img)
+                    img = ImageTk.PhotoImage(img)
+                    images.append(img)
+
+                    view_frame.update()
+                    if view_frame is not None and view_frame.winfo_height() > 630:
+                        scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
+                        scrollbar.place(relx=1, rely=0, relheight=0.89, anchor='ne')
+                        display_canvas.configure(yscrollcommand=scrollbar.set)
+
+                    if column_cimension < column_size:
+                        image_frame = tk.Frame(view_frame, height=img.height(), width=img.width(), bg="#2C2B2B", bd=0,
+                                               relief="groove")
+                        image_frame.grid(row=row_dimension, column=column_cimension)
+                        # change the h and w of tk.Button when trying display the image
+                        container = tk.Button(image_frame, image=img, borderwidth=0, highlightthickness=0,
+                                              command=lambda id=i: click_image(id))
+                        container_array.append(container)
+                        container.place(relx=0.05, rely=0.1)
+                        im_label = tk.Label(image_frame)
+                        im_label_array.append(im_label)
+                        column_cimension += 1
+
+                    if column_cimension == column_size:
+                        row_dimension += 1
+                        column_cimension = 0
+                    i += 1
+                else:
+                    text = "Cannot Open Images! \nImages does not exist or deleted!"
                     error_handler(text, True)
+        except:
+            pass
 
-                if column_size == 4:
-                    img = image.downscale(img, 200)
-                if column_size == 3:
-                    img = image.downscale(img, 200)
-                if column_size == 2:
-                    img = image.downscale(img, 200)
-
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                img = Image.fromarray(img)
-                img = ImageTk.PhotoImage(img)
-                images.append(img)
-
-                view_frame.update()
-                if view_frame is not None and view_frame.winfo_height() > 630:
-                    scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
-                    scrollbar.place(relx=1, rely=0, relheight=0.89, anchor='ne')
-                    display_canvas.configure(yscrollcommand=scrollbar.set)
-
-                if column_cimension < column_size:
-                    image_frame = tk.Frame(view_frame, height=img.height(), width=img.width(), bg="#2C2B2B", bd=0,
-                                           relief="groove")
-                    image_frame.grid(row=row_dimension, column=column_cimension)
-                    # change the h and w of tk.Button when trying display the image
-                    container = tk.Button(image_frame, image=img, borderwidth=0, highlightthickness=0,
-                                          command=lambda id=i: click_image(id))
-                    container_array.append(container)
-                    container.place(relx=0.05, rely=0.1)
-                    im_label = tk.Label(image_frame)
-                    im_label_array.append(im_label)
-                    column_cimension += 1
-
-                if column_cimension == column_size:
-                    row_dimension += 1
-                    column_cimension = 0
-                i += 1
-            else:
-                text = "Cannot Open Images! \nImages does not exist or deleted!"
-                error_handler(text, True)
+        isLoaded = True
 
     def input_gallery_gui():
         global images
@@ -923,37 +935,39 @@ if __name__ == "__main__":
         global view_frame
         global display_frame
         global display_canvas
+        global isLoaded
 
-        if column_size == 4:
-            column_size = 2
-        else:
-            column_size += 1
+        if isLoaded:
+            if column_size == 4:
+                column_size = 2
+            else:
+                column_size += 1
 
-        if column_size == 4:
-            column_handler_btn.configure(image = large_image)
-            column_label.configure(text = "Small", bg = "#323232")
-            column_label.place(relx=0.24)
-        elif column_size == 3:
-            column_handler_btn.configure(image = medium_image)
-            column_label.configure(text="Medium", bg = "#323232")
-            column_label.place(relx = 0.235)
-        elif column_size == 2:
-            column_handler_btn.configure(image = small_image)
-            column_label.configure(text="Large", bg = "#323232")
-            column_label.place(relx=0.24)
+            if column_size == 4:
+                column_handler_btn.configure(image = large_image)
+                column_label.configure(text = "Small", bg = "#323232")
+                column_label.place(relx=0.24)
+            elif column_size == 3:
+                column_handler_btn.configure(image = medium_image)
+                column_label.configure(text="Medium", bg = "#323232")
+                column_label.place(relx = 0.235)
+            elif column_size == 2:
+                column_handler_btn.configure(image = small_image)
+                column_label.configure(text="Large", bg = "#323232")
+                column_label.place(relx=0.24)
 
-            try:
-                if view_frame is not None and view_frame.winfo_height() > 630:
-                    scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
-                    scrollbar.place(relx=1, rely=0, relheight=0.89, anchor='ne')
-                    display_canvas.configure(yscrollcommand=scrollbar.set)
-            except:
-                pass
+                try:
+                    if view_frame is not None and view_frame.winfo_height() > 630:
+                        scrollbar = ttk.Scrollbar(display_frame, command=display_canvas.yview)
+                        scrollbar.place(relx=1, rely=0, relheight=0.89, anchor='ne')
+                        display_canvas.configure(yscrollcommand=scrollbar.set)
+                except:
+                    pass
 
-        for widget in foreground_input_list_box.winfo_children():
-            widget.destroy()
+            for widget in foreground_input_list_box.winfo_children():
+                widget.destroy()
 
-        input_gallery_gui()
+            input_gallery_gui()
 
     def initialize_stream():
         global cmodnet
@@ -1303,6 +1317,7 @@ if __name__ == "__main__":
     isClick_camera = False
     stopped = False
     isGrid = False
+    isLoaded = True
     current_background = ""
     mainwindow_width = 1200
     mainwindow_height = 720

@@ -30,6 +30,7 @@ def change_background(img, matte, background):
 
 # get foreground with transparent background
 def get_foreground(image, matte):
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = Image.fromarray(image)
     matte = Image.fromarray(matte)
 
@@ -118,20 +119,20 @@ def rescale(img, basesize, isNotBackground):
     if width < height:
         # if foreground scale to baseheight
         if isNotBackground:
-            baseheight = int(baseheight * 0.85)
-            new_width = int(baseheight * width / height)
-            if new_width > basewidth:
-                baseheight = int(baseheight * basewidth / new_width)
+            baseheight = math.ceil(baseheight * 0.85)
+            new_width = math.ceil(baseheight * width / height)
+            if new_width < basewidth:
+                baseheight = math.ceil(baseheight * basewidth / new_width)
                 new_width = basewidth
 
             img = cv2.resize(img, (new_width, baseheight),  interpolation= cv2.INTER_LANCZOS4)
             return img
 
-        new_height = int(height * basewidth / width)
+        new_height = math.ceil(height * basewidth / width)
 
         if new_height < baseheight and not isNotBackground:
             basewidth += baseheight - new_height
-            new_height = int(height * basewidth / width)
+            new_height = math.ceil(height * basewidth / width)
 
         img = cv2.resize(img, (basewidth, new_height), interpolation= cv2.INTER_LANCZOS4)
 
@@ -149,12 +150,12 @@ def create_containter(img, matte, size, isBackground):
     img_width, img_height = img.size
 
     # align img to center
-    x = int((size_width - img_width) / 2)
+    x = math.ceil((size_width - img_width) / 2)
     if not isBackground:
-        y = int(size_height - img_height) - int(img_height * 0.01)
+        y = math.ceil(size_height - img_height)
         # top padding
         if y < (size_height * 0.15):
-            y = int(size_height * 0.15) - int(img_height * 0.01)
+            y = math.ceil(size_height * 0.15) - math.ceil(img_height * 0.01)
     else:
         y = 0
 
