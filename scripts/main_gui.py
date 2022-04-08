@@ -222,11 +222,11 @@ if __name__ == "__main__":
 
         # output size templete
         tk.Frame(setting_panel, height = 72, width = 94, bg = "#e6e6e6").place(relx=0.145,rely=0.5025)
-        tk.Button(setting_panel, font = ("Tahoma", 11), fg="#a8a8a8", bg="#161010", activebackground = "#363636", text = "1 X 1 inches", height = 3, width = 10, cursor = "hand2", bd = 2, command = lambda: template_size_handler(96 , 96 , height_entry, width_entry)).place(relx=0.15,rely=0.505)
+        tk.Button(setting_panel, font = ("Tahoma", 11), fg="#a8a8a8", bg="#161010", activebackground = "#363636", text = "1 X 1 inches", height = 3, width = 10, cursor = "hand2", bd = 2, command = lambda: template_size_handler(512 , 512 , height_entry, width_entry)).place(relx=0.15,rely=0.505)
         tk.Frame(setting_panel, height=72, width=94, bg="#e6e6e6").place(relx=0.460, rely=0.5025)
-        tk.Button(setting_panel, font = ("Tahoma", 11), fg="#a8a8a8", bg="#161010", activebackground = "#363636", text = "2 X 2 inches", height = 3, width = 10, cursor = "hand2", bd = 2, command = lambda: template_size_handler(192, 192, height_entry, width_entry)).place(relx=0.465,rely=0.505)
+        tk.Button(setting_panel, font = ("Tahoma", 11), fg="#a8a8a8", bg="#161010", activebackground = "#363636", text = "2 X 2 inches", height = 3, width = 10, cursor = "hand2", bd = 2, command = lambda: template_size_handler(1024, 1024, height_entry, width_entry)).place(relx=0.465,rely=0.505)
         tk.Frame(setting_panel, height=72, width=94, bg="#e6e6e6").place(relx=0.145, rely=0.6225)
-        tk.Button(setting_panel, font = ("Tahoma", 11), fg="#a8a8a8", bg="#161010", activebackground = "#363636", text = "3.5 x 4.5 cm", height = 3, width = 10, cursor = "hand2", bd = 2, command = lambda: template_size_handler( 132, 170,height_entry, width_entry)).place(relx=0.15,rely=0.625)
+        tk.Button(setting_panel, font = ("Tahoma", 11), fg="#a8a8a8", bg="#161010", activebackground = "#363636", text = "3.5 x 4.5 cm", height = 3, width = 10, cursor = "hand2", bd = 2, command = lambda: template_size_handler(706, 907,height_entry, width_entry)).place(relx=0.15,rely=0.625)
 
 
         return height_error_label, width_error_label, output_error_label, output_loc_entry, setting_panel, customreso_cbeckbox, height_entry, width_entry
@@ -493,6 +493,9 @@ if __name__ == "__main__":
         #assign it with data from event
         input_folder_path = event.data
 
+        print(input_folder_path)
+
+
         if input_folder_path:
             isNotBigger = False
             isCorrupted = False
@@ -723,11 +726,11 @@ if __name__ == "__main__":
                         error_handler(text, True)
 
                     if column_size == 4:
-                        img = image.downscale(img, 200)
+                        img = image.downscale(img, 100)
                     if column_size == 3:
-                        img = image.downscale(img, 250)
+                        img = image.downscale(img, 150)
                     if column_size == 2:
-                        img = image.downscale(img, 350)
+                        img = image.downscale(img, 200)
 
                     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                     img = Image.fromarray(img)
