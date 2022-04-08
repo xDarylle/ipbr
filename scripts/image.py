@@ -154,8 +154,8 @@ def create_containter(img, matte, size, isBackground):
     if not isBackground:
         y = math.ceil(size_height - img_height)
         # top padding
-        if y < (size_height * 0.15):
-            y = math.ceil(size_height * 0.15) - math.ceil(img_height * 0.01)
+        if y < (size_height * 0.05) and img_height >= size_height:
+            y = math.ceil(size_height * 0.05) - math.ceil(img_height * 0.01)
     else:
         y = 0
 
@@ -179,4 +179,3 @@ def downscale(img, baseheight):
     img = cv2.resize(img, (new_width, baseheight), interpolation=cv2.INTER_AREA)
 
     return img
-
