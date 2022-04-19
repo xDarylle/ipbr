@@ -220,13 +220,6 @@ if __name__ == "__main__":
 
         checkbox(height_entry, width_entry)
 
-        # output size templete
-        tk.Frame(setting_panel, height = 72, width = 94, bg = "#e6e6e6").place(relx=0.145,rely=0.5025)
-        tk.Button(setting_panel, font = ("Tahoma", 11), fg="#a8a8a8", bg="#161010", activebackground = "#363636", text = "1 X 1 inches", height = 3, width = 10, cursor = "hand2", bd = 2, command = lambda: template_size_handler(512 , 512 , height_entry, width_entry)).place(relx=0.15,rely=0.505)
-        tk.Frame(setting_panel, height=72, width=94, bg="#e6e6e6").place(relx=0.460, rely=0.5025)
-        tk.Button(setting_panel, font = ("Tahoma", 11), fg="#a8a8a8", bg="#161010", activebackground = "#363636", text = "2 X 2 inches", height = 3, width = 10, cursor = "hand2", bd = 2, command = lambda: template_size_handler(1024, 1024, height_entry, width_entry)).place(relx=0.465,rely=0.505)
-        tk.Frame(setting_panel, height=72, width=94, bg="#e6e6e6").place(relx=0.145, rely=0.6225)
-        tk.Button(setting_panel, font = ("Tahoma", 11), fg="#a8a8a8", bg="#161010", activebackground = "#363636", text = "3.5 x 4.5 cm", height = 3, width = 10, cursor = "hand2", bd = 2, command = lambda: template_size_handler(706, 907,height_entry, width_entry)).place(relx=0.15,rely=0.625)
 
 
         return height_error_label, width_error_label, output_error_label, output_loc_entry, setting_panel, customreso_cbeckbox, height_entry, width_entry
