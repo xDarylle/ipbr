@@ -225,25 +225,25 @@ if __name__ == "__main__":
         return height_error_label, width_error_label, output_error_label, output_loc_entry, setting_panel, customreso_cbeckbox, height_entry, width_entry
 
 
-    def template_size_handler(passedHeight, passwedWidth, height_entry, width_entry):
-        global width_var
-        global height_var
-        global width_var
-        global height_var
-
-        # set passed size to global variables
-        height_var = passedHeight
-        width_var = passwedWidth
-        # set state of entry to normal
-        height_entry.configure(state = "normal")
-        height_entry.delete(0,"end")
-        height_entry.insert(0, passedHeight)
-        width_entry.configure(state="normal")
-        width_entry.delete(0,"end")
-        width_entry.insert(0, passwedWidth)
-
-        print(height_var)
-        print(width_var)
+    # def template_size_handler(passedHeight, passwedWidth, height_entry, width_entry):
+    #     global width_var
+    #     global height_var
+    #     global width_var
+    #     global height_var
+    #
+    #     # set passed size to global variables
+    #     height_var = passedHeight
+    #     width_var = passwedWidth
+    #     # set state of entry to normal
+    #     height_entry.configure(state = "normal")
+    #     height_entry.delete(0,"end")
+    #     height_entry.insert(0, passedHeight)
+    #     width_entry.configure(state="normal")
+    #     width_entry.delete(0,"end")
+    #     width_entry.insert(0, passwedWidth)
+    #
+    #     print(height_var)
+    #     print(width_var)
 
     def use_input_reso_handler(inputsize_checkbox,customreso_cbeckbox,  height_entry, width_entry):
         global ifcheck_var
