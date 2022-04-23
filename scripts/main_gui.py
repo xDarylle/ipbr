@@ -31,13 +31,13 @@ if __name__ == "__main__":
         yindex = 0.1
 
         # create main panel
-        background_panel = tk.Frame(mainwindow, height=720, width=360, relief="groove", bg="#161010")
+        background_panel = tk.Frame(mainwindow, height=720, width=360, relief="groove", bg="#525E75")
         background_panel.place(relx=0.72, rely=0)
         # create button widgets
         tk.Button(background_panel, height=20, width=20, bd=0, image=add_background_icon, cursor="hand2",
                   command=lambda: add_background(background_panel)).place(relx=0.05, rely=0.025)
-        tk.Button(background_panel, height = 1, width = 15, text = "Add Background", font = ("Roboto", 12), fg = "#ffffff", bg = "#161010", activebackground = "#858585", cursor = "hand2", borderwidth=0, highlightthickness=0,command=lambda: add_background(background_panel)).place(relx=0.15, rely=0.02)
-        tk.Button(background_panel, height = 1, width = 8, text = "Close", font = ("Roboto", 12),borderwidth=0, highlightthickness=0, cursor = "hand2", fg="white", bg="#303E8C", command = background_panel.destroy).place(relx = 0.7, rely = 0.02)
+        tk.Button(background_panel, height = 2, width = 15, text = "Add Background", font = ("Roboto", 10), fg = "#b3e3b3", bg = "#78938A", activebackground = "#858585", cursor = "hand2", borderwidth=0, highlightthickness=0,command=lambda: add_background(background_panel)).place(relx=0.15, rely=0.02)
+        tk.Button(background_panel, height = 2, width = 8, text = "Close", font = ("Roboto", 10),borderwidth=0, highlightthickness=0, cursor = "hand2", fg="#b3e3b3", bg="#78938A", command = background_panel.destroy).place(relx = 0.7, rely = 0.02)
         # recreate the image gallery with current image and panel as paramenter
         for img in backgrounds_array:
             create_background_gallery(img, background_panel)
@@ -73,7 +73,7 @@ if __name__ == "__main__":
                 img = ImageTk.PhotoImage(img)
 
                 # create the image in image gallery, I used button for command attribute
-                image_panel = tk.Frame(panel, height=180, width=img.width(), bg="#161010")
+                image_panel = tk.Frame(panel, height=180, width=img.width(), bg="#525E75")
                 mainwindow.update()
                 x = ((panel.winfo_width() - img.width()) / 2) / panel.winfo_width()
                 image_panel.place(relx=x, rely=(yindex))
@@ -164,54 +164,54 @@ if __name__ == "__main__":
         height_entry_var.set(str(height_var))
         width_entry_var.set(str(width_var))
 
-        setting_panel = tk.Frame(mainwindow, height=720, width=350, bg="#161010")
+        setting_panel = tk.Frame(mainwindow, height=720, width=350, bg="#525E75")
         setting_panel.place(relx=0.730, rely=0)
-        tk.Label(setting_panel, text="Settings", font=("Roboto", 20), fg="#4369D9", bg="#161010").place(relx=0.05,
+        tk.Label(setting_panel, text="Settings", font=("Roboto", 20), fg="#4369D9", bg="#525E75").place(relx=0.05,
                                                                                                         rely=0.025)
-        tk.Label(setting_panel, text="Output Location", font=("Roboto", 14), fg="#D6D2D2", bg="#161010").place(relx=0.05,
+        tk.Label(setting_panel, text="Output Location", font=("Roboto", 14), fg="#b3e3b3", bg="#525E75").place(relx=0.05,
                                                                                                                rely=0.1)
-        output_loc_entry = tk.Label(setting_panel, width=25, font=("Roboto", 12), fg="#D6D2D2", bg="#161010", bd=2,
+        output_loc_entry = tk.Label(setting_panel, width=25, font=("Roboto", 12), fg="#b3e3b3", bg="#525E75", bd=2,
                                     relief="groove")
         output_loc_entry.configure(text = output_loc)
         output_loc_entry.place(relx=0.05, rely=0.15, height=40)
 
-        output_error_label = tk.Label(setting_panel, font=("Roboto", 10), fg="#ff7045", bg="#161010")
+        output_error_label = tk.Label(setting_panel, font=("Roboto", 10), fg="#b3e3b3", bg="#525E75")
         output_error_label.place(relx=0.25, rely=0.215)
 
-        tk.Button(setting_panel, height=0, width=3, text="...", font=("Roboto", 15), fg="#D6D2D2", bg="#161010", bd=2,
+        tk.Button(setting_panel, height=0, width=3, text="...", font=("Roboto", 15), fg="#b3e3b3", bg="#525E75", bd=2,
                   relief="groove", command=lambda: [get_output_loc(output_loc_entry)]).place(relx=0.7, rely=0.15)
 
-        tk.Label(setting_panel, text = "Use Input Sizes", font = ("Roboto", 13), fg="#D6D2D2", bg="#161010").place(relx = 0.05, rely = 0.3)
-        tk.Label(setting_panel, text = "Save transparent background",font = ("Roboto", 13), fg="#D6D2D2", bg="#161010").place(relx = 0.05, rely = 0.25)
-        tk.Checkbutton(setting_panel,  bg="#161010", variable=isSaveTransparent).place(relx = 0.7, rely = 0.25)
+        tk.Label(setting_panel, text = "Use Input Sizes", font = ("Roboto", 13), fg="#b3e3b3", bg="#525E75").place(relx = 0.05, rely = 0.3)
+        tk.Label(setting_panel, text = "Save transparent background",font = ("Roboto", 13), fg="#b3e3b3", bg="#525E75").place(relx = 0.05, rely = 0.25)
+        tk.Checkbutton(setting_panel,  bg="#525E75", variable=isSaveTransparent).place(relx = 0.7, rely = 0.25)
 
-        tk.Checkbutton(setting_panel, variable = inputsize_checkbox, bg="#161010", command = lambda: use_input_reso_handler(inputsize_checkbox.get(),customreso_cbeckbox, height_entry, width_entry)).place(relx = 0.7, rely = 0.298)
+        tk.Checkbutton(setting_panel, variable = inputsize_checkbox, bg="#525E75", command = lambda: use_input_reso_handler(inputsize_checkbox.get(),customreso_cbeckbox, height_entry, width_entry)).place(relx = 0.7, rely = 0.298)
 
-        tk.Label(setting_panel, text="Use Custom Sizes", font=("Roboto", 13), fg="#D6D2D2", bg="#161010").place(relx=0.05, rely=0.35)
+        tk.Label(setting_panel, text="Use Custom Sizes", font=("Roboto", 13), fg="#b3e3b3", bg="#525E75").place(relx=0.05, rely=0.35)
 
-        customreso_cbeckbox = tk.Checkbutton(setting_panel, variable= temp, bg="#161010",command=lambda: [checkbox(height_entry, width_entry)])
+        customreso_cbeckbox = tk.Checkbutton(setting_panel, variable= temp, bg="#525E75",command=lambda: [checkbox(height_entry, width_entry)])
         customreso_cbeckbox.place(relx=0.7, rely=0.348)
 
-        tk.Label(setting_panel, text="Height (Pixels): ", font=("Roboto", 12), fg="#D6D2D2", bg="#161010").place(relx=0.05,rely=0.4)
+        tk.Label(setting_panel, text="Height (Pixels): ", font=("Roboto", 12), fg="#b3e3b3", bg="#525E75").place(relx=0.05,rely=0.4)
         height_entry = tk.Entry(setting_panel, state='readonly',  textvariable=height_entry_var, width=5,
-                                font=("Roboto", 12), fg="#D6D2D2", bg="#161010", bd=3)
+                                font=("Roboto", 12), fg="#331c09", bg="#FAFDD6", bd=3)
 
         height_entry.place(relx=0.4, rely=0.4)
 
-        tk.Label(setting_panel, text="Width (Pixels): ", font=("Roboto", 12), fg="#D6D2D2", bg="#161010").place(relx=0.05,rely=0.45)
+        tk.Label(setting_panel, text="Width (Pixels): ", font=("Roboto", 12), fg="#b3e3b3", bg="#525E75").place(relx=0.05,rely=0.45)
 
         width_entry = tk.Entry(setting_panel, state='readonly', textvariable=width_entry_var, width=5, font=("Roboto", 12),
-                               fg="#D6D2D2", bg="#161010", bd=3)
+                               fg="#331c09", bg="#FAFDD6", bd=3)
 
         width_entry.place(relx=0.4, rely=0.45)
-        height_error_label = tk.Label(setting_panel, font=("Roboto", 10), fg="#ff7045", bg="#161010")
+        height_error_label = tk.Label(setting_panel, font=("Roboto", 10), fg="#b3e3b3", bg="#525E75")
         height_error_label.place(relx=0.575, rely=0.405)
-        width_error_label = tk.Label(setting_panel, font=("Roboto", 10), fg="#ff7045", bg="#161010")
+        width_error_label = tk.Label(setting_panel, font=("Roboto", 10), fg="#b3e3b3", bg="#525E75")
         width_error_label.place(relx=0.575, rely=0.455)
 
-        tk.Button(setting_panel, height=2, width=30, text="Cancel", font=("Roboto", 13), fg="white", bg="#DC4343", borderwidth=0, highlightthickness=0,
+        tk.Button(setting_panel, height=2, width=30, text="Cancel", font=("Roboto", 13), fg="#b3e3b3", bg="#78938A", borderwidth=0, highlightthickness=0,
                   cursor="hand2", command=setting_panel.destroy).place(relx = 0.07, rely=0.85)
-        tk.Button(setting_panel, height=2, width=30, text="Apply Changes", font=("Roboto", 13), fg="white", bg="#303E8C", borderwidth=0, highlightthickness=0,
+        tk.Button(setting_panel, height=2, width=30, text="Apply Changes", font=("Roboto", 13), fg="#b3e3b3", bg="#78938A", borderwidth=0, highlightthickness=0,
                   cursor="hand2", command=lambda: [
                 save_settings(height_error_label, width_error_label, output_error_label, setting_panel,  ifcheck_var)]).place(
             relx=0.07, rely=0.75)
@@ -781,13 +781,13 @@ if __name__ == "__main__":
 
         ttkstyle = ttk.Style()
         ttkstyle.theme_use("classic")
-        ttkstyle.configure("Vertical.TScrollbar", background="#363434",arrowsize = 1, borderwidth = 0, troughcolor = "#2b2a2a", relief = "groove")
+        ttkstyle.configure("Vertical.TScrollbar", background="#FAFDD6",arrowsize = 1, borderwidth = 0, troughcolor = "#2b2a2a", relief = "groove")
 
-        display_frame = tk.Frame(foreground_input_list_box, height=720, width=870, bg="#2C2B2B")
+        display_frame = tk.Frame(foreground_input_list_box, height=720, width=870, bg="#FAFDD6")
         display_frame.place(relx=0, rely=0)
-        display_canvas = tk.Canvas(display_frame, bg="#2C2B2B", height=630, width=960, borderwidth=0, highlightthickness=0, )
+        display_canvas = tk.Canvas(display_frame, bg="#FAFDD6", height=630, width=960, borderwidth=0, highlightthickness=0, )
         display_canvas.place(relx=0, rely=0)
-        view_frame = tk.Frame(display_canvas, bg="#2C2B2B")
+        view_frame = tk.Frame(display_canvas, bg="#FAFDD6")
         view_frame.bind('<Configure>', on_configure)
         mainwindow.bind("<MouseWheel>", _on_mousewheel)
         display_canvas.create_window(0, 0, window=view_frame)
@@ -807,9 +807,9 @@ if __name__ == "__main__":
 
         if len(input_array) > 0:
             if isHomeBool == True:
-                select_btn.configure(state = "disabled",cursor="arrow")
-                del_btn.configure(state="disabled",cursor="arrow")
-                clean_btn.configure(state = "disabled",cursor="arrow")
+                select_btn.configure(state = "disabled",cursor="arrow", bg ="#e8e8e8")
+                del_btn.configure(state="disabled",cursor="arrow", bg = "#e8e8e8")
+                clean_btn.configure(state = "disabled",cursor="arrow", bg = "#e8e8e8")
                 # use_cam_btn.configure(state="normal", cursor="hand2")
                 column_handler_btn.configure(state = "disabled", cursor = "arrow")
 
@@ -1424,54 +1424,54 @@ if __name__ == "__main__":
     mainwindow.iconbitmap(icon2)
     mainwindow.geometry(f"{mainwindow_width}x{mainwindow_height}+{int((screen_width / 2) - (mainwindow_width / 2))}+{int((screen_height / 2) - (mainwindow_height / 2))}")
     mainwindow.title("Intelligent Portrait Background Replacement")
-    mainwindow.configure(bg = "#323232")
+    mainwindow.configure(bg = "#343434")
     mainwindow.resizable(False, False)
 
     #create main window widgets
-    frame1 = tk.Frame(mainwindow, height= 55, width = 900, bg = "#323232").place(x=0,y=0)
-    add_btn = tk.Button(frame1, image = add_image_icon,bg = "#323232", height = 50, width = 50,  bd = 2, command = add_image_handler, cursor = "hand2", borderwidth= 0 , highlightthickness= 0)
+    frame1 = tk.Frame(mainwindow, height= 55, width = 900, bg = "#343434").place(x=0,y=0)
+    add_btn = tk.Button(frame1, image = add_image_icon,bg = "#343434", height = 50, width = 50,  bd = 2, command = add_image_handler, cursor = "hand2", borderwidth= 0 , highlightthickness= 0)
     add_btn.place(relx = 0.015, rely = 0.015)
-    tk.Label(frame1, text = "Add", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232").place(relx = 0.02, rely = 0.1)
+    tk.Label(frame1, text = "Add", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#343434").place(relx = 0.02, rely = 0.1)
     select_btn = tk.Button(frame1, image = select_image, command = lambda : [del_btn.configure(state="normal"), select_img()], bg = "#323232", height = 50, width = 50, borderwidth= 0 , highlightthickness= 0)
     select_btn.place(relx=0.07,rely=0.015)
-    select_lbl = tk.Label(frame1, text="Select", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232")
+    select_lbl = tk.Label(frame1, text="Select", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#343434")
     select_lbl.place(relx = 0.0725, rely = 0.1)
-    del_btn = tk.Button(frame1, image = delete_image, command = delete_selected, bg = "#323232", height = 50, width = 50,borderwidth= 0 , highlightthickness= 0)
+    del_btn = tk.Button(frame1, image = delete_image, command = delete_selected, bg = "#343434", height = 50, width = 50,borderwidth= 0 , highlightthickness= 0)
     del_btn.place(relx = 0.125, rely = 0.015)
-    tk.Label(frame1, text="Delete", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232").place(relx = 0.1275, rely = 0.1)
-    clean_btn = tk.Button(frame1, image = clear_image, bg = "#323232", height = 50, width = 50,command = clear, borderwidth= 0 , highlightthickness= 0)
+    tk.Label(frame1, text="Delete", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#343434").place(relx = 0.1275, rely = 0.1)
+    clean_btn = tk.Button(frame1, image = clear_image, bg = "#343434", height = 50, width = 50,command = clear, borderwidth= 0 , highlightthickness= 0)
     clean_btn.place(relx = 0.18, rely = 0.015)
-    tk.Label(frame1, text="Clear", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232").place(relx = 0.1865, rely = 0.1)
-    column_handler_btn = tk.Button(frame1, image = large_image, bg = "#323232", height = 50, width = 50, command = update_column_handler, borderwidth= 0 , highlightthickness= 0)
+    tk.Label(frame1, text="Clear", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#343434").place(relx = 0.1865, rely = 0.1)
+    column_handler_btn = tk.Button(frame1, image = large_image, bg = "#343434", height = 50, width = 50, command = update_column_handler, borderwidth= 0 , highlightthickness= 0)
     column_handler_btn.place(relx=0.235,rely=0.015)
-    column_label = tk.Label(frame1, text = "Small", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232")
+    column_label = tk.Label(frame1, text = "Small", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#343434")
     column_label.place(relx = 0.24, rely = 0.1)
     # use_cam_btn = tk.Button(frame1, image = camera_image, command =use_camera_handler,bg = "#323232", height = 50, width = 50,borderwidth= 0 , highlightthickness= 0)
     # use_cam_btn.place(relx=0.655,rely=0.015)
     # tk.Label(frame1, text="Use Camera", font = ("Roboto", 10), fg = "#D6D2D2", bg = "#323232").place(relx = 0.6425, rely = 0.1)
 
-    foreground_input_list_box = tk.Listbox(mainwindow, selectmode= tk.SINGLE, width = 200, height = 38, bg = "#2C2B2B", bd = 1, relief = "groove", borderwidth= 0, highlightthickness=0 )
+    foreground_input_list_box = tk.Listbox(mainwindow, selectmode= tk.SINGLE, width = 200, height = 38, bg = "#343434", bd = 1, relief = "groove", borderwidth= 0, highlightthickness=0 )
     foreground_input_list_box.drop_target_register(DND_FILES)
     foreground_input_list_box.dnd_bind("<<Drop>>", drop_inside_list_box)
     foreground_input_list_box.place(relx= 0.005, rely=0.141)
-    tk.Label(foreground_input_list_box, text= "Drop image folder here", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.25, rely = 0.35)
-    tk.Label(foreground_input_list_box, text= "or", font = ("Roboto", 20), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.35, rely = 0.41)
-    tk.Button(foreground_input_list_box, text = "Browse", height = 1, width=20, font = ("Roboto", 17),  fg = "#e0efff", bg = "#4369D9", activebackground="#4a9eff", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command= get_input_handler).place(relx= 0.255, rely = 0.50)
+    tk.Label(foreground_input_list_box, text= "Drop image folder here", font = ("Roboto", 20), fg = "white", bg = "#343434").place(relx= 0.25, rely = 0.35)
+    tk.Label(foreground_input_list_box, text= "or", font = ("Roboto", 20), fg = "white", bg = "#343434").place(relx= 0.35, rely = 0.41)
+    tk.Button(foreground_input_list_box, text = "Browse", height = 2, width=20, font = ("Roboto", 17),  fg = "white", bg = "#78938A", activebackground="#4a9eff", cursor = "hand2", borderwidth= 0, highlightthickness= 0,command= get_input_handler).place(relx= 0.255, rely = 0.50)
 
     #create menu frame widget
-    menu_frame = tk.Frame(mainwindow, height= 720, width=350, relief="groove", bg = "#323232")
+    menu_frame = tk.Frame(mainwindow, height= 720, width=350, relief="groove", bg = "#525E75")
     menu_frame.place(relx= 0.73, rely= 0)
     # tk.Label(menu_frame, text = "Chosen Background Image Preview: ", font = ("Roboto", 12), fg = "#D6D2D2", bg = "#2C2B2B").place(relx= 0.05, rely = 0.02)
-    background_preview = tk.Label(menu_frame, bg = "#2C2B2B", bd =2, relief = "groove", borderwidth= 0, highlightthickness=0)
-    background_preview.place(relx = 0.02, rely = 0.02)
+    background_preview = tk.Label(menu_frame, bg = "#525E75", bd =2, relief = "groove", borderwidth= 0, highlightthickness=0)
+    background_preview.place(relx = 0.02, rely = 0)
     background_preview.configure(height=160, width=310, image=background_image)
-    preview_frame = tk.Frame(menu_frame, height= 500, width= 310, bg = "#323232")
+    preview_frame = tk.Frame(menu_frame, height= 500, width= 310, bg = "#525E75")
     preview_frame.place(relx=0.02, rely=0.385)
-    preview = tk.Label(preview_frame, height= 22, width= 315, bg = "#2C2B2B" )
+    preview = tk.Label(preview_frame, height= 22, width= 315, bg = "#525E75" )
     preview.place(relx = 0, rely =0)
-    tk.Button(menu_frame, height = 1, width = 25, text = "Change Background", font = ("Roboto", 16), fg = "#e0efff", bg = "#303E8C", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command=background_panel_gui).place(relx= 0.025, rely= 0.26)
-    tk.Button(menu_frame, height = 1, width = 25, text = "Settings", font = ("Roboto", 16), fg = "#e0efff", bg = "#303E8C", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0,command = open_settings).place(relx= 0.025, rely= 0.32)
-    start_btn = tk.Button(menu_frame, height = 3, width = 25, text = "START", font = ("Roboto", 16), fg = "#e0efff", bg = "#4369D9", activebackground="#4a9eff", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command = start_thread)
+    tk.Button(menu_frame, height = 2, width = 20, text = "Change Background", font = ("Roboto", 14), fg = "#b3e3b3", bg = "#78938A", activebackground="#d1d971", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command=background_panel_gui).place(relx= 0.135, rely= 0.26)
+    tk.Button(menu_frame, height = 2, width = 20, text = "Settings", font = ("Roboto", 14), fg = "#b3e3b3", bg = "#78938A", activebackground="#d1d971", cursor ="hand2",borderwidth= 0, highlightthickness= 0,command = open_settings).place(relx= 0.135, rely= 0.37)
+    start_btn = tk.Button(menu_frame, height = 3, width = 25, text = "START", font = ("Roboto", 16), fg = "#b3e3b3", bg = "#78938A", activebackground="#d1d971", cursor ="hand2",borderwidth= 0, highlightthickness= 0, command = start_thread)
     start_btn.place(relx=0.025, rely=0.87)
     checkI_home_handler()
 
