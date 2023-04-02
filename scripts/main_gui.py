@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from PIL import Image, ImageTk, UnidentifiedImageError
-from TkinterDnD2 import DND_FILES, TkinterDnD
+from tkdnd import DND_FILES, TkinterDnD
 import os, os.path
 import sys
 from threading import *
@@ -12,9 +12,8 @@ import time
 import numpy as np
 import traceback
 
-import image
-
 sys.path.append('scripts')
+import image
 import ipbr
 import config
 import cam_modnet
